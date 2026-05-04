@@ -1,0 +1,13 @@
+use crate::domain::value_object::image_id::ImageId;
+use crate::domain::value_object::session_id::SessionId;
+
+pub struct GetImageInput{
+    session_id: SessionId,
+    image_id: ImageId
+}
+
+impl GetImageInput {
+    pub fn into_session_id_and_image_id(self) -> (SessionId,ImageId) {
+        (self.session_id, self.image_id)
+    }
+}

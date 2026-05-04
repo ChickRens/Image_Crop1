@@ -1,0 +1,58 @@
+Flow
+
+user: Send Image
+serv: Create Session
+
+user: Add Point (optional)
+serv: Generate Mask & Send cropped Mask
+
+user: Add Point
+serv: Generate Mask & Send cropped Mask
+
+...
+
+user: Undo
+serv: Send previous Mask & Delete latest Point
+
+...
+
+user: Redo
+serv: If exist next history, Send next Mask & Add next Point
+
+...
+
+user: Save Image
+serv: Delete Session after 10 min
+
+
+Rule
+
+Session:
+    PNG Image
+    Mask history
+
+    Life span is 30 min
+    If update, reset life span
+    If save Image, Delete Session after 10 min
+
+History:
+    Point array
+    current history index
+
+    Redo
+    Undo
+
+    If Redo or Undo, Re-Generate Mask from Points
+
+Image:
+    Allowed Extension:
+        JPEG,JPG,PNG,TIFF,HEIC,HEIF,BMP
+    
+    Size:
+        2<=x<=3000, 2<=y<=3000
+
+    apply:
+        Using Mask Extract Image 
+
+Mask:
+    Same parent Image Size
