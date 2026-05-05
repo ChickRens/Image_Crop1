@@ -1,7 +1,8 @@
 use crate::application::types::storage_path::StoragePath;
+use crate::ImageId;
 
 pub struct UploadOutput{
-    path: StoragePath
+    image_id: ImageId
 }
 
 impl UploadOutput {
