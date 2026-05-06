@@ -48,6 +48,4 @@ mod get_image_usecase_test{
 
         assert!(result.is_ok())
     }
-
-
 }

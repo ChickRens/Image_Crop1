@@ -5,3 +5,7 @@ use crate::domain::value_object::point::Point;
 pub trait ImageSegmenter {
     fn segment(&self, image:Image, points: Option<&Point>) -> &SegmentedImage;
 }
+
+pub trait ImageSegmenterPreparing {
+    fn prepare(&self, image:Image);
+}
