@@ -1,5 +1,6 @@
 use crate::{application::types::image::Image, domain::value_object::image_size::ImageSize};
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct LoadedImage {
     image: Image,
     size: ImageSize,

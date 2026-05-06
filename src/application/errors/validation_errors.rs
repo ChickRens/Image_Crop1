@@ -1,6 +1,7 @@
 use crate::application::errors::validation::point_errors::PointErrors;
 use crate::application::errors::validation::session_errors::SessionErrors;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum ValidationErrors {
     Session(SessionErrors),
     Points(PointErrors),

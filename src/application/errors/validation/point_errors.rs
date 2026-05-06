@@ -1,5 +1,6 @@
 use crate::application::errors::application_errors::Code;
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum PointErrors {
     EmptyPoint,
     OutSidePoints,

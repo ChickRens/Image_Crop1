@@ -1,6 +1,7 @@
 use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::session_id::SessionId;
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct UploadOutput{
     session_id: SessionId,
     image_id: ImageId,

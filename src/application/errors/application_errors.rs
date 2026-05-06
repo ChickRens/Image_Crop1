@@ -6,6 +6,7 @@ pub trait Code {
     fn code(&self) -> &str;
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum ApplicationErrors {
     ImageLoadError(LoadingErrors),
     ValidationError(ValidationErrors),
