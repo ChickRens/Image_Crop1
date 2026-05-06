@@ -1,12 +1,17 @@
-use crate::application::types::storage_path::StoragePath;
-use crate::ImageId;
+use crate::domain::value_object::image_id::ImageId;
+use crate::domain::value_object::session_id::SessionId;
 
 pub struct UploadOutput{
-    image_id: ImageId
+    session_id: SessionId,
+    image_id: ImageId,
 }
 
 impl UploadOutput {
-    pub fn into_parts(self) -> StoragePath {
-        self.path
+    pub fn new(session_id: SessionId, image_id: ImageId) -> Self {
+        Self { session_id, image_id }
+    }
+
+    pub fn into_parts(self) -> (SessionId, ImageId) {
+        (self.session_id, self.image_id)
     }
 }

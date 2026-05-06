@@ -4,6 +4,7 @@ use crate::application::repository::image_repository::ImageRepository;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::application::usecase::config::MAX_HISTORY;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
+use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
 use crate::domain::entity::image_meta::ImageMeta;
 use crate::domain::entity::session::Session;
 use crate::domain::repository::image_meta_repository::ImageMetaRepository;
@@ -45,7 +46,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, input: UploadInput) -> Result<(), ApplicationErrors> {
+    pub fn execute(&mut self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
         let input_image = input.into_image_data();
         let image_dto: LoadedImage = self.loader.load(input_image)?;
 
@@ -62,6 +63,6 @@ where
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        Ok(())
+        Ok(UploadOutput::new(session_id, image_id))
     }
 }

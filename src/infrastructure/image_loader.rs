@@ -33,3 +33,8 @@ impl ImageLoader for FileImageLoader {
     }
 }
 
+impl FileImageLoader{
+    pub fn new() -> Self {
+        Self
+    }
+}
