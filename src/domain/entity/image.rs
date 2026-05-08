@@ -1,18 +1,22 @@
+use image::Pixel;
+
 use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::image_size::ImageSize;
 use crate::domain::value_object::point::Point;
 use crate::domain::value_object::point_history::PointHistory;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ImageMeta {
+pub struct Image {
+    pixels: Vec<u8>,
     image_id: ImageId,
     image_size: ImageSize,
     point_history: PointHistory,
 }
 
-impl ImageMeta {
-    pub fn new(id: ImageId, size: ImageSize, max_history: usize) -> Self {
+impl Image {
+    pub fn new(pixel_data: Vec<u8> ,id: ImageId, size: ImageSize, max_history: usize) -> Self {
         Self {
+            pixels: pixel_data,
             image_id: id,
             image_size: size,
             point_history: PointHistory::new(max_history),
