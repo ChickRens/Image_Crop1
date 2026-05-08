@@ -2,10 +2,9 @@ use crate::application::errors::application_errors::ApplicationErrors;
 use crate::application::errors::repository_errors::RepositoryErrors;
 use crate::application::errors::validation::session_errors::SessionErrors;
 use crate::application::errors::validation_errors::ValidationErrors;
-use crate::application::repository::image_repository::ImageRepository;
 use crate::application::usecase::get_image_usecase::get_image_input::GetImageInput;
 use crate::application::usecase::get_image_usecase::get_image_output::GetImageOutput;
-use crate::domain::repository::image_meta_repository::ImageRepository;
+use crate::domain::repository::image_repository::ImageRepository;
 use crate::domain::repository::session_repository::SessionRepository;
 
 pub struct GetImageUseCase<SR ,IR>
@@ -46,5 +45,5 @@ where
         let image = self.image_repo.get(&image_id)
                             .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound))?;
 
-        Ok(GetImageOutput::new(image.into_image()))
+        Ok(GetImageOutput::new(image.image_data().into_image()))
     }}
