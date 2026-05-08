@@ -1,2 +1,2 @@
-pub mod image_meta;
+pub mod image;
 pub mod session;

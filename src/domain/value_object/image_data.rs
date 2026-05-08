@@ -1,9 +1,9 @@
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Image {
+pub struct ImageData {
     image: Vec<u8>,
 }
 
-impl Image {
+impl ImageData {
     pub fn new(image: Vec<u8>) -> Self {
         Self { image }
     }
