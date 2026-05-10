@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::application::repository::image_repository::ImageRepository;
+use crate::domain::repository::image_repository::ImageRepository;
 use crate::application::types::image::Image;
 use crate::domain::value_object::image_id::ImageId;
 
