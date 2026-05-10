@@ -34,6 +34,10 @@ impl Image {
         &self.image_size
     }
 
+    pub fn into_data(self) -> (ImageData, ImageId, ImageSize) {
+        (self.image_data, self.image_id, self.image_size)
+    }
+
     pub fn undo(&mut self) -> Option<&Point> {
         self.point_history.undo()
     }
