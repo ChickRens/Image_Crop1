@@ -4,7 +4,7 @@ use crate::application::types::loaded_image::LoadedImage;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
 use crate::domain::entity::image::Image;
 use crate::domain::entity::session::Session;
-use crate::domain::repository::image_meta_repository::ImageRepository;
+use crate::domain::repository::image_repository::ImageRepository;
 use crate::domain::repository::session_repository::SessionRepository;
 use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::session_id::SessionId;
