@@ -4,6 +4,8 @@ use crate::application::errors::validation::session_errors::SessionErrors;
 use crate::application::errors::validation_errors::ValidationErrors;
 use crate::application::usecase::get_image_usecase::get_image_input::GetImageInput;
 use crate::application::usecase::get_image_usecase::get_image_output::GetImageOutput;
+use crate::domain::entity::image::Image;
+use crate::domain::entity::session::Session;
 use crate::domain::repository::image_repository::ImageRepository;
 use crate::domain::repository::session_repository::SessionRepository;
 
@@ -34,16 +36,19 @@ where
     pub fn execute(&mut self, input: GetImageInput) -> Result<GetImageOutput, ApplicationErrors> {
         let (session_id, image_id) = input.into_session_id_and_image_id();
 
-        let session=self.session_repo.get(&session_id)
+        let session: Session=self.session_repo.get(&session_id)
                               .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound))?;
         
-        let is_valid_image_id = session.has_image_id(&image_id);
+        let is_valid_image_id: bool = session.has_image_id(&image_id);
         if !is_valid_image_id {
             return Err(ApplicationErrors::ValidationError(ValidationErrors::Session(SessionErrors::ImageNotOwned)))
         }
         
-        let image = self.image_repo.get(&image_id)
+        let image: Image = self.image_repo.get(&image_id)
                             .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound))?;
 
-        Ok(GetImageOutput::new(image.image_data().into_image()))
+        let (data, _id, _size)=image.into_data();
+        let output: GetImageOutput = GetImageOutput::new(data.into_image());
+
+        Ok(output)
     }}
