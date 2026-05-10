@@ -2,11 +2,13 @@ use crate::application::errors::application_errors::ApplicationErrors;
 use crate::application::interface::image_loader::ImageLoader;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
+use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
 use crate::domain::entity::image::Image;
 use crate::domain::entity::session::Session;
 use crate::domain::repository::image_repository::ImageRepository;
 use crate::domain::repository::session_repository::SessionRepository;
 use crate::domain::value_object::image_id::ImageId;
+use crate::domain::value_object::image_kind::ImageKind;
 use crate::domain::value_object::session_id::SessionId;
 
 pub struct UploadUseCase<SR, IR, LD>
@@ -38,7 +40,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, input: UploadInput) -> Result<(), ApplicationErrors> {
+    pub fn execute(&mut self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
         let input_image = input.into_image_data();
         let image_dto: LoadedImage = self.loader.load(input_image)?;
 
@@ -46,12 +48,14 @@ where
 
         let image: Image = image_dto.into_image();
 
-        self.image_repo.save(image);
+        self.image_repo.save(image, ImageKind::Original);
 
         let session_id: SessionId = SessionId::new();
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        Ok(())
+        let output= UploadOutput::new(session_id, image_id);
+
+        Ok(output)
     }
 }
