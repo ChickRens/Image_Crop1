@@ -1,8 +1,10 @@
 use crate::application::errors::loading_errors::LoadingErrors;
 use crate::application::interface::image_loader::ImageLoader;
-use crate::application::types::image::Image;
+use crate::domain::entity::image::Image;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::domain::value_object::image_size::ImageSize;
+use crate::domain::value_object::image_data::ImageData;
+use crate::domain::value_object::image_id::ImageId;
 use image::ImageError;
 use image::DynamicImage;
 use image::ImageBuffer;
@@ -27,9 +29,11 @@ impl ImageLoader for FileImageLoader {
         let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = img.to_rgb8();
         let raw_pixels: Vec<u8> = rgb_image.into_raw();
 
-        let image: Image = Image::new(raw_pixels);
+        let image_data = ImageData::new(raw_pixels);
+        let image_id = ImageId::new();
+        let image = Image::new(image_data, image_id, image_size, 10);
 
-        Ok(LoadedImage::new(image, image_size))
+        Ok(LoadedImage::new(image))
     }
 }
 
