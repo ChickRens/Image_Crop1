@@ -7,3 +7,4 @@ pub mod point;
 pub mod point_history;
 pub mod session_id;
 pub mod image_data;
+pub mod image_kind;
