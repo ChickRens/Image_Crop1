@@ -9,22 +9,22 @@ mod image_loader_test{
     fn test_normal_load(){
         let loader= FileImageLoader::new();
 
-        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Anti Cyclone.png")).unwrap();
+        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png")).unwrap();
 
         let result = loader.load(image);
         assert!(result.is_ok());
 
         let image = result.unwrap().into_image();
         let size = image.image_size();
-        assert_eq!(size.height(), 1080);
-        assert_eq!(size.width(), 1920);
+        assert_eq!(size.height(), 500);
+        assert_eq!(size.width(), 500);
     }
 
     #[test]
     fn test_invalid_size(){
         let loader= FileImageLoader::new();
 
-        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/TooBigImage.png")).unwrap();
+        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Huge_Image.png")).unwrap();
 
         let result = loader.load(image);
         assert_eq!(result, Err(LoadingErrors::InvalidSize));
@@ -34,7 +34,7 @@ mod image_loader_test{
     fn test_broken_image(){
         let loader= FileImageLoader::new();
 
-        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/BrokenImage.png")).unwrap();
+        let image=fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Broken_Image.png")).unwrap();
 
         let result = loader.load(image);
         assert_eq!(result, Err(LoadingErrors::CorruptedImage))

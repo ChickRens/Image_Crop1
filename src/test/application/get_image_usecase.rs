@@ -22,7 +22,7 @@ mod get_image_usecase_test {
 
         let session_id = SessionId::new();
 
-        let image_bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Spot Late_4.png")).unwrap();
+        let image_bytes = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png")).unwrap();
         let loaded_image = loader.load(image_bytes).unwrap();
         let image = loaded_image.into_image();
         let image_id = image.image_id().clone();

@@ -17,7 +17,7 @@ mod upload_usecase_test {
         let loader = FileImageLoader::new();
         let mut usecase = UploadUseCase::new(session_repo, image_repo, loader);
 
-        let image = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Anti Cyclone.png")).unwrap();
+        let image = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png")).unwrap();
         let input = UploadInput::new(image);
         let output = usecase.execute(input).unwrap();
         let (session_id, _image_id) = output.into_session_id_and_image_id();
