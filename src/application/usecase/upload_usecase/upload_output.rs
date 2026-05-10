@@ -12,7 +12,7 @@ impl UploadOutput {
         Self { session_id, image_id }
     }
 
-    pub fn into_parts(self) -> (SessionId, ImageId) {
+    pub fn into_session_id_and_image_id(self) -> (SessionId, ImageId) {
         (self.session_id, self.image_id)
     }
 }
