@@ -34,7 +34,7 @@ where
     }
 
     pub fn execute(&mut self, input: GetImageInput) -> Result<GetImageOutput, ApplicationErrors> {
-        let (session_id, image_id) = input.into_session_id_and_image_id();
+        let (session_id, image_id, image_kind) = input.into_session_id_image_id_image_kind();
 
         let session: Session=self.session_repo.get(&session_id)
                               .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound))?;
@@ -44,7 +44,7 @@ where
             return Err(ApplicationErrors::ValidationError(ValidationErrors::Session(SessionErrors::ImageNotOwned)))
         }
         
-        let image: Image = self.image_repo.get(&image_id)
+        let image: Image = self.image_repo.get(&image_id, image_kind)
                             .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound))?;
 
         let (data, _id, _size)=image.into_data();
