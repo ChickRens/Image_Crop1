@@ -1,20 +1,22 @@
 use std::collections::HashMap;
 
 use crate::domain::repository::image_repository::ImageRepository;
-use crate::application::types::image::Image;
+use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_id::ImageId;
+use crate::domain::value_object::image_kind::ImageKind;
 
 pub struct ImageRepositoryInMemory {
-    images: HashMap<ImageId, Image>,
+    images: HashMap<(ImageId, ImageKind), Image>,
 }
 
 impl ImageRepository for ImageRepositoryInMemory {
-    fn save(&mut self, image: Image, image_id: ImageId) {
-        self.images.insert(image_id, image);
+    fn save(&mut self, image: Image, kind: ImageKind) {
+        let key = (*image.image_id(), kind);
+        self.images.insert(key, image);
     }
 
-    fn get(&self, image_id: &ImageId) -> Option<Image> {
-        self.images.get(image_id).cloned()
+    fn get(&self, image_id: &ImageId, kind: ImageKind) -> Option<Image> {
+        self.images.get(&(image_id.clone(), kind)).cloned()
     }
 }
 
