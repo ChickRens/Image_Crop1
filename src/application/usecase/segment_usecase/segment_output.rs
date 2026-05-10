@@ -1,11 +1,17 @@
-use crate::application::types::storage_path::StoragePath;
+use crate::domain::value_object::image_id::ImageId;
+use crate::domain::value_object::session_id::SessionId;
 
 pub struct SegmentOutput{
-    path: StoragePath
+    session_id: SessionId,
+    image_id: ImageId,
 }
 
 impl SegmentOutput {
-    pub fn into_parts(self) -> StoragePath {
-        self.path
+    pub fn new(session_id: SessionId, image_id: ImageId) -> Self {
+        Self { session_id, image_id }
+    }
+
+    pub fn into_session_id_and_image_id(self) -> (SessionId, ImageId) {
+        (self.session_id, self.image_id)
     }
 }
