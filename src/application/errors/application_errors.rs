@@ -1,5 +1,6 @@
 use crate::application::errors::loading_errors::LoadingErrors;
 use crate::application::errors::repository_errors::RepositoryErrors;
+use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::errors::validation_errors::ValidationErrors;
 
 pub trait Code {
@@ -10,7 +11,7 @@ pub trait Code {
 pub enum ApplicationErrors {
     ImageLoadError(LoadingErrors),
     ValidationError(ValidationErrors),
-    SegmentationError(),
+    SegmentationError(SegmentationErrors),
     RepositoryError(RepositoryErrors),
 }
 
