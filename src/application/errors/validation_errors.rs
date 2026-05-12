@@ -1,10 +1,10 @@
-use crate::application::errors::validation::point_errors::PointErrors;
+use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
 use crate::application::errors::validation::session_errors::SessionErrors;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationErrors {
     Session(SessionErrors),
-    Points(PointErrors),
+    Points(SegmentInputErrors),
 }
 
 impl From<SessionErrors> for ValidationErrors {
@@ -13,8 +13,8 @@ impl From<SessionErrors> for ValidationErrors {
     }
 }
 
-impl From<PointErrors> for ValidationErrors {
-    fn from(value: PointErrors) -> Self {
+impl From<SegmentInputErrors> for ValidationErrors {
+    fn from(value: SegmentInputErrors) -> Self {
         Self::Points(value)
     }
 }

@@ -33,3 +33,8 @@ impl From<RepositoryErrors> for ApplicationErrors {
     }
 }
 
+impl From<SegmentationErrors> for ApplicationErrors {
+    fn from(value: SegmentationErrors) -> Self {
+        Self::SegmentationError(value)
+    }
+}
