@@ -3,7 +3,7 @@ mod errors_tests {
     use crate::application::errors::application_errors::{ApplicationErrors, Code};
     use crate::application::errors::loading_errors::LoadingErrors;
     use crate::application::errors::repository_errors::RepositoryErrors;
-    use crate::application::errors::validation::point_errors::PointErrors;
+    use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
     use crate::application::errors::validation::session_errors::SessionErrors;
     use crate::application::errors::validation_errors::ValidationErrors;
 
@@ -25,8 +25,8 @@ mod errors_tests {
         let session_error = ValidationErrors::from(SessionErrors::NoSession);
         assert_eq!(session_error, ValidationErrors::Session(SessionErrors::NoSession));
 
-        let point_error = ValidationErrors::from(PointErrors::EmptyPoint);
-        assert_eq!(point_error, ValidationErrors::Points(PointErrors::EmptyPoint));
+        let point_error = ValidationErrors::from(SegmentInputErrors::EmptyPoint);
+        assert_eq!(point_error, ValidationErrors::Points(SegmentInputErrors::EmptyPoint));
     }
 
     #[test]
