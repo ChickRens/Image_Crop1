@@ -3,7 +3,8 @@ mod interface_tests {
     use uuid::Uuid;
 
     use crate::application::errors::loading_errors::LoadingErrors;
-    use crate::application::interface::image_loader::ImageLoader;
+    use crate::application::errors::segmentation_error::SegmentationErrors;
+use crate::application::interface::image_loader::ImageLoader;
     use crate::application::interface::image_segmenter::ImageSegmenter;
     use crate::application::types::{loaded_image::LoadedImage, segmented_image::SegmentedImage};
     use crate::domain::entity::image::Image;
@@ -29,8 +30,8 @@ mod interface_tests {
 
     struct DummySegmenter;
     impl ImageSegmenter for DummySegmenter {
-        fn segment(&self, image: Image, _points: Option<&Point>) -> SegmentedImage {
-            SegmentedImage::new(image)
+        fn segment(&self, image: Image, _points: Option<&Point>) -> Result<SegmentedImage, SegmentationErrors> {
+            Ok(SegmentedImage::new(image))
         }
     }
 
@@ -51,6 +52,6 @@ mod interface_tests {
         );
         let segmenter = DummySegmenter;
         let result = segmenter.segment(image, None);
-        let _ = result.into_image();
+        let _ = result.unwrap().into_image();
     }
 }
