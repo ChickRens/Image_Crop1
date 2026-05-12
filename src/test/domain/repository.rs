@@ -6,10 +6,7 @@ mod repository_tests {
     use crate::domain::repository::image_repository::ImageRepository;
     use crate::domain::repository::session_repository::SessionRepository;
     use crate::domain::value_object::{
-        image_data::ImageData,
-        image_id::ImageId,
-        image_kind::ImageKind,
-        image_size::ImageSize,
+        image_data::ImageData, image_id::ImageId, image_kind::ImageKind, image_size::ImageSize,
         session_id::SessionId,
     };
     use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;

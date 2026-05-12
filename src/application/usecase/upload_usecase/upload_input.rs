@@ -7,7 +7,7 @@ impl UploadInput {
         Self { image: image }
     }
 
-    pub fn into_image_data(self) -> Vec<u8>{
+    pub fn into_image_data(self) -> Vec<u8> {
         self.image
     }
 }

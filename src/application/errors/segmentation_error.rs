@@ -3,7 +3,7 @@ use crate::application::errors::application_errors::Code;
 #[derive(Debug, PartialEq, Eq)]
 pub enum SegmentationErrors {
     RunningError,
-    PreParingError
+    PreParingError,
 }
 
 impl Code for SegmentationErrors {

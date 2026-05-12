@@ -4,7 +4,7 @@ use crate::application::errors::application_errors::Code;
 pub enum SegmentInputErrors {
     EmptyPoint,
     OutSidePoints,
-    InvalidSegmentId
+    InvalidSegmentId,
 }
 
 impl Code for SegmentInputErrors {

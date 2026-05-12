@@ -19,8 +19,8 @@ impl Session {
         &self.session_id
     }
 
-    pub fn has_image_id(&self, image_id: &ImageId) -> bool{
-        image_id==&self.image_id
+    pub fn has_image_id(&self, image_id: &ImageId) -> bool {
+        image_id == &self.image_id
     }
 
     pub fn image_id(&self) -> &ImageId {

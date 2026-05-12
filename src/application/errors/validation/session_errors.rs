@@ -4,7 +4,7 @@ use crate::application::errors::application_errors::Code;
 pub enum SessionErrors {
     NoSession,
     TimeOut,
-    ImageNotOwned
+    ImageNotOwned,
 }
 
 impl Code for SessionErrors {

@@ -7,9 +7,7 @@ pub struct LoadedImage {
 
 impl LoadedImage {
     pub fn new(image: Image) -> Self {
-        Self {
-            image
-        }
+        Self { image }
     }
 
     pub fn into_image(self) -> Image {

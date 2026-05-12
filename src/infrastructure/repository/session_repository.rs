@@ -18,8 +18,10 @@ impl SessionRepository for SessionRepositoryInMemory {
     }
 }
 
-impl SessionRepositoryInMemory{
-    pub fn new() -> Self{
-        Self { sessions: HashMap::new() }
+impl SessionRepositoryInMemory {
+    pub fn new() -> Self {
+        Self {
+            sessions: HashMap::new(),
+        }
     }
 }

@@ -17,24 +17,39 @@ mod errors_tests {
     #[test]
     fn test_repository_errors_code() {
         assert_eq!(RepositoryErrors::ImageNotFound.code(), "IMAGE_NOT_FOUND");
-        assert_eq!(RepositoryErrors::SessionNotFound.code(), "SESSION_NOT_FOUND");
+        assert_eq!(
+            RepositoryErrors::SessionNotFound.code(),
+            "SESSION_NOT_FOUND"
+        );
     }
 
     #[test]
     fn test_validation_errors_conversion() {
         let session_error = ValidationErrors::from(SessionErrors::NoSession);
-        assert_eq!(session_error, ValidationErrors::Session(SessionErrors::NoSession));
+        assert_eq!(
+            session_error,
+            ValidationErrors::Session(SessionErrors::NoSession)
+        );
 
         let point_error = ValidationErrors::from(SegmentInputErrors::EmptyPoint);
-        assert_eq!(point_error, ValidationErrors::Points(SegmentInputErrors::EmptyPoint));
+        assert_eq!(
+            point_error,
+            ValidationErrors::Points(SegmentInputErrors::EmptyPoint)
+        );
     }
 
     #[test]
     fn test_application_errors_from_nested_errors() {
         let loading_error: ApplicationErrors = LoadingErrors::UnsupportedFormat.into();
-        assert_eq!(loading_error, ApplicationErrors::ImageLoadError(LoadingErrors::UnsupportedFormat));
+        assert_eq!(
+            loading_error,
+            ApplicationErrors::ImageLoadError(LoadingErrors::UnsupportedFormat)
+        );
 
         let repository_error: ApplicationErrors = RepositoryErrors::ImageNotFound.into();
-        assert_eq!(repository_error, ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound));
+        assert_eq!(
+            repository_error,
+            ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound)
+        );
     }
 }

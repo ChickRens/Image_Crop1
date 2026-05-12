@@ -28,11 +28,7 @@ where
     IR: ImageRepository,
     LD: ImageLoader,
 {
-    pub fn new(
-        session_repository: SR,
-        image_repository: IR,
-        image_loader: LD,
-    ) -> Self {
+    pub fn new(session_repository: SR, image_repository: IR, image_loader: LD) -> Self {
         Self {
             session_repo: session_repository,
             image_repo: image_repository,
@@ -54,7 +50,7 @@ where
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        let output= UploadOutput::new(session_id, image_id);
+        let output = UploadOutput::new(session_id, image_id);
 
         Ok(output)
     }

@@ -3,7 +3,11 @@ mod image_tests {
     use uuid::Uuid;
 
     use crate::domain::entity::image::Image;
-    use crate::domain::value_object::{image_data::ImageData, image_id::ImageId, image_size::{ImageSize, SizeErrorType}};
+    use crate::domain::value_object::{
+        image_data::ImageData,
+        image_id::ImageId,
+        image_size::{ImageSize, SizeErrorType},
+    };
 
     #[test]
     fn test_create_normal_image() {

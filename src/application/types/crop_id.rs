@@ -2,8 +2,8 @@ use uuid::Uuid;
 
 use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
 
-pub struct SegmentId{
-    id: Uuid
+pub struct SegmentId {
+    id: Uuid,
 }
 
 impl SegmentId {

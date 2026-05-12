@@ -1,14 +1,14 @@
-use image::GenericImageView;
-use ort::session::builder::GraphOptimizationLevel;
-use ort::session::Session;
-use ort::value::{Tensor, Value, DynValueTypeMarker};
-use ndarray::{Array, Array4, IxDyn};
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::interface::image_segmenter::ImageSegmenter;
-use crate::domain::entity::image::Image;
 use crate::application::types::segmented_image::SegmentedImage;
+use crate::domain::entity::image::Image;
 use crate::domain::value_object::point::Point;
 use image::DynamicImage;
+use image::GenericImageView;
+use ndarray::{Array, Array4, IxDyn};
+use ort::session::Session;
+use ort::session::builder::GraphOptimizationLevel;
+use ort::value::{DynValueTypeMarker, Tensor, Value};
 
 pub struct Sam2Segmenter {
     session: Session,
@@ -25,7 +25,10 @@ impl Sam2Segmenter {
         Ok(Self { session })
     }
 
-    pub fn encode_image(&mut self, img: &DynamicImage) -> Result<Array<f32, IxDyn>, Box<dyn std::error::Error>> {
+    pub fn encode_image(
+        &mut self,
+        img: &DynamicImage,
+    ) -> Result<Array<f32, IxDyn>, Box<dyn std::error::Error>> {
         // Load and preprocess image
         let img = img.resize_exact(224, 224, image::imageops::FilterType::Lanczos3);
         let img = img.to_rgb8();
@@ -54,7 +57,10 @@ impl Sam2Segmenter {
         let shape_ref = unsafe { std::slice::from_raw_parts(shape_slice.as_ptr(), 4) };
         let data: Vec<f32> = input_tensor.iter().cloned().collect();
         let tensor: Tensor<f32> = Tensor::from_array((shape_ref, data))?;
-        let inputs = vec![(input_name.to_string(), Value::<DynValueTypeMarker>::from(tensor))];
+        let inputs = vec![(
+            input_name.to_string(),
+            Value::<DynValueTypeMarker>::from(tensor),
+        )];
         let outputs = self.session.run(inputs)?;
         let (shape, data) = outputs[0].try_extract_tensor::<f32>()?;
         let shape_vec = shape.iter().map(|&x| x as usize).collect::<Vec<usize>>();
@@ -65,7 +71,11 @@ impl Sam2Segmenter {
 }
 
 impl ImageSegmenter for Sam2Segmenter {
-    fn segment(&self, image: Image, _points: Option<&Point>) -> Result<SegmentedImage, SegmentationErrors> {
+    fn segment(
+        &self,
+        image: Image,
+        _points: Option<&Point>,
+    ) -> Result<SegmentedImage, SegmentationErrors> {
         // For now, just return the image as segmented since full SAM2 requires decoder
         // TODO: Implement full segmentation with decoder
         Ok(SegmentedImage::new(image))

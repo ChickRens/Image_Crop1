@@ -6,5 +6,5 @@ pub trait ContextRepository {
     type Context;
 
     fn save(&mut self, context: Self::Context);
-    fn get(&self, segment_id:SegmentId) -> Context;
+    fn get(&self, segment_id: SegmentId) -> Context;
 }

@@ -1,13 +1,13 @@
 use crate::application::errors::loading_errors::LoadingErrors;
 use crate::application::interface::image_loader::ImageLoader;
-use crate::domain::entity::image::Image;
 use crate::application::types::loaded_image::LoadedImage;
-use crate::domain::value_object::image_size::ImageSize;
+use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_data::ImageData;
 use crate::domain::value_object::image_id::ImageId;
-use image::ImageError;
+use crate::domain::value_object::image_size::ImageSize;
 use image::DynamicImage;
 use image::ImageBuffer;
+use image::ImageError;
 use image::Rgb;
 
 pub struct FileImageLoader;
@@ -18,13 +18,13 @@ impl ImageLoader for FileImageLoader {
             ImageError::Unsupported(_) => LoadingErrors::UnsupportedFormat,
             ImageError::Decoding(_) => LoadingErrors::CorruptedImage,
             _ => LoadingErrors::CorruptedImage,
-            })?;
+        })?;
 
         let width: u32 = img.width();
         let height: u32 = img.height();
 
-        let image_size: ImageSize = ImageSize::new(height as u16, width as u16)
-            .map_err(|_| LoadingErrors::InvalidSize)?;
+        let image_size: ImageSize =
+            ImageSize::new(height as u16, width as u16).map_err(|_| LoadingErrors::InvalidSize)?;
 
         let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = img.to_rgb8();
         let raw_pixels: Vec<u8> = rgb_image.into_raw();
@@ -37,7 +37,7 @@ impl ImageLoader for FileImageLoader {
     }
 }
 
-impl FileImageLoader{
+impl FileImageLoader {
     pub fn new() -> Self {
         Self
     }

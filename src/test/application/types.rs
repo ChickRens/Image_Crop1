@@ -5,9 +5,7 @@ mod types_tests {
     use crate::application::types::{loaded_image::LoadedImage, segmented_image::SegmentedImage};
     use crate::domain::entity::image::Image;
     use crate::domain::value_object::{
-        image_data::ImageData,
-        image_id::ImageId,
-        image_size::ImageSize,
+        image_data::ImageData, image_id::ImageId, image_size::ImageSize,
     };
 
     #[test]

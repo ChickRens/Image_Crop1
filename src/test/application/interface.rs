@@ -4,15 +4,12 @@ mod interface_tests {
 
     use crate::application::errors::loading_errors::LoadingErrors;
     use crate::application::errors::segmentation_error::SegmentationErrors;
-use crate::application::interface::image_loader::ImageLoader;
+    use crate::application::interface::image_loader::ImageLoader;
     use crate::application::interface::image_segmenter::ImageSegmenter;
     use crate::application::types::{loaded_image::LoadedImage, segmented_image::SegmentedImage};
     use crate::domain::entity::image::Image;
     use crate::domain::value_object::{
-        image_data::ImageData,
-        image_id::ImageId,
-        image_size::ImageSize,
-        point::Point,
+        image_data::ImageData, image_id::ImageId, image_size::ImageSize, point::Point,
     };
 
     struct DummyLoader;
@@ -30,7 +27,11 @@ use crate::application::interface::image_loader::ImageLoader;
 
     struct DummySegmenter;
     impl ImageSegmenter for DummySegmenter {
-        fn segment(&self, image: Image, _points: Option<&Point>) -> Result<SegmentedImage, SegmentationErrors> {
+        fn segment(
+            &self,
+            image: Image,
+            _points: Option<&Point>,
+        ) -> Result<SegmentedImage, SegmentationErrors> {
             Ok(SegmentedImage::new(image))
         }
     }

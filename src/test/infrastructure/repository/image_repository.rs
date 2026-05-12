@@ -3,16 +3,13 @@ mod image_repository_in_memory_test {
     use crate::domain::entity::image::Image;
     use crate::domain::repository::image_repository::ImageRepository;
     use crate::domain::value_object::{
-        image_data::ImageData,
-        image_id::ImageId,
-        image_kind::ImageKind,
-        image_size::ImageSize,
+        image_data::ImageData, image_id::ImageId, image_kind::ImageKind, image_size::ImageSize,
     };
     use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;
 
     #[test]
     fn test_normal_get() {
-        let mut repo=ImageRepositoryInMemory::new();
+        let mut repo = ImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
 
@@ -30,8 +27,8 @@ mod image_repository_in_memory_test {
     }
 
     #[test]
-    fn test_unknown_image_get(){
-        let mut repo=ImageRepositoryInMemory::new();
+    fn test_unknown_image_get() {
+        let mut repo = ImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let image_id2 = ImageId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
@@ -50,8 +47,8 @@ mod image_repository_in_memory_test {
     }
 
     #[test]
-    fn test_overwrite_save_existing_image(){
-        let mut repo=ImageRepositoryInMemory::new();
+    fn test_overwrite_save_existing_image() {
+        let mut repo = ImageRepositoryInMemory::new();
 
         let image_id = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
 
@@ -77,8 +74,8 @@ mod image_repository_in_memory_test {
     }
 
     #[test]
-    fn test_multi_image(){
-        let mut repo=ImageRepositoryInMemory::new();
+    fn test_multi_image() {
+        let mut repo = ImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let image_id2 = ImageId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
@@ -111,8 +108,8 @@ mod image_repository_in_memory_test {
         let got2 = repo.get(&image_id2, ImageKind::Original);
         let got3 = repo.get(&image_id3, ImageKind::Original);
 
-        assert_eq!(got1,Some(image1));
-        assert_eq!(got2,Some(image2));
-        assert_eq!(got3,Some(image3));
+        assert_eq!(got1, Some(image1));
+        assert_eq!(got2, Some(image2));
+        assert_eq!(got3, Some(image3));
     }
 }

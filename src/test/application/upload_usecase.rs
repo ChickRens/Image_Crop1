@@ -1,7 +1,5 @@
 #[cfg(test)]
 mod upload_usecase_test {
-    use std::fs;
-    use std::path::Path;
     use crate::application::errors::application_errors::ApplicationErrors;
     use crate::application::errors::loading_errors::LoadingErrors;
     use crate::application::usecase::upload_usecase::upload_input::UploadInput;
@@ -9,6 +7,8 @@ mod upload_usecase_test {
     use crate::infrastructure::image_loader::FileImageLoader;
     use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;
     use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
+    use std::fs;
+    use std::path::Path;
 
     #[test]
     fn test_normal_execute() {
@@ -17,7 +17,10 @@ mod upload_usecase_test {
         let loader = FileImageLoader::new();
         let mut usecase = UploadUseCase::new(session_repo, image_repo, loader);
 
-        let image = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png")).unwrap();
+        let image = fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png"),
+        )
+        .unwrap();
         let input = UploadInput::new(image);
         let output = usecase.execute(input).unwrap();
         let (session_id, _image_id) = output.into_session_id_and_image_id();
@@ -32,11 +35,19 @@ mod upload_usecase_test {
         let loader = FileImageLoader::new();
         let mut usecase = UploadUseCase::new(session_repo, image_repo, loader);
 
-        let image = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav")).unwrap();
+        let image = fs::read(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"),
+        )
+        .unwrap();
         let input = UploadInput::new(image);
 
         let result = usecase.execute(input);
 
-        assert_eq!(result, Err(ApplicationErrors::ImageLoadError(LoadingErrors::UnsupportedFormat)));
+        assert_eq!(
+            result,
+            Err(ApplicationErrors::ImageLoadError(
+                LoadingErrors::UnsupportedFormat
+            ))
+        );
     }
 }
