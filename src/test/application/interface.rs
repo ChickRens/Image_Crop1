@@ -8,7 +8,9 @@ mod interface_tests {
     use crate::application::interface::image_segmenter::ImageSegmenter;
     use crate::application::types::{loaded_image::LoadedImage, segmented_image::SegmentedImage};
     use crate::domain::entity::image::Image;
-    use crate::domain::value_object::{
+    use crate::domain::value_object::coordinate::Coordinate;
+use crate::domain::value_object::point::PointLabel;
+use crate::domain::value_object::{
         image_data::ImageData, image_id::ImageId, image_size::ImageSize, point::Point,
     };
 
@@ -28,9 +30,9 @@ mod interface_tests {
     struct DummySegmenter;
     impl ImageSegmenter for DummySegmenter {
         fn segment(
-            &self,
+            &mut self,
             image: Image,
-            _points: Option<&Point>,
+            _points: &[Point],
         ) -> Result<SegmentedImage, SegmentationErrors> {
             Ok(SegmentedImage::new(image))
         }
@@ -51,8 +53,8 @@ mod interface_tests {
             ImageSize::new(2, 2).unwrap(),
             0,
         );
-        let segmenter = DummySegmenter;
-        let result = segmenter.segment(image, None);
+        let mut segmenter = DummySegmenter;
+        let result = segmenter.segment(image, &[Point::new(Coordinate::new(4, 4), PointLabel::FOREGROUND)]);
         let _ = result.unwrap().into_image();
     }
 }
