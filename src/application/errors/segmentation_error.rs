@@ -4,6 +4,9 @@ use crate::application::errors::application_errors::Code;
 pub enum SegmentationErrors {
     RunningError,
     PreParingError,
+    NotPrepared,
+    InferenceError(String),
+    ImageLoadError(String),
 }
 
 impl Code for SegmentationErrors {
@@ -11,6 +14,9 @@ impl Code for SegmentationErrors {
         match self {
             Self::RunningError => "RUNNING_ERROR",
             Self::PreParingError => "PREPARE_ERROR",
+            Self::NotPrepared => "NOT_PREPARED",
+            Self::InferenceError(_) => "INFERENCE_ERROR",
+            Self::ImageLoadError(_) => "IMAGE_LOAD_ERROR",
         }
     }
 }

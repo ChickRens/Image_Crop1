@@ -38,7 +38,7 @@ where
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
         )?;
 
-        let segmented_image = self.segmenter.segment(image, points.as_ref());
+        let segmented_image = self.segmenter.segment(image, &points);
         let segmented_image_data = segmented_image?.into_image();
         self.image_repo
             .save(segmented_image_data, ImageKind::Segmented);

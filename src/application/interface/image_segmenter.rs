@@ -5,9 +5,9 @@ use crate::domain::value_object::point::Point;
 
 pub trait ImageSegmenter {
     fn segment(
-        &self,
+        &mut self,
         image: Image,
-        points: Option<&Point>,
+        points: &[Point],
     ) -> Result<SegmentedImage, SegmentationErrors>;
 }
 
