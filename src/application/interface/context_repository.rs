@@ -1,4 +1,4 @@
-use crate::application::types::crop_id::SegmentId;
+use crate::application::types::segment_id::SegmentId;
 
 pub trait ContextRepository {
     type Context;
