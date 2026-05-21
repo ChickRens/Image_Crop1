@@ -1,13 +1,13 @@
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
-use crate::domain::value_object::point::Point;
 
 pub trait ImageSegmenter {
+    type SegmentationInputs;
+
     fn segment(
         &mut self,
-        image: Image,
-        points: &[Point],
+        request: Self::SegmentationInputs
     ) -> Result<SegmentedImage, SegmentationErrors>;
 }
 
