@@ -17,11 +17,11 @@ impl Point {
         Self { coordinate, label }
     }
 
-    pub fn coordinate(&self) -> &Coordinate {
-        &self.coordinate
+    pub fn coordinate(&self) -> Coordinate {
+        self.coordinate.clone()
     }
 
-    pub fn label(&self) -> &PointLabel {
-        &self.label
+    pub fn label(&self) -> PointLabel {
+        self.label.clone()
     }
 }

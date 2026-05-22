@@ -7,7 +7,7 @@ mod point_tests {
         let coordinate = Coordinate::new(3, 4);
         let point = Point::new(coordinate.clone(), PointLabel::FOREGROUND);
 
-        assert_eq!(point.coordinate(), &coordinate);
-        assert_eq!(point.label(), &PointLabel::FOREGROUND);
+        assert_eq!(point.coordinate(), coordinate);
+        assert_eq!(point.label(), PointLabel::FOREGROUND);
     }
 }
