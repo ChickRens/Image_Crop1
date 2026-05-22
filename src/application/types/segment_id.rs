@@ -2,6 +2,7 @@ use uuid::Uuid;
 
 use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub struct SegmentId {
     id: Uuid,
 }
