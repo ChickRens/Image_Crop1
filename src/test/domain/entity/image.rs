@@ -15,13 +15,11 @@ mod image_tests {
         let size_res: Result<ImageSize, SizeErrorType> = ImageSize::new(3000, 3000);
 
         let size = size_res.expect("failed size generate");
-        const MAX_HISTORY: usize = 50;
 
         let image = Image::new(
             ImageData::new(vec![1, 2, 3]),
             id.clone(),
             size.clone(),
-            MAX_HISTORY,
         );
 
         assert_eq!(image.image_id(), &id);

@@ -31,7 +31,7 @@ impl ImageLoader for FileImageLoader {
 
         let image_data = ImageData::new(raw_pixels);
         let image_id = ImageId::new();
-        let image = Image::new(image_data, image_id, image_size, 10);
+        let image = Image::new(image_data, image_id, image_size);
 
         Ok(LoadedImage::new(image))
     }

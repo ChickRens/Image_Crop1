@@ -17,7 +17,6 @@ mod image_repository_in_memory_test {
             ImageData::new(vec![0, 1, 2, 3]),
             image_id1.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
         repo.save(image1.clone(), ImageKind::Original);
 
@@ -37,7 +36,6 @@ mod image_repository_in_memory_test {
             ImageData::new(vec![255, 255, 255, 255, 0, 0, 0, 0, 128, 128, 128, 128]),
             image_id1.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
         repo.save(image1, ImageKind::Original);
 
@@ -56,13 +54,11 @@ mod image_repository_in_memory_test {
             ImageData::new(vec![0, 1, 2, 3, 4, 5, 6, 7, 9, 10]),
             image_id.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
         let new_image = Image::new(
             ImageData::new(vec![10, 9, 7, 6, 5, 4, 3, 2, 1, 0]),
             image_id.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
 
         repo.save(old_image.clone(), ImageKind::Original);
@@ -85,19 +81,16 @@ mod image_repository_in_memory_test {
             ImageData::new(vec![0, 0, 0, 0, 0]),
             image_id1.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
         let image2 = Image::new(
             ImageData::new(vec![2, 2, 2, 2, 2]),
             image_id2.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
         let image3 = Image::new(
             ImageData::new(vec![4, 4, 4, 4, 4]),
             image_id3.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
 
         repo.save(image1.clone(), ImageKind::Original);

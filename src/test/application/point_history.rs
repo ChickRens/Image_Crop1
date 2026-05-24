@@ -2,7 +2,7 @@
 mod mask_history_tests {
     use crate::domain::value_object::coordinate::Coordinate;
     use crate::domain::value_object::point::{Point, PointLabel};
-    use crate::domain::value_object::point_history::PointHistory;
+    use crate::application::types::point_history::PointHistory;
 
     fn create_point(x: u16, y: u16, label: PointLabel) -> Point {
         Point::new(Coordinate::new(x, y), label)

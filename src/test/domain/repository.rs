@@ -20,7 +20,6 @@ mod repository_tests {
             ImageData::new(vec![1, 2, 3]),
             image_id.clone(),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
 
         repo.save(image.clone(), ImageKind::Original);

@@ -14,7 +14,6 @@ mod types_tests {
             ImageData::new(vec![1, 2, 3]),
             ImageId::from_uuid(Uuid::new_v4()),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
 
         let loaded = LoadedImage::new(image.clone());
@@ -27,7 +26,6 @@ mod types_tests {
             ImageData::new(vec![4, 5, 6]),
             ImageId::from_uuid(Uuid::new_v4()),
             ImageSize::new(2, 2).unwrap(),
-            0,
         );
 
         let segmented = SegmentedImage::new(image.clone());

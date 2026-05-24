@@ -8,9 +8,7 @@ mod interface_tests {
     use crate::application::interface::image_segmenter::ImageSegmenter;
     use crate::application::types::{loaded_image::LoadedImage, segmented_image::SegmentedImage};
     use crate::domain::entity::image::Image;
-    use crate::domain::value_object::coordinate::Coordinate;
-use crate::domain::value_object::point::PointLabel;
-use crate::domain::value_object::{
+    use crate::domain::value_object::{
         image_data::ImageData, image_id::ImageId, image_size::ImageSize, point::Point,
     };
 
@@ -54,7 +52,10 @@ use crate::domain::value_object::{
             0,
         );
         let mut segmenter = DummySegmenter;
-        let result = segmenter.segment(image, &[Point::new(Coordinate::new(4, 4), PointLabel::FOREGROUND)]);
+        let result = segmenter.segment(
+            image,
+            &[Point::new(Coordinate::new(4, 4), PointLabel::FOREGROUND)],
+        );
         let _ = result.unwrap().into_image();
     }
 }
