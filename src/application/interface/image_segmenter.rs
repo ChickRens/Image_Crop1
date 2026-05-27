@@ -1,5 +1,5 @@
 use crate::application::errors::segmentation_error::SegmentationErrors;
-use crate::application::types::segmented_image::SegmentedImage;
+use crate::application::types::mask::Mask;
 use crate::domain::entity::image::Image;
 
 pub trait ImageSegmenter {
@@ -7,10 +7,12 @@ pub trait ImageSegmenter {
 
     fn segment(
         &mut self,
-        request: Self::SegmentationInputs
-    ) -> Result<SegmentedImage, SegmentationErrors>;
+        request: Self::SegmentationInputs,
+    ) -> Result<Mask, SegmentationErrors>;
 }
 
 pub trait ImageSegmenterPreparing {
-    fn prepare(&mut self, image: Image) -> Result<(), SegmentationErrors>;
+    type SegmentationContext;
+
+    fn prepare(&mut self, image: Image) -> Result<Self::SegmentationContext, SegmentationErrors>;
 }
