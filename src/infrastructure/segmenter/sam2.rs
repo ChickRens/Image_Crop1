@@ -3,12 +3,12 @@ use crate::application::interface::image_segmenter::{ImageSegmenter, ImageSegmen
 use crate::application::types::mask::Mask as ApplicationMask;
 use crate::domain::entity::image::Image;
 use crate::infrastructure::segmenter::sam2_data::{
-    DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask,
-    SAM2InferenceContext, SAM2Inputs, SAM2StaticContext, SparseEmbeddings,
+    DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask, SAM2Inputs,
+    SAM2StaticContext, SparseEmbeddings,
 };
 use image::{DynamicImage, GenericImageView, Pixel};
 use ndarray::prelude::{ArrayBase, Dim};
-use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr, s};
+use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr};
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::{Session, SessionOutputs};
 use ort::value::{
@@ -251,12 +251,11 @@ impl Sam2Segmenter {
 
 impl ImageSegmenter for Sam2Segmenter {
     type SegmentationInputs = SAM2Inputs;
-    type SegmentationContext = SAM2InferenceContext;
 
     fn segment(
         &mut self,
         request: Self::SegmentationInputs,
-    ) -> Result<(ApplicationMask, Self::SegmentationContext), SegmentationErrors> {
+    ) -> Result<ApplicationMask, SegmentationErrors> {
         let static_context = request.static_context;
         let inference_context = request.inference_context;
 
@@ -293,9 +292,7 @@ impl ImageSegmenter for Sam2Segmenter {
                 SegmentationErrors::InferenceError(format!("Mask decoding failed: {}", e))
             })?;
 
-        let mask_2d = mask.view().slice(s![0, 0, .., ..]).to_owned();
-        let context = SAM2InferenceContext::new(Some(mask));
-        Ok((ApplicationMask::new(mask_2d), context))
+        Ok(ApplicationMask::new(mask.into_mask()))
     }
 }
 
