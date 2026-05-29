@@ -5,10 +5,7 @@ use crate::domain::entity::image::Image;
 pub trait ImageSegmenter {
     type SegmentationInputs;
 
-    fn segment(
-        &mut self,
-        request: Self::SegmentationInputs,
-    ) -> Result<Mask, SegmentationErrors>;
+    fn segment(&mut self, request: Self::SegmentationInputs) -> Result<Mask, SegmentationErrors>;
 }
 
 pub trait ImageSegmenterPreparing {
