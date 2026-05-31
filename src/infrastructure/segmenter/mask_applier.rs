@@ -1,14 +1,13 @@
 use ndarray::prelude::{ArrayBase, Dim};
 use ndarray::{ViewRepr, s};
 
-use crate::application::interface::mask_applier::MaskApplier;
-use crate::application::types::mask::Mask;
 use crate::domain::entity::image::Image;
+use crate::infrastructure::segmenter::sam2_data::Mask;
 
 pub struct SAM2MaskApplier;
 
-impl MaskApplier for SAM2MaskApplier {
-    fn apply(original: &Image, mask: &Mask) -> Vec<u8> {
+impl SAM2MaskApplier {
+    pub fn apply(original: &Image, mask: &Mask) -> Vec<u8> {
         let mask_4d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 4]>, f32> = mask.view();
         let mask_2d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 2]>, f32> =
             mask_4d.slice(s![0, 0, .., ..]);
