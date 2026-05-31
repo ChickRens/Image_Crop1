@@ -33,5 +33,4 @@ impl Image {
     pub fn into_data(self) -> (ImageData, ImageId, ImageSize) {
         (self.image_data, self.image_id, self.image_size)
     }
-
 }
