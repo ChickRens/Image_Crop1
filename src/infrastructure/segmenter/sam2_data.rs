@@ -1,4 +1,3 @@
-use crate::domain::value_object::point::Point;
 use ndarray::{Array3, Array4, ArrayBase, ArrayView3, ArrayView4, Dim, OwnedRepr};
 
 #[derive(Debug)]
@@ -137,10 +136,8 @@ impl SAM2InferenceContext {
     pub fn get_all_context_refs(&self) -> &Option<Mask> {
         &self.masks
     }
-}
 
-pub struct SAM2Inputs {
-    pub points: Option<Vec<Point>>,
-    pub static_context: SAM2StaticContext,
-    pub inference_context: SAM2InferenceContext,
+    pub fn set_mask(&mut self, mask: Mask) {
+        self.masks = Some(mask)
+    }
 }
