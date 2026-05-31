@@ -1,10 +1,14 @@
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::interface::image_segmenter::{ImageSegmenter, ImageSegmenterPreparing};
-use crate::application::types::mask::Mask as ApplicationMask;
+use crate::application::types::editing_session::CommonEditingSession;
+use crate::application::types::editing_session::EditingSession;
+use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
+use crate::domain::value_object::image_data::ImageData;
+use crate::infrastructure::segmenter::mask_applier::SAM2MaskApplier;
 use crate::infrastructure::segmenter::sam2_data::{
-    DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask, SAM2Inputs,
-    SAM2StaticContext, SparseEmbeddings,
+    DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask,
+    SAM2InferenceContext, SAM2StaticContext, SparseEmbeddings,
 };
 use image::{DynamicImage, GenericImageView, Pixel};
 use ndarray::prelude::{ArrayBase, Dim};
@@ -101,7 +105,7 @@ impl Sam2Segmenter {
         }
 
         let input_value: Value<TensorValueType<f32>> = Value::from_array(input)?;
-        let outputs: &SessionOutputs = &self
+        let outputs = &self
             .encoder_session
             .run(ort::inputs!["image" => input_value])?;
 
@@ -155,7 +159,7 @@ impl Sam2Segmenter {
             None => none_binding.view(),
         };
 
-        let outputs = &self.encoder_session.run(ort::inputs![
+        let outputs = &self.prompt_encoder_session.run(ort::inputs![
                 "points_coords" => TensorRef::from_array_view(&input_coords)?,
                 "points_labels" => TensorRef::from_array_view(&input_labels)?,
                 "mask"          => TensorRef::from_array_view(input_mask)?])?;
@@ -234,7 +238,7 @@ impl Sam2Segmenter {
         let input_high_res_feature_s1: ArrayBase<ViewRepr<&f32>, Dim<[usize; 4]>, f32> =
             high_res_feature_s1.view();
 
-        let outputs: &SessionOutputs = &self.mask_decoder_session.run(ort::inputs![
+        let outputs = &self.mask_decoder_session.run(ort::inputs![
             "image_embeddings" => TensorRef::from_array_view(input_image_embeddings)?,
             "sparse_prompt_embeddings" => TensorRef::from_array_view(input_sparse_embeddings)?,
             "dense_prompt_embeddings" => TensorRef::from_array_view(input_dense_embeddings)?,
@@ -250,14 +254,16 @@ impl Sam2Segmenter {
 }
 
 impl ImageSegmenter for Sam2Segmenter {
-    type SegmentationInputs = SAM2Inputs;
+    type InferenceContext = SAM2InferenceContext;
+    type StaticContext = SAM2StaticContext;
 
     fn segment(
         &mut self,
-        request: Self::SegmentationInputs,
-    ) -> Result<ApplicationMask, SegmentationErrors> {
-        let static_context = request.static_context;
-        let inference_context = request.inference_context;
+        original_image: &Image,
+        editing_session: &mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+    ) -> Result<SegmentedImage, SegmentationErrors> {
+        let static_context = editing_session.static_context();
+        let inference_context = editing_session.inference_context();
 
         let (image_emb, s0, s1) = static_context.get_all_context_refs();
         let mask = inference_context.get_all_context_refs();
@@ -266,7 +272,7 @@ impl ImageSegmenter for Sam2Segmenter {
         let mut labels: Vec<i64> = Vec::new();
         let mut mask_value: Option<ArrayView4<f32>> = None;
 
-        if let Some(points) = request.points {
+        if let Some(points) = editing_session.points() {
             for point in points {
                 let point_x = point.coordinate().x() as f32;
                 let point_y = point.coordinate().y() as f32;
@@ -292,7 +298,10 @@ impl ImageSegmenter for Sam2Segmenter {
                 SegmentationErrors::InferenceError(format!("Mask decoding failed: {}", e))
             })?;
 
-        Ok(ApplicationMask::new(mask.into_mask()))
+        let applied_image = SAM2MaskApplier::apply(&original_image, &mask);
+        editing_session.inference_context_mut().set_mask(mask);
+
+        Ok(SegmentedImage::new(ImageData::new(applied_image)))
     }
 }
 
