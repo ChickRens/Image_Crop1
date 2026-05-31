@@ -1,25 +1,15 @@
-use crate::domain::entity::image::Image;
-use ndarray::Array2;
+use crate::domain::value_object::image_data::ImageData;
 
 pub struct SegmentedImage {
-    image: Image,
-    mask: Option<Array2<f32>>,
+    image: ImageData,
 }
 
 impl SegmentedImage {
-    pub fn new(image: Image) -> Self {
-        Self { image, mask: None }
+    pub fn new(image: ImageData) -> Self {
+        Self { image }
     }
 
-    pub fn with_mask(image: Image, mask: Array2<f32>) -> Self {
-        Self { image, mask: Some(mask) }
-    }
-
-    pub fn into_image(self) -> Image {
+    pub fn into_image(self) -> ImageData {
         self.image
-    }
-
-    pub fn mask(&self) -> Option<&Array2<f32>> {
-        self.mask.as_ref()
     }
 }
