@@ -4,8 +4,8 @@ use crate::application::interface::inference_context_cache::InferenceContextCach
 use crate::application::types::segment_id::SegmentId;
 use crate::infrastructure::segmenter::sam2_data::SAM2InferenceContext;
 
-pub struct SAM2InferenceContextCache{
-    contexts: HashMap<SegmentId, SAM2InferenceContext>
+pub struct SAM2InferenceContextCache {
+    contexts: HashMap<SegmentId, SAM2InferenceContext>,
 }
 
 impl InferenceContextCache for SAM2InferenceContextCache {
