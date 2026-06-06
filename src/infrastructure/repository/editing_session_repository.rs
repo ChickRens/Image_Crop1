@@ -29,4 +29,12 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
     {
         self.sessions.get(session_id)
     }
+
+    fn get_mut(
+        &mut self,
+        session_id: &SessionId,
+    ) -> Option<&mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
+    {
+        self.sessions.get_mut(session_id)
+    }
 }
