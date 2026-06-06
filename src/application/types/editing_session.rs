@@ -14,6 +14,7 @@ pub trait EditingSession {
 
     fn session(&self) -> &Session;
     fn points(&self) -> Option<&[Point]>;
+    fn update_points(&mut self, points: Vec<Point>);
     fn static_context(&self) -> &Self::StaticContext;
     fn inference_context(&self) -> &Self::InferenceContext;
 
@@ -26,6 +27,10 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
 
     fn points(&self) -> Option<&[Point]> {
         self.points.as_deref()
+    }
+
+    fn update_points(&mut self, points: Vec<Point>) {
+        self.points = Some(points)
     }
 
     fn session(&self) -> &Session {
