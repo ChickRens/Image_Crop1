@@ -35,3 +35,9 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
         self.sessions.get_mut(session_id)
     }
 }
+
+impl SAM2EditingSessionRepository {
+    pub fn new() -> Self {
+        Self { sessions: HashMap::new() }
+    }
+}
