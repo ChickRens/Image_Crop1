@@ -301,14 +301,22 @@ impl ImageSegmenter for Sam2Segmenter {
         let applied_image = SAM2MaskApplier::apply(&original_image, &mask);
         editing_session.inference_context_mut().set_mask(mask);
 
-        Ok(SegmentedImage::new(ImageData::new(applied_image), original_image.image_size().clone()))
+        Ok(SegmentedImage::new(
+            ImageData::new(applied_image),
+            original_image.image_size().clone(),
+        ))
     }
 }
 
 impl ImageSegmenterPreparing for Sam2Segmenter {
-    type SegmentationContext = SAM2StaticContext;
+    type StaticContext = SAM2StaticContext;
+    type InferenceContext = SAM2InferenceContext;
 
-    fn prepare(&mut self, image: Image) -> Result<Self::SegmentationContext, SegmentationErrors> {
+    fn prepare(
+        &mut self,
+        image: Image,
+    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, SegmentationErrors>
+    {
         let img_data = image.image_data().image();
         let img = image::load_from_memory(img_data).map_err(|e| {
             SegmentationErrors::ImageLoadError(format!("Failed to load image: {}", e))
@@ -319,6 +327,7 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
         })?;
 
         let context = SAM2StaticContext::new(embedding, s0, s1);
-        Ok(context)
+        let editing_session = CommonEditingSession::new(context, SAM2InferenceContext::new(None));
+        Ok(editing_session)
     }
 }
