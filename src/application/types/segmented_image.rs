@@ -8,7 +8,10 @@ pub struct SegmentedImage {
 
 impl SegmentedImage {
     pub fn new(image: ImageData, image_size: ImageSize) -> Self {
-        Self { image, size: image_size }
+        Self {
+            image,
+            size: image_size,
+        }
     }
 
     pub fn into_image_and_size(self) -> (ImageData, ImageSize) {
