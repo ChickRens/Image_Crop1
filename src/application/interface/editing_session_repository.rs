@@ -7,6 +7,7 @@ pub trait EditingSessionRepository {
 
     fn save(
         &mut self,
+        session_id: &SessionId,
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     );
     fn get(

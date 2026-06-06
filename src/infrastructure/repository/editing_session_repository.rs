@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use crate::application::interface::editing_session_repository::EditingSessionRepository;
-use crate::application::types::editing_session::{CommonEditingSession, EditingSession};
+use crate::application::types::editing_session::CommonEditingSession;
 use crate::domain::value_object::session_id::SessionId;
 use crate::infrastructure::segmenter::sam2_data::{SAM2InferenceContext, SAM2StaticContext};
 
-pub struct SAM2EditingSessionRepository{
-    sessions: HashMap<SessionId, CommonEditingSession<SAM2StaticContext, SAM2InferenceContext>>
+pub struct SAM2EditingSessionRepository {
+    sessions: HashMap<SessionId, CommonEditingSession<SAM2StaticContext, SAM2InferenceContext>>,
 }
 
 impl EditingSessionRepository for SAM2EditingSessionRepository {
@@ -15,26 +15,23 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
 
     fn save(
         &mut self,
+        session_id: &SessionId,
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
-    )
-    {
-        let session_id = editing_session.session().session_id();
+    ) {
         self.sessions.insert(*session_id, editing_session);
     }
 
     fn get(
         &self,
         session_id: &SessionId,
-    ) -> Option<&CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
-    {
+    ) -> Option<&CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
         self.sessions.get(session_id)
     }
 
     fn get_mut(
         &mut self,
         session_id: &SessionId,
-    ) -> Option<&mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
-    {
+    ) -> Option<&mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
         self.sessions.get_mut(session_id)
     }
 }
