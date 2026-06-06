@@ -1,15 +1,17 @@
 use crate::domain::value_object::image_data::ImageData;
+use crate::domain::value_object::image_size::ImageSize;
 
 pub struct SegmentedImage {
     image: ImageData,
+    size: ImageSize,
 }
 
 impl SegmentedImage {
-    pub fn new(image: ImageData) -> Self {
-        Self { image }
+    pub fn new(image: ImageData, image_size: ImageSize) -> Self {
+        Self { image, size: image_size }
     }
 
-    pub fn into_image(self) -> ImageData {
-        self.image
+    pub fn into_image_and_size(self) -> (ImageData, ImageSize) {
+        (self.image, self.size)
     }
 }

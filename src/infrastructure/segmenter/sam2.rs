@@ -301,7 +301,7 @@ impl ImageSegmenter for Sam2Segmenter {
         let applied_image = SAM2MaskApplier::apply(&original_image, &mask);
         editing_session.inference_context_mut().set_mask(mask);
 
-        Ok(SegmentedImage::new(ImageData::new(applied_image)))
+        Ok(SegmentedImage::new(ImageData::new(applied_image), original_image.image_size().clone()))
     }
 }
 
