@@ -1,5 +1,7 @@
 use crate::application::errors::application_errors::ApplicationErrors;
+use crate::application::interface::editing_session_repository::EditingSessionRepository;
 use crate::application::interface::image_loader::ImageLoader;
+use crate::application::interface::image_segmenter::{ImageSegmenter, ImageSegmenterPreparing};
 use crate::application::types::loaded_image::LoadedImage;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
 use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
@@ -11,28 +13,48 @@ use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::image_kind::ImageKind;
 use crate::domain::value_object::session_id::SessionId;
 
-pub struct UploadUseCase<SR, IR, LD>
+pub struct UploadUseCase<SR, IR, LD, IS, ESR>
 where
     SR: SessionRepository,
     IR: ImageRepository,
     LD: ImageLoader,
+    IS: ImageSegmenterPreparing,
+    ESR: EditingSessionRepository<
+        StaticContext = IS::StaticContext,
+        InferenceContext = IS::InferenceContext,
+    >,
 {
     session_repo: SR,
     image_repo: IR,
     loader: LD,
+    segmenter: IS,
+    editing_session_repo: ESR,
 }
 
-impl<SR, IR, LD> UploadUseCase<SR, IR, LD>
+impl<SR, IR, LD, IS, ESR> UploadUseCase<SR, IR, LD, IS, ESR>
 where
     SR: SessionRepository,
     IR: ImageRepository,
     LD: ImageLoader,
+    IS: ImageSegmenterPreparing,
+    ESR: EditingSessionRepository<
+        StaticContext = IS::StaticContext,
+        InferenceContext = IS::InferenceContext,
+    >,
 {
-    pub fn new(session_repository: SR, image_repository: IR, image_loader: LD) -> Self {
+    pub fn new(
+        session_repository: SR,
+        image_repository: IR,
+        image_loader: LD,
+        image_segmenter: IS,
+        editing_session_repository: ESR,
+    ) -> Self {
         Self {
             session_repo: session_repository,
             image_repo: image_repository,
             loader: image_loader,
+            segmenter: image_segmenter,
+            editing_session_repo: editing_session_repository,
         }
     }
 
@@ -43,12 +65,15 @@ where
         let image_id: ImageId = ImageId::new();
 
         let image: Image = image_dto.into_image();
-
-        self.image_repo.save(image, ImageKind::Original);
-
+        
         let session_id: SessionId = SessionId::new();
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
+
+        let editing_session = self.segmenter.prepare(&image)?;
+
+        self.image_repo.save(image, ImageKind::Original);
+        self.editing_session_repo.save(&session_id ,editing_session);
 
         let output = UploadOutput::new(session_id, image_id);
 
