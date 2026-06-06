@@ -314,7 +314,7 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
 
     fn prepare(
         &mut self,
-        image: Image,
+        image: &Image,
     ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, SegmentationErrors>
     {
         let img_data = image.image_data().image();
