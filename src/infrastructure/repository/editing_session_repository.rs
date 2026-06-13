@@ -38,6 +38,8 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
 
 impl SAM2EditingSessionRepository {
     pub fn new() -> Self {
-        Self { sessions: HashMap::new() }
+        Self {
+            sessions: HashMap::new(),
+        }
     }
 }

@@ -14,6 +14,10 @@ impl SegmentInput {
     }
 
     pub fn new(session_id: SessionId, image_id: ImageId, points: Vec<Point>) -> Self {
-        Self { session_id, image_id, points }
+        Self {
+            session_id,
+            image_id,
+            points,
+        }
     }
 }

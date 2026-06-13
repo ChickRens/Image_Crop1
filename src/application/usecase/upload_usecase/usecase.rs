@@ -1,7 +1,7 @@
 use crate::application::errors::application_errors::ApplicationErrors;
 use crate::application::interface::editing_session_repository::EditingSessionRepository;
 use crate::application::interface::image_loader::ImageLoader;
-use crate::application::interface::image_segmenter::{ImageSegmenter, ImageSegmenterPreparing};
+use crate::application::interface::image_segmenter::ImageSegmenterPreparing;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
 use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
@@ -20,9 +20,9 @@ where
     LD: ImageLoader,
     IS: ImageSegmenterPreparing,
     ESR: EditingSessionRepository<
-        StaticContext = IS::StaticContext,
-        InferenceContext = IS::InferenceContext,
-    >,
+            StaticContext = IS::StaticContext,
+            InferenceContext = IS::InferenceContext,
+        >,
 {
     session_repo: SR,
     image_repo: IR,
@@ -38,9 +38,9 @@ where
     LD: ImageLoader,
     IS: ImageSegmenterPreparing,
     ESR: EditingSessionRepository<
-        StaticContext = IS::StaticContext,
-        InferenceContext = IS::InferenceContext,
-    >,
+            StaticContext = IS::StaticContext,
+            InferenceContext = IS::InferenceContext,
+        >,
 {
     pub fn new(
         session_repository: SR,
@@ -65,7 +65,7 @@ where
         let image_id: ImageId = ImageId::new();
 
         let image: Image = image_dto.into_image();
-        
+
         let session_id: SessionId = SessionId::new();
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
@@ -73,7 +73,7 @@ where
         let editing_session = self.segmenter.prepare(&image)?;
 
         self.image_repo.save(image, ImageKind::Original);
-        self.editing_session_repo.save(&session_id ,editing_session);
+        self.editing_session_repo.save(&session_id, editing_session);
 
         let output = UploadOutput::new(session_id, image_id);
 

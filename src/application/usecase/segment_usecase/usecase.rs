@@ -17,9 +17,9 @@ where
     IR: ImageRepository,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
-        StaticContext = IS::StaticContext,
-        InferenceContext = IS::InferenceContext,
-    >,
+            StaticContext = IS::StaticContext,
+            InferenceContext = IS::InferenceContext,
+        >,
 {
     session_repo: SR,
     image_repo: IR,
@@ -33,16 +33,21 @@ where
     IR: ImageRepository,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
-        StaticContext = IS::StaticContext,
-        InferenceContext = IS::InferenceContext,
-    >,
+            StaticContext = IS::StaticContext,
+            InferenceContext = IS::InferenceContext,
+        >,
 {
-    pub fn new(session_repository: SR, image_repository: IR, image_segmenter: IS, editing_session_repository: ESR) -> Self {
+    pub fn new(
+        session_repository: SR,
+        image_repository: IR,
+        image_segmenter: IS,
+        editing_session_repository: ESR,
+    ) -> Self {
         Self {
             session_repo: session_repository,
             image_repo: image_repository,
             segmenter: image_segmenter,
-            editing_session_repo: editing_session_repository
+            editing_session_repo: editing_session_repository,
         }
     }
 
@@ -52,8 +57,9 @@ where
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
         )?;
 
-        let editing_session = self.editing_session_repo.get_mut(&session_id)
-        .ok_or(ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound))?;
+        let editing_session = self.editing_session_repo.get_mut(&session_id).ok_or(
+            ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
+        )?;
 
         editing_session.update_points(points);
 
@@ -61,8 +67,10 @@ where
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
 
-        self.image_repo
-            .save(Image::new(segmented_image_data, segmented_image_id, size), ImageKind::Segmented);
+        self.image_repo.save(
+            Image::new(segmented_image_data, segmented_image_id, size),
+            ImageKind::Segmented,
+        );
 
         let output = SegmentOutput::new(session_id, segmented_image_id);
         Ok(output)
