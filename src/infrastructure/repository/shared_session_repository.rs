@@ -6,6 +6,7 @@ use crate::domain::repository::session_repository::SessionRepository;
 use crate::domain::value_object::session_id::SessionId;
 use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
 
+#[derive(Clone)]
 pub struct SharedSessionRepository {
     sessions: Rc<RefCell<SessionRepositoryInMemory>>,
 }

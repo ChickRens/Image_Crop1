@@ -7,7 +7,7 @@ use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::image_kind::ImageKind;
 use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;
 
-
+#[derive(Clone)]
 pub struct SharedImageRepository {
     images: Rc<RefCell<ImageRepositoryInMemory>>
 }
