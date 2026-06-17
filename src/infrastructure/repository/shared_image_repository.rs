@@ -9,12 +9,14 @@ use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory
 
 #[derive(Clone)]
 pub struct SharedImageRepository {
-    images: Rc<RefCell<ImageRepositoryInMemory>>
+    images: Rc<RefCell<ImageRepositoryInMemory>>,
 }
 
 impl SharedImageRepository {
     pub fn new() -> Self {
-        Self { images: Rc::new(RefCell::new(ImageRepositoryInMemory::new())) }
+        Self {
+            images: Rc::new(RefCell::new(ImageRepositoryInMemory::new())),
+        }
     }
 }
 
