@@ -6,11 +6,12 @@ use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_data::ImageData;
 use crate::infrastructure::segmenter::mask_applier::SAM2MaskApplier;
+use crate::infrastructure::segmenter::mask_resizer::SAM2MaskResizer;
 use crate::infrastructure::segmenter::sam2_data::{
     DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask,
     SAM2InferenceContext, SAM2StaticContext, SparseEmbeddings,
 };
-use image::{DynamicImage, GenericImageView, Pixel};
+use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel, Rgb};
 use ndarray::prelude::{ArrayBase, Dim};
 use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr};
 use ort::session::builder::GraphOptimizationLevel;
@@ -19,15 +20,17 @@ use ort::value::{
     DynValueTypeMarker, PrimitiveTensorElementType, TensorRef, TensorValueType, Value,
 };
 use std::collections::HashMap;
+use std::{fs, vec};
 
 type OrtResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 type OrtInputs = HashMap<String, Value<DynValueTypeMarker>>;
 
 pub struct Sam2Segmenter {
-    encoder_session: Session,
+    image_encoder_session: Session,
     prompt_encoder_session: Session,
     mask_decoder_session: Session,
+    image_pe: Array4<f32>,
 }
 
 impl Sam2Segmenter {
@@ -35,8 +38,8 @@ impl Sam2Segmenter {
         ort::init();
 
         Ok(Self {
-            encoder_session: Self::build_session(format!(
-                "{}/sam2.1_hiera_small_encoder.onnx",
+            image_encoder_session: Self::build_session(format!(
+                "{}/sam2.1_hiera_small_image_encoder.onnx",
                 model_dir
             ))?,
             prompt_encoder_session: Self::build_session(format!(
@@ -47,6 +50,11 @@ impl Sam2Segmenter {
                 "{}/sam2.1_hiera_small_mask_decoder.onnx",
                 model_dir
             ))?,
+            image_pe: {
+                let bin_file = fs::read("models/image_pe.bin")?;
+                let data: &[f32] = bytemuck::cast_slice(&bin_file);
+                Array4::from_shape_vec((1, 256, 64, 64), data.to_vec())?
+            },
         })
     }
 
@@ -106,7 +114,7 @@ impl Sam2Segmenter {
 
         let input_value: Value<TensorValueType<f32>> = Value::from_array(input)?;
         let outputs = &self
-            .encoder_session
+            .image_encoder_session
             .run(ort::inputs!["image" => input_value])?;
 
         // 出力を取得
@@ -122,6 +130,27 @@ impl Sam2Segmenter {
         let high_res_feature_s1 = HighResFeatureS1::new(high_res_feature_s1_value);
 
         Ok((image_embeddings, high_res_feature_s0, high_res_feature_s1))
+    }
+
+    fn _scale_prompt(
+        points_coords: Vec<(f32, f32)>,
+        current_height: u16,
+        current_width: u16,
+        target_height: u16,
+        target_width: u16,
+    ) -> Vec<(f32, f32)> {
+        let height_scale = target_height as f64 / current_height as f64;
+        let width_scale = target_width as f64 / current_width as f64;
+
+        let mut scaled_points_coords: Vec<(f32, f32)> = Vec::with_capacity(points_coords.len());
+
+        for coords in points_coords {
+            let x = coords.0 as f64 * width_scale;
+            let y = coords.1 as f64 * height_scale;
+
+            scaled_points_coords.push((x as f32, y as f32));
+        }
+        scaled_points_coords
     }
 
     fn _encode_prompt(
@@ -160,8 +189,8 @@ impl Sam2Segmenter {
         };
 
         let outputs = &self.prompt_encoder_session.run(ort::inputs![
-                "points_coords" => TensorRef::from_array_view(&input_coords)?,
-                "points_labels" => TensorRef::from_array_view(&input_labels)?,
+                "point_coords" => TensorRef::from_array_view(&input_coords)?,
+                "point_labels" => TensorRef::from_array_view(&input_labels)?,
                 "mask"          => TensorRef::from_array_view(input_mask)?])?;
 
         let sparse_embeddings_value: ArrayBase<OwnedRepr<f32>, Dim<[usize; 3]>, f32> =
@@ -240,6 +269,7 @@ impl Sam2Segmenter {
 
         let outputs = &self.mask_decoder_session.run(ort::inputs![
             "image_embeddings" => TensorRef::from_array_view(input_image_embeddings)?,
+            "image_pe" => TensorRef::from_array_view(self.image_pe.view())?,
             "sparse_prompt_embeddings" => TensorRef::from_array_view(input_sparse_embeddings)?,
             "dense_prompt_embeddings" => TensorRef::from_array_view(input_dense_embeddings)?,
             "high_res_feature_s0" => TensorRef::from_array_view(input_high_res_feature_s0)?,
@@ -262,6 +292,9 @@ impl ImageSegmenter for Sam2Segmenter {
         original_image: &Image,
         editing_session: &mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     ) -> Result<SegmentedImage, SegmentationErrors> {
+        let sam2_required_height = 1024;
+        let sam2_required_width = 1024;
+
         let static_context = editing_session.static_context();
         let inference_context = editing_session.inference_context();
 
@@ -286,11 +319,21 @@ impl ImageSegmenter for Sam2Segmenter {
             mask_value = Some(mask.view())
         }
 
-        let (sparse_emb, dense_emb) =
-            self._encode_prompt(coords, labels, mask_value)
-                .map_err(|e| {
-                    SegmentationErrors::InferenceError(format!("Prompt encoding failed: {}", e))
-                })?;
+        let scaled_coords = Self::_scale_prompt(
+            coords,
+            original_image.image_size().height(),
+            original_image.image_size().width(),
+            sam2_required_height,
+            sam2_required_width,
+        );
+
+        println!("{:?}", scaled_coords);
+
+        let (sparse_emb, dense_emb) = self
+            ._encode_prompt(scaled_coords, labels, mask_value)
+            .map_err(|e| {
+                SegmentationErrors::InferenceError(format!("Prompt encoding failed: {}", e))
+            })?;
 
         let mask = self
             ._decode_mask(&image_emb, &sparse_emb, &dense_emb, s0, s1)
@@ -298,7 +341,14 @@ impl ImageSegmenter for Sam2Segmenter {
                 SegmentationErrors::InferenceError(format!("Mask decoding failed: {}", e))
             })?;
 
-        let applied_image = SAM2MaskApplier::apply(&original_image, &mask);
+        let resized_mask = SAM2MaskResizer::resize_mask(
+            &mask.view().to_owned(),
+            original_image.image_size().height() as usize,
+            original_image.image_size().width() as usize,
+        );
+
+        let applied_image = SAM2MaskApplier::apply(&original_image, resized_mask.view().to_owned());
+
         editing_session.inference_context_mut().set_mask(mask);
 
         Ok(SegmentedImage::new(
@@ -318,9 +368,15 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
     ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, SegmentationErrors>
     {
         let img_data = image.image_data().image();
-        let img = image::load_from_memory(img_data).map_err(|e| {
-            SegmentationErrors::ImageLoadError(format!("Failed to load image: {}", e))
-        })?;
+        let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_raw(
+            image.image_size().width() as u32,
+            image.image_size().height() as u32,
+            img_data.clone(),
+        )
+        .ok_or(SegmentationErrors::ImageLoadError(
+            "It's not Raw RGB data".to_string(),
+        ))?;
+        let img = DynamicImage::ImageRgb8(rgb_image);
 
         let (embedding, s0, s1) = self._encode_image(&img).map_err(|e| {
             SegmentationErrors::InferenceError(format!("Image encoding failed: {}", e))
