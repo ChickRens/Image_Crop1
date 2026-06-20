@@ -21,5 +21,5 @@ pub trait ImageSegmenterPreparing {
     fn prepare(
         &mut self,
         image: &Image,
-    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, SegmentationErrors>;
+    ) -> Result<(Self::StaticContext, Self::InferenceContext), SegmentationErrors>;
 }

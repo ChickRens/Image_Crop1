@@ -365,7 +365,7 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
     fn prepare(
         &mut self,
         image: &Image,
-    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, SegmentationErrors>
+    ) -> Result<(Self::StaticContext, Self::InferenceContext), SegmentationErrors>
     {
         let img_data = image.image_data().image();
         let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_raw(
@@ -382,8 +382,8 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
             SegmentationErrors::InferenceError(format!("Image encoding failed: {}", e))
         })?;
 
-        let context = SAM2StaticContext::new(embedding, s0, s1);
-        let editing_session = CommonEditingSession::new(context, SAM2InferenceContext::new(None));
-        Ok(editing_session)
+        let static_context = SAM2StaticContext::new(embedding, s0, s1);
+        let inference_context = SAM2InferenceContext::new(None);
+        Ok((static_context, inference_context))
     }
 }
