@@ -2,7 +2,10 @@ use crate::application::errors::application_errors::ApplicationErrors;
 use crate::application::interface::editing_session_repository::EditingSessionRepository;
 use crate::application::interface::image_loader::ImageLoader;
 use crate::application::interface::image_segmenter::ImageSegmenterPreparing;
+use crate::application::types::editing_session::CommonEditingSession;
 use crate::application::types::loaded_image::LoadedImage;
+use crate::application::types::point_history::PointHistory;
+use crate::application::usecase::config::MAX_HISTORY;
 use crate::application::usecase::upload_usecase::upload_input::UploadInput;
 use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
 use crate::domain::entity::image::Image;
@@ -70,7 +73,9 @@ where
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        let editing_session = self.segmenter.prepare(&image)?;
+        let (static_context, inference_context) = self.segmenter.prepare(&image)?;
+        let history = PointHistory::new(MAX_HISTORY);
+        let editing_session = CommonEditingSession::new(history, static_context, inference_context);
 
         self.image_repo.save(image, ImageKind::Original);
         self.editing_session_repo.save(&session_id, editing_session);
