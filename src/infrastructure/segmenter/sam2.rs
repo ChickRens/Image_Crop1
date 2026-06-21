@@ -365,8 +365,7 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
     fn prepare(
         &mut self,
         image: &Image,
-    ) -> Result<(Self::StaticContext, Self::InferenceContext), SegmentationErrors>
-    {
+    ) -> Result<(Self::StaticContext, Self::InferenceContext), SegmentationErrors> {
         let img_data = image.image_data().image();
         let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_raw(
             image.image_size().width() as u32,
