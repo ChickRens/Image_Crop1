@@ -2,7 +2,7 @@ use crate::domain::value_object::point::Point;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct PointHistory {
-    points: Vec<Vec<Point>>,
+    points: Vec<Point>,
     current_index: usize,
     max_points: usize,
 }
@@ -16,34 +16,33 @@ impl PointHistory {
         }
     }
 
-    pub fn add(&mut self, point: Vec<Point>) {
+    pub fn add(&mut self, point: Point) {
         // current_index以降の履歴を削除（redo履歴を破棄）
-        self.points.truncate(self.current_index + 1);
+        self.points.truncate(self.current_index);
         self.points.push(point);
 
-        // self.points がmax_pointsを超えたら先頭を削除
-        if self.points.len() > self.max_points {
-            self.points.remove(0);
-        }
-        self.current_index = self.points.len() - 1;
+        self.current_index = self.points.len();
     }
 
-    pub fn current(&self) -> Option<&Vec<Point>> {
-        self.points.get(self.current_index)
+    pub fn current(&self) -> &[Point] {
+        &self.points[0..self.current_index]
     }
 
-    pub fn undo(&mut self) -> Option<&Vec<Point>> {
-        if self.current_index == 0 {
-            None
+    pub fn undo(&mut self) -> bool {
+        if self.current_index <= 1 {
+            false
         } else {
             self.current_index -= 1;
-            let undid_mask: &Vec<Point> = &self.points[self.current_index];
-            Some(&undid_mask)
+            true
         }
     }
 
-    pub fn redo(&mut self) -> Option<&Vec<Point>> {
+    pub fn redo(&mut self) -> bool {
         self.current_index += 1;
-        self.points.get(self.current_index)
+        if self.current_index >= self.points.len() + 1 {
+            false
+        } else {
+            true
+        }
     }
 }

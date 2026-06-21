@@ -30,13 +30,15 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     }
 
     fn undo(&mut self) {
-        let point = self.history.undo();
-        self.points = point.cloned();
+        self.history.undo();
+        let point = self.history.current();
+        self.points = Some(point.to_vec());
     }
 
     fn redo(&mut self) {
-        let point = self.history.redo();
-        self.points = point.cloned();
+        self.history.redo();
+        let point = self.history.current();
+        self.points = Some(point.to_vec());
     }
 
     fn update_points(&mut self, points: Vec<Point>) {
