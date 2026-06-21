@@ -54,8 +54,8 @@ where
         }
     }
 
-    pub fn execute(&mut self, redo_input: UndoInput) -> Result<UndoOutput, ApplicationErrors> {
-        let session_id = redo_input.session_id();
+    pub fn execute(&mut self, undo_input: UndoInput) -> Result<UndoOutput, ApplicationErrors> {
+        let session_id = undo_input.session_id();
         let session =
             self.session_repo
                 .get(&session_id)
