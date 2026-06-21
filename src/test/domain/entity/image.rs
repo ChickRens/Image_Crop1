@@ -16,11 +16,7 @@ mod image_tests {
 
         let size = size_res.expect("failed size generate");
 
-        let image = Image::new(
-            ImageData::new(vec![1, 2, 3]),
-            id.clone(),
-            size.clone(),
-        );
+        let image = Image::new(ImageData::new(vec![1, 2, 3]), id.clone(), size.clone());
 
         assert_eq!(image.image_id(), &id);
         assert_eq!(image.image_size(), &size);
