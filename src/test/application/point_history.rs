@@ -1,8 +1,9 @@
 #[cfg(test)]
-mod mask_history_tests {
-    use crate::domain::value_object::coordinate::Coordinate;
-    use crate::domain::value_object::point::{Point, PointLabel};
+mod point_history_tests {
     use crate::application::types::point_history::PointHistory;
+    use crate::domain::value_object::coordinate::Coordinate;
+    use crate::domain::value_object::point::PointLabel::{BACKGROUND, FOREGROUND};
+    use crate::domain::value_object::point::{Point, PointLabel};
 
     fn create_point(x: u16, y: u16, label: PointLabel) -> Point {
         Point::new(Coordinate::new(x, y), label)
@@ -12,22 +13,20 @@ mod mask_history_tests {
     fn normal_add_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(100, 100, PointLabel::BACKGROUND)
-        );
+        let point1 = create_point(100, 100, BACKGROUND);
+        let point2 = create_point(200, 200, FOREGROUND);
+        let point3 = create_point(300, 300, BACKGROUND);
 
-        history.add(create_point(200, 200, PointLabel::FOREGROUND));
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(200, 200, PointLabel::FOREGROUND)
-        );
+        history.add(point1.clone());
+        assert_eq!(history.current(), [point1.clone()]);
 
-        history.add(create_point(300, 300, PointLabel::BACKGROUND));
+        history.add(point2.clone());
+        assert_eq!(history.current(), [point1.clone(), point2.clone()]);
+
+        history.add(point3.clone());
         assert_eq!(
-            *history.current().unwrap(),
-            create_point(300, 300, PointLabel::BACKGROUND)
+            history.current(),
+            [point1.clone(), point2.clone(), point3.clone()]
         );
     }
 
@@ -35,132 +34,137 @@ mod mask_history_tests {
     fn undo_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
-        history.add(create_point(200, 200, PointLabel::FOREGROUND));
-        history.add(create_point(300, 300, PointLabel::BACKGROUND));
+        let point1 = create_point(100, 100, BACKGROUND);
+        let point2 = create_point(200, 200, FOREGROUND);
+        let point3 = create_point(300, 300, BACKGROUND);
+
+        history.add(point1.clone());
+        history.add(point2.clone());
+        history.add(point3.clone());
 
         // undoで1つ戻る
-        let result = history.undo();
-        assert_eq!(
-            *result.unwrap(),
-            create_point(200, 200, PointLabel::FOREGROUND)
-        );
+        let undo_result = history.undo();
+        assert!(undo_result);
+
+        assert_eq!(history.current(), [point1.clone(), point2.clone()]);
     }
 
     #[test]
     fn undo_at_first_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
+        let point1 = create_point(100, 100, BACKGROUND);
+        history.add(point1);
 
         // 先頭でundo
-        let mask = history.undo();
-        assert!(mask.is_none());
+        let undo_result = history.undo();
+        assert!(!undo_result);
     }
 
     #[test]
     fn redo_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
-        history.add(create_point(200, 200, PointLabel::FOREGROUND));
+        let point1 = create_point(100, 100, BACKGROUND);
+        let point2 = create_point(200, 200, FOREGROUND);
+
+        history.add(point1.clone());
+        history.add(point2.clone());
 
         let _ = history.undo();
         // redoで1つ進む
-        let result = history.redo();
-        assert_eq!(
-            *result.unwrap(),
-            create_point(200, 200, PointLabel::FOREGROUND)
-        );
+        let redo_result = history.redo();
+        assert!(redo_result);
+
+        assert_eq!(history.current(), [point1.clone(), point2.clone()]);
     }
 
     #[test]
     fn redo_at_last_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::FOREGROUND));
-        history.add(create_point(200, 200, PointLabel::FOREGROUND));
+        let point1 = create_point(100, 100, FOREGROUND);
+        let point2 = create_point(200, 200, FOREGROUND);
+
+        history.add(point1.clone());
+        history.add(point2.clone());
 
         // 末尾でredoするとエラー
-        let result = history.redo();
-        assert!(result.is_none());
+        let redo_result = history.redo();
+        assert!(!redo_result);
     }
 
     #[test]
     fn add_after_undo_test() {
         let mut history = PointHistory::new(5);
 
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(100, 100, PointLabel::BACKGROUND)
-        );
+        let point1 = create_point(100, 100, BACKGROUND);
+        let point2 = create_point(200, 200, FOREGROUND);
+        let point3 = create_point(300, 300, BACKGROUND);
 
-        history.add(create_point(200, 200, PointLabel::FOREGROUND));
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(200, 200, PointLabel::FOREGROUND)
-        );
-
-        history.add(create_point(300, 300, PointLabel::BACKGROUND));
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(300, 300, PointLabel::BACKGROUND)
-        );
+        history.add(point1.clone());
+        history.add(point2.clone());
+        history.add(point3.clone());
 
         // 1つundo
         let _ = history.undo();
 
+        let point4 = create_point(400, 400, FOREGROUND);
         // undo状態でaddすると、redo履歴が破棄される
-        history.add(create_point(400, 400, PointLabel::FOREGROUND));
+        history.add(point4.clone());
 
         // masksは [100, 200, 400] になる（300は破棄）
         assert_eq!(
-            *history.current().unwrap(),
-            create_point(400, 400, PointLabel::FOREGROUND)
+            history.current(),
+            [point1.clone(), point2.clone(), point4.clone()]
         );
 
         let _ = history.undo();
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(200, 200, PointLabel::FOREGROUND)
-        );
+        assert_eq!(history.current(), [point1.clone(), point2.clone()]);
     }
 
     #[test]
     fn over_capacity_test() {
         let mut history = PointHistory::new(2);
-        history.add(create_point(100, 100, PointLabel::BACKGROUND));
-        history.add(create_point(200, 200, PointLabel::BACKGROUND));
-        history.add(create_point(300, 300, PointLabel::FOREGROUND));
+
+        let point1 = create_point(100, 100, PointLabel::BACKGROUND);
+        let point2 = create_point(200, 200, PointLabel::BACKGROUND);
+        let point3 = create_point(300, 300, PointLabel::FOREGROUND);
+
+        history.add(point1.clone());
+        history.add(point2.clone());
+        history.add(point3.clone());
 
         let _ = history.undo();
 
+        assert_eq!(history.current(), [point1.clone(), point2.clone()]);
+
+        history.redo();
+
         assert_eq!(
-            *history.current().unwrap(),
-            create_point(200, 200, PointLabel::BACKGROUND)
-        );
-        assert_eq!(
-            *history.redo().unwrap(),
-            create_point(300, 300, PointLabel::FOREGROUND)
+            history.current(),
+            [point1.clone(), point2.clone(), point3.clone()]
         )
     }
 
     #[test]
     fn undo_3consecutive_test() {
         let mut history = PointHistory::new(5);
-        history.add(create_point(100, 100, PointLabel::FOREGROUND));
-        history.add(create_point(200, 200, PointLabel::BACKGROUND));
-        history.add(create_point(300, 300, PointLabel::FOREGROUND));
-        history.add(create_point(400, 400, PointLabel::BACKGROUND));
+
+        let point1 = create_point(100, 100, FOREGROUND);
+        let point2 = create_point(200, 200, BACKGROUND);
+        let point3 = create_point(300, 300, FOREGROUND);
+        let point4 = create_point(400, 400, BACKGROUND);
+
+        history.add(point1.clone());
+        history.add(point2.clone());
+        history.add(point3.clone());
+        history.add(point4.clone());
 
         let _ = history.undo();
         let _ = history.undo();
         let _ = history.undo();
 
-        assert_eq!(
-            *history.current().unwrap(),
-            create_point(100, 100, PointLabel::FOREGROUND)
-        )
+        assert_eq!(history.current(), [point1.clone()])
     }
 }
