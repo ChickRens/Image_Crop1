@@ -11,11 +11,7 @@ pub trait EditingSessionRepository {
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     );
     fn get(
-        &self,
-        session_id: &SessionId,
-    ) -> Option<&CommonEditingSession<Self::StaticContext, Self::InferenceContext>>;
-    fn get_mut(
         &mut self,
         session_id: &SessionId,
-    ) -> Option<&mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>>;
+    ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>>;
 }
