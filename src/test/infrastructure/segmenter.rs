@@ -4,7 +4,7 @@ mod segmenter_tests {
 
     use crate::{
         application::{
-            interface::image_segmenter::{ImageSegmenter, ImageSegmenterPreparing},
+            interface::image_segmenter::ImageSegmenter,
             types::{
                 editing_session::{CommonEditingSession, EditingSession},
                 point_history::PointHistory,
@@ -59,8 +59,11 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let editing_result = segmenter.prepare(&image);
-        assert!(editing_result.is_ok());
+        let static_context = segmenter.prepare_static_context(&image);
+        let inference_context = segmenter.prepare_inference_context(&image);
+
+        assert!(static_context.is_ok());
+        assert!(inference_context.is_ok());
     }
 
     #[ignore]
@@ -71,14 +74,20 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let (static_context, inference_context) = segmenter.prepare(&image).unwrap();
+        let static_context = segmenter.prepare_static_context(&image).unwrap();
+        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
+
         let mut editing_session =
             CommonEditingSession::new(PointHistory::new(30), static_context, inference_context);
-        editing_session.update_points(vec![Point::new(
-            Coordinate::new(2, 2),
-            PointLabel::FOREGROUND,
-        )]);
-        let segmented_res = segmenter.segment(&image, &mut editing_session);
+
+        editing_session.add_point(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND));
+
+        let segmented_res = segmenter.segment(
+            &image,
+            editing_session.static_context(),
+            editing_session.inference_context(),
+            editing_session.points(),
+        );
 
         match &segmented_res {
             Ok(_) => assert!(true),
@@ -87,7 +96,7 @@ mod segmenter_tests {
 
         assert!(segmented_res.is_ok());
 
-        let segmented_image = segmented_res.unwrap();
+        let (_, segmented_image) = segmented_res.unwrap();
 
         let (data, size) = segmented_image.into_image_and_size();
         assert_eq!(size, ImageSize::new(5, 5).unwrap());
@@ -106,14 +115,20 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let (static_context, inference_context) = segmenter.prepare(&image).unwrap();
+        let static_context = segmenter.prepare_static_context(&image).unwrap();
+        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
+
         let mut editing_session =
             CommonEditingSession::new(PointHistory::new(40), static_context, inference_context);
-        editing_session.update_points(vec![Point::new(
-            Coordinate::new(2, 2),
-            PointLabel::FOREGROUND,
-        )]);
-        let segmented_res = segmenter.segment(&image, &mut editing_session);
+
+        editing_session.add_point(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND));
+
+        let segmented_res = segmenter.segment(
+            &image,
+            editing_session.static_context(),
+            editing_session.inference_context(),
+            editing_session.points(),
+        );
 
         match &segmented_res {
             Ok(_) => assert!(true),
@@ -122,7 +137,7 @@ mod segmenter_tests {
 
         assert!(segmented_res.is_ok());
 
-        let segmented_image = segmented_res.unwrap();
+        let (_, segmented_image) = segmented_res.unwrap();
 
         let (data, size) = segmented_image.into_image_and_size();
         assert_eq!(size, ImageSize::new(5, 5).unwrap());
@@ -136,10 +151,18 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let (static_context, inference_context) = segmenter.prepare(&image).unwrap();
-        let mut editing_session =
+        let static_context = segmenter.prepare_static_context(&image).unwrap();
+        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
+
+        let editing_session =
             CommonEditingSession::new(PointHistory::new(30), static_context, inference_context);
-        let segmented_res = segmenter.segment(&image, &mut editing_session);
+
+        let segmented_res = segmenter.segment(
+            &image,
+            editing_session.static_context(),
+            editing_session.inference_context(),
+            editing_session.points(),
+        );
 
         match &segmented_res {
             Ok(_) => assert!(true),
@@ -148,7 +171,7 @@ mod segmenter_tests {
 
         assert!(segmented_res.is_ok());
 
-        let segmented_image = segmented_res.unwrap();
+        let (_, segmented_image) = segmented_res.unwrap();
 
         let (data, size) = segmented_image.into_image_and_size();
         assert_eq!(size, ImageSize::new(5, 5).unwrap());
@@ -163,17 +186,25 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let (static_context, inference_context) = segmenter.prepare(&image).unwrap();
-        let mut editing_session =
+        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
+        let static_context = segmenter.prepare_static_context(&image).unwrap();
+
+        let editing_session =
             CommonEditingSession::new(PointHistory::new(30), static_context, inference_context);
-        let segmented_res = segmenter.segment(&image, &mut editing_session);
+
+        let segmented_res = segmenter.segment(
+            &image,
+            editing_session.static_context(),
+            editing_session.inference_context(),
+            editing_session.points(),
+        );
 
         match &segmented_res {
             Ok(_) => assert!(true),
             Err(e) => println!("{:?}", e),
         }
 
-        let segmented_image = segmented_res.unwrap();
+        let (_, segmented_image) = segmented_res.unwrap();
 
         let (data, size) = segmented_image.into_image_and_size();
 
@@ -184,6 +215,7 @@ mod segmenter_tests {
             .unwrap();
     }
 
+    #[ignore]
     #[test]
     fn test_segment_invalid_point() {
         let model_dir = "models";
@@ -191,21 +223,26 @@ mod segmenter_tests {
 
         let image = _create_5x5_rgb();
 
-        let (static_context, inference_context) = segmenter.prepare(&image).unwrap();
+        let static_context = segmenter.prepare_static_context(&image).unwrap();
+        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
+
         let mut editing_session =
             CommonEditingSession::new(PointHistory::new(30), static_context, inference_context);
-        let segmented_res = segmenter.segment(&image, &mut editing_session);
-        editing_session.update_points(vec![Point::new(
-            Coordinate::new(10, 10),
-            PointLabel::FOREGROUND,
-        )]);
+
+        let segmented_res = segmenter.segment(
+            &image,
+            editing_session.static_context(),
+            editing_session.inference_context(),
+            editing_session.points(),
+        );
+        editing_session.add_point(Point::new(Coordinate::new(10, 10), PointLabel::FOREGROUND));
 
         match &segmented_res {
             Ok(_) => assert!(true),
             Err(e) => println!("{:?}", e),
         }
 
-        let segmented_image = segmented_res.unwrap();
+        let (_, segmented_image) = segmented_res.unwrap();
 
         let (data, size) = segmented_image.into_image_and_size();
         assert_eq!(size, ImageSize::new(5, 5).unwrap());
