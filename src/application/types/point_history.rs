@@ -38,10 +38,10 @@ impl PointHistory {
     }
 
     pub fn redo(&mut self) -> bool {
-        self.current_index += 1;
-        if self.current_index >= self.points.len() + 1 {
+        if self.current_index >= self.points.len() {
             false
         } else {
+            self.current_index += 1;
             true
         }
     }
