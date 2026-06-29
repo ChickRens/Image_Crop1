@@ -1,7 +1,7 @@
 use crate::application::errors::application_errors::ApplicationErrors;
 use crate::application::interface::editing_session_repository::EditingSessionRepository;
 use crate::application::interface::image_loader::ImageLoader;
-use crate::application::interface::image_segmenter::ImageSegmenterPreparing;
+use crate::application::interface::image_segmenter::ImageSegmenter;
 use crate::application::types::editing_session::CommonEditingSession;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::application::types::point_history::PointHistory;
@@ -21,7 +21,7 @@ where
     SR: SessionRepository,
     IR: ImageRepository,
     LD: ImageLoader,
-    IS: ImageSegmenterPreparing,
+    IS: ImageSegmenter,
     ESR: EditingSessionRepository<
             StaticContext = IS::StaticContext,
             InferenceContext = IS::InferenceContext,
@@ -39,7 +39,7 @@ where
     SR: SessionRepository,
     IR: ImageRepository,
     LD: ImageLoader,
-    IS: ImageSegmenterPreparing,
+    IS: ImageSegmenter,
     ESR: EditingSessionRepository<
             StaticContext = IS::StaticContext,
             InferenceContext = IS::InferenceContext,
@@ -73,7 +73,8 @@ where
         let session: Session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        let (static_context, inference_context) = self.segmenter.prepare(&image)?;
+        let inference_context = self.segmenter.prepare_inference_context(&image)?;
+        let static_context = self.segmenter.prepare_static_context(&image)?;
         let history = PointHistory::new(MAX_HISTORY);
         let editing_session = CommonEditingSession::new(history, static_context, inference_context);
 

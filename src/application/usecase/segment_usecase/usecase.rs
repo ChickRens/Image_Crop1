@@ -52,20 +52,29 @@ where
     }
 
     pub fn execute(&mut self, input: SegmentInput) -> Result<SegmentOutput, ApplicationErrors> {
-        let (session_id, image_id, points) = input.into_parts();
+        let (session_id, image_id, point) = input.into_parts();
         let original_image = self.image_repo.get(&image_id, ImageKind::Original).ok_or(
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
         )?;
 
-        let editing_session = self.editing_session_repo.get_mut(&session_id).ok_or(
+        let mut editing_session = self.editing_session_repo.get(&session_id).ok_or(
             ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
         )?;
 
-        editing_session.update_points(points);
+        editing_session.add_point(point);
 
-        let segmented_image = self.segmenter.segment(&original_image, editing_session)?;
+        let static_context = editing_session.static_context();
+        let inference_context = editing_session.inference_context();
+        let points = editing_session.points();
+
+        let (new_inference_context, segmented_image) =
+            self.segmenter
+                .segment(&original_image, static_context, inference_context, points)?;
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
+        editing_session.set_inference_context(new_inference_context);
+
+        self.editing_session_repo.save(&session_id, editing_session);
 
         self.image_repo.save(
             Image::new(segmented_image_data, segmented_image_id, size),
