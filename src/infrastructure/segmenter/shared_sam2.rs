@@ -3,7 +3,6 @@ use std::rc::Rc;
 
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::interface::image_segmenter::ImageSegmenter;
-use crate::application::types::editing_session::CommonEditingSession;
 use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
 use crate::domain::value_object::point::Point;
