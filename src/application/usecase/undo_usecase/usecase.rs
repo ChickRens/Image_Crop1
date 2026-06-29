@@ -20,8 +20,8 @@ where
     IS: ImageSegmenter,
     IR: ImageRepository,
     ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
+            StaticContext = <IS as ImageSegmenter>::StaticContext,
+            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
 {
     session_repo: SR,
@@ -36,8 +36,8 @@ where
     IR: ImageRepository,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
+            StaticContext = <IS as ImageSegmenter>::StaticContext,
+            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
 {
     pub fn new(
@@ -68,16 +68,22 @@ where
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
         )?;
 
-        let editing_session = self.editing_session_repo.get_mut(&session_id).ok_or(
+        let mut editing_session = self.editing_session_repo.get(&session_id).ok_or(
             ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
         )?;
 
         editing_session.undo();
-        editing_session.points();
+        let points = editing_session.points();
+        let static_context = editing_session.static_context();
 
-        let segmented_image = self.segmenter.segment(&image, editing_session)?;
+        let (new_context, segmented_image) =
+            self.segmenter.rebuild(&image, static_context, points)?;
+        editing_session.set_inference_context(new_context);
+
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
+
+        self.editing_session_repo.save(&session_id, editing_session);
 
         self.image_repo.save(
             Image::new(segmented_image_data, segmented_image_id, size),

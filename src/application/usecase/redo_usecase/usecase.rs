@@ -5,7 +5,10 @@ use crate::{
             editing_session_repository::EditingSessionRepository, image_segmenter::ImageSegmenter,
         },
         types::editing_session::EditingSession,
-        usecase::redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput},
+        usecase::{
+            redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput},
+            undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput},
+        },
     },
     domain::{
         entity::image::Image,
@@ -20,8 +23,8 @@ where
     IS: ImageSegmenter,
     IR: ImageRepository,
     ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
+            StaticContext = <IS as ImageSegmenter>::StaticContext,
+            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
 {
     session_repo: SR,
@@ -36,8 +39,8 @@ where
     IR: ImageRepository,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
+            StaticContext = <IS as ImageSegmenter>::StaticContext,
+            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
 {
     pub fn new(
@@ -54,8 +57,8 @@ where
         }
     }
 
-    pub fn execute(&mut self, redo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
-        let session_id = redo_input.session_id();
+    pub fn execute(&mut self, undo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
+        let session_id = undo_input.session_id();
         let session =
             self.session_repo
                 .get(&session_id)
@@ -68,16 +71,24 @@ where
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
         )?;
 
-        let editing_session = self.editing_session_repo.get_mut(&session_id).ok_or(
+        let mut editing_session = self.editing_session_repo.get(&session_id).ok_or(
             ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
         )?;
 
         editing_session.redo();
-        editing_session.points();
+        let points = editing_session.points();
+        let static_context = editing_session.static_context();
+        let inference_context = editing_session.inference_context();
 
-        let segmented_image = self.segmenter.segment(&image, editing_session)?;
+        let (new_context, segmented_image) =
+            self.segmenter
+                .segment(&image, static_context, inference_context, points)?;
+        editing_session.set_inference_context(new_context);
+
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
+
+        self.editing_session_repo.save(&session_id, editing_session);
 
         self.image_repo.save(
             Image::new(segmented_image_data, segmented_image_id, size),
