@@ -1,10 +1,9 @@
 use crate::application::errors::segmentation_error::SegmentationErrors;
-use crate::application::interface::image_segmenter::{ImageSegmenter, ImageSegmenterPreparing};
-use crate::application::types::editing_session::CommonEditingSession;
-use crate::application::types::editing_session::EditingSession;
+use crate::application::interface::image_segmenter::ImageSegmenter;
 use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_data::ImageData;
+use crate::domain::value_object::point::Point;
 use crate::infrastructure::segmenter::mask_applier::SAM2MaskApplier;
 use crate::infrastructure::segmenter::mask_resizer::SAM2MaskResizer;
 use crate::infrastructure::segmenter::sam2_data::{
@@ -17,14 +16,12 @@ use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr};
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::{Session, SessionOutputs};
 use ort::value::{
-    DynValueTypeMarker, PrimitiveTensorElementType, TensorRef, TensorValueType, Value,
+    PrimitiveTensorElementType, TensorRef, TensorValueType, Value,
 };
-use std::collections::HashMap;
 use std::{fs, vec};
 
 type OrtResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-type OrtInputs = HashMap<String, Value<DynValueTypeMarker>>;
 
 pub struct Sam2Segmenter {
     image_encoder_session: Session,
@@ -35,8 +32,6 @@ pub struct Sam2Segmenter {
 
 impl Sam2Segmenter {
     pub fn new(model_dir: &str) -> OrtResult<Self> {
-        ort::init();
-
         Ok(Self {
             image_encoder_session: Self::build_session(format!(
                 "{}/sam2.1_hiera_small_image_encoder.onnx",
@@ -290,13 +285,12 @@ impl ImageSegmenter for Sam2Segmenter {
     fn segment(
         &mut self,
         original_image: &Image,
-        editing_session: &mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
-    ) -> Result<SegmentedImage, SegmentationErrors> {
+        static_context: &Self::StaticContext,
+        inference_context: &Self::InferenceContext,
+        input_points: &[Point],
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
         let sam2_required_height = 1024;
         let sam2_required_width = 1024;
-
-        let static_context = editing_session.static_context();
-        let inference_context = editing_session.inference_context();
 
         let (image_emb, s0, s1) = static_context.get_all_context_refs();
         let mask = inference_context.get_all_context_refs();
@@ -305,14 +299,12 @@ impl ImageSegmenter for Sam2Segmenter {
         let mut labels: Vec<i64> = Vec::new();
         let mut mask_value: Option<ArrayView4<f32>> = None;
 
-        if let Some(points) = editing_session.points() {
-            for point in points {
-                let point_x = point.coordinate().x() as f32;
-                let point_y = point.coordinate().y() as f32;
-                let label = point.label() as i64;
-                coords.push((point_x, point_y));
-                labels.push(label);
-            }
+        for point in input_points {
+            let point_x = point.coordinate().x() as f32;
+            let point_y = point.coordinate().y() as f32;
+            let label = point.label() as i64;
+            coords.push((point_x, point_y));
+            labels.push(label);
         }
 
         if let Some(mask) = mask {
@@ -348,24 +340,55 @@ impl ImageSegmenter for Sam2Segmenter {
         );
 
         let applied_image = SAM2MaskApplier::apply(&original_image, resized_mask.view().to_owned());
+        let inference_context = SAM2InferenceContext::new(Some(mask));
 
-        editing_session.inference_context_mut().set_mask(mask);
+        // Ok(SegmentedImage::new(
+        //     ImageData::new(applied_image),
+        //     original_image.image_size().clone(),
+        // ))
 
-        Ok(SegmentedImage::new(
-            ImageData::new(applied_image),
-            original_image.image_size().clone(),
+        Ok((
+            inference_context,
+            SegmentedImage::new(
+                ImageData::new(applied_image),
+                original_image.image_size().clone(),
+            ),
         ))
     }
-}
 
-impl ImageSegmenterPreparing for Sam2Segmenter {
-    type StaticContext = SAM2StaticContext;
-    type InferenceContext = SAM2InferenceContext;
+    fn rebuild(
+        &mut self,
+        original_image: &Image,
+        static_context: &Self::StaticContext,
+        input_points: &[Point],
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
+        let mut inference_context = SAM2InferenceContext::new(None);
 
-    fn prepare(
+        let (original_data, _original_id, original_size) = original_image.clone().into_data();
+
+        let mut segmented_image: SegmentedImage = SegmentedImage::new(original_data, original_size);
+
+        for idx in 0..=input_points.len() {
+            let current_points = &input_points[0..idx];
+
+            let (new_context, segmented) = self.segment(
+                original_image,
+                static_context,
+                &inference_context,
+                current_points,
+            )?;
+
+            inference_context = new_context;
+            segmented_image = segmented
+        }
+
+        Ok((inference_context, segmented_image))
+    }
+
+    fn prepare_static_context(
         &mut self,
         image: &Image,
-    ) -> Result<(Self::StaticContext, Self::InferenceContext), SegmentationErrors> {
+    ) -> Result<Self::StaticContext, SegmentationErrors> {
         let img_data = image.image_data().image();
         let rgb_image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_raw(
             image.image_size().width() as u32,
@@ -373,7 +396,7 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
             img_data.clone(),
         )
         .ok_or(SegmentationErrors::ImageLoadError(
-            "It's not Raw RGB data".to_string(),
+            "It is not Raw RGB data".to_string(),
         ))?;
         let img = DynamicImage::ImageRgb8(rgb_image);
 
@@ -382,7 +405,14 @@ impl ImageSegmenterPreparing for Sam2Segmenter {
         })?;
 
         let static_context = SAM2StaticContext::new(embedding, s0, s1);
+        Ok(static_context)
+    }
+
+    fn prepare_inference_context(
+        &mut self,
+        _image: &Image,
+    ) -> Result<Self::InferenceContext, SegmentationErrors> {
         let inference_context = SAM2InferenceContext::new(None);
-        Ok((static_context, inference_context))
+        Ok(inference_context)
     }
 }
