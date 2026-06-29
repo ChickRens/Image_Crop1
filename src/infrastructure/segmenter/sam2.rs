@@ -15,13 +15,10 @@ use ndarray::prelude::{ArrayBase, Dim};
 use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr};
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::{Session, SessionOutputs};
-use ort::value::{
-    PrimitiveTensorElementType, TensorRef, TensorValueType, Value,
-};
+use ort::value::{PrimitiveTensorElementType, TensorRef, TensorValueType, Value};
 use std::{fs, vec};
 
 type OrtResult<T> = Result<T, Box<dyn std::error::Error>>;
-
 
 pub struct Sam2Segmenter {
     image_encoder_session: Session,
@@ -368,7 +365,7 @@ impl ImageSegmenter for Sam2Segmenter {
 
         let mut segmented_image: SegmentedImage = SegmentedImage::new(original_data, original_size);
 
-        for idx in 0..=input_points.len() {
+        for idx in 1..=input_points.len() {
             let current_points = &input_points[0..idx];
 
             let (new_context, segmented) = self.segment(
