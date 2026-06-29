@@ -22,17 +22,10 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
     }
 
     fn get(
-        &self,
-        session_id: &SessionId,
-    ) -> Option<&CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
-        self.sessions.get(session_id)
-    }
-
-    fn get_mut(
         &mut self,
         session_id: &SessionId,
-    ) -> Option<&mut CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
-        self.sessions.get_mut(session_id)
+    ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
+        self.sessions.remove(session_id)
     }
 }
 
