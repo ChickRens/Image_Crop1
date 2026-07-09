@@ -16,7 +16,7 @@ use ndarray::{Array, Array3, Array4, ArrayView4, Ix3, Ix4, OwnedRepr, ViewRepr};
 use ort::session::builder::GraphOptimizationLevel;
 use ort::session::{Session, SessionOutputs};
 use ort::value::{PrimitiveTensorElementType, TensorRef, TensorValueType, Value};
-use std::{fs, vec};
+use std::{fs, time, vec};
 
 type OrtResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -273,19 +273,14 @@ impl Sam2Segmenter {
         let mask = Mask::new(mask_value);
         Ok(mask)
     }
-}
 
-impl ImageSegmenter for Sam2Segmenter {
-    type InferenceContext = SAM2InferenceContext;
-    type StaticContext = SAM2StaticContext;
-
-    fn segment(
+    fn _inference(
         &mut self,
         original_image: &Image,
-        static_context: &Self::StaticContext,
-        inference_context: &Self::InferenceContext,
+        static_context: &SAM2StaticContext,
+        inference_context: &SAM2InferenceContext,
         input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
+    ) -> Result<Mask, SegmentationErrors> {
         let sam2_required_height = 1024;
         let sam2_required_width = 1024;
 
@@ -316,8 +311,6 @@ impl ImageSegmenter for Sam2Segmenter {
             sam2_required_width,
         );
 
-        println!("{:?}", scaled_coords);
-
         let (sparse_emb, dense_emb) = self
             ._encode_prompt(scaled_coords, labels, mask_value)
             .map_err(|e| {
@@ -330,13 +323,55 @@ impl ImageSegmenter for Sam2Segmenter {
                 SegmentationErrors::InferenceError(format!("Mask decoding failed: {}", e))
             })?;
 
+        Ok(mask)
+    }
+
+    fn _generate_image(
+        mask: &Mask,
+        original_image: &Image,
+    ) -> Result<SegmentedImage, SegmentationErrors> {
         let resized_mask = SAM2MaskResizer::resize_mask(
             &mask.view().to_owned(),
             original_image.image_size().height() as usize,
             original_image.image_size().width() as usize,
         );
 
+        let start = time::Instant::now();
         let applied_image = SAM2MaskApplier::apply(&original_image, resized_mask.view().to_owned());
+        let elapsed = start.elapsed();
+        println!("Applying time: {:?}", elapsed);
+
+        Ok(SegmentedImage::new(
+            ImageData::new(applied_image),
+            original_image.image_size().clone(),
+        ))
+    }
+}
+
+impl ImageSegmenter for Sam2Segmenter {
+    type InferenceContext = SAM2InferenceContext;
+    type StaticContext = SAM2StaticContext;
+
+    fn segment(
+        &mut self,
+        original_image: &Image,
+        static_context: &Self::StaticContext,
+        inference_context: &Self::InferenceContext,
+        input_points: &[Point],
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
+        let mask = self._inference(
+            original_image,
+            static_context,
+            inference_context,
+            input_points,
+        )?;
+
+        let start = time::Instant::now();
+        let segmented = Self::_generate_image(&mask, original_image)?;
+
+        let elapsed = start.elapsed();
+        println!("Applying time: {:?}", elapsed);
+
         let inference_context = SAM2InferenceContext::new(Some(mask));
 
         // Ok(SegmentedImage::new(
@@ -344,13 +379,7 @@ impl ImageSegmenter for Sam2Segmenter {
         //     original_image.image_size().clone(),
         // ))
 
-        Ok((
-            inference_context,
-            SegmentedImage::new(
-                ImageData::new(applied_image),
-                original_image.image_size().clone(),
-            ),
-        ))
+        Ok((inference_context, segmented))
     }
 
     fn rebuild(
@@ -361,23 +390,31 @@ impl ImageSegmenter for Sam2Segmenter {
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
         let mut inference_context = SAM2InferenceContext::new(None);
 
-        let (original_data, _original_id, original_size) = original_image.clone().into_data();
+        for idx in 1..=input_points.len()-1 {
+            let current_points = &input_points[..idx];
 
-        let mut segmented_image: SegmentedImage = SegmentedImage::new(original_data, original_size);
-
-        for idx in 1..=input_points.len() {
-            let current_points = &input_points[0..idx];
-
-            let (new_context, segmented) = self.segment(
+            let temp_mask= self._inference(
                 original_image,
                 static_context,
                 &inference_context,
                 current_points,
             )?;
 
-            inference_context = new_context;
-            segmented_image = segmented
+            inference_context = SAM2InferenceContext::new(Some(temp_mask));
         }
+
+        let current_points = input_points;
+
+        let mask = self._inference(
+            original_image, 
+            static_context, 
+            &inference_context, 
+            current_points
+        )?;
+
+        let segmented_image = Self::_generate_image(&mask, original_image)?;
+
+        inference_context = SAM2InferenceContext::new(Some(mask));
 
         Ok((inference_context, segmented_image))
     }
