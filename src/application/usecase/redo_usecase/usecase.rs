@@ -5,10 +5,7 @@ use crate::{
             editing_session_repository::EditingSessionRepository, image_segmenter::ImageSegmenter,
         },
         types::editing_session::EditingSession,
-        usecase::{
-            redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput},
-            undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput},
-        },
+        usecase::redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput},
     },
     domain::{
         entity::image::Image,
@@ -57,8 +54,8 @@ where
         }
     }
 
-    pub fn execute(&mut self, undo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
-        let session_id = undo_input.session_id();
+    pub fn execute(&mut self, redo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
+        let session_id = redo_input.session_id();
         let session =
             self.session_repo
                 .get(&session_id)
