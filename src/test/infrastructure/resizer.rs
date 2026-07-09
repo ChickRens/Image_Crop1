@@ -23,7 +23,7 @@ mod image_loader_test {
     }
 
     #[test]
-    fn test_resized_mask_dont_contain_invalid_value() {
+    fn test_resized_mask_do_not_contain_invalid_value() {
         let mut mask = Array4::<f32>::zeros((1, 1, 2, 2));
 
         mask[[0, 0, 0, 0]] = 0.0;
