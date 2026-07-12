@@ -4,15 +4,13 @@ mod image_tests {
 
     use crate::domain::entity::image::Image;
     use crate::domain::value_object::{
-        image_data::ImageData,
-        image_id::ImageId,
-        image_size::{ImageSize, SizeErrorType},
+        image_data::ImageData, image_id::ImageId, image_size::ImageSize,
     };
 
     #[test]
     fn test_create_normal_image() {
         let id: ImageId = ImageId::from_uuid(Uuid::new_v4());
-        let size_res: Result<ImageSize, SizeErrorType> = ImageSize::new(3000, 3000);
+        let size_res = ImageSize::new(3000, 3000);
 
         let size = size_res.expect("failed size generate");
 

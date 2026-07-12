@@ -2,6 +2,7 @@ use crate::application::errors::loading_errors::LoadingErrors;
 use crate::application::errors::repository_errors::RepositoryErrors;
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::errors::validation_errors::ValidationErrors;
+use crate::domain::errors::domain_errors::DomainErrors;
 
 pub trait Code {
     fn code(&self) -> &str;
@@ -9,6 +10,8 @@ pub trait Code {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ApplicationErrors {
+    DomainError(DomainErrors),
+
     ImageLoadError(LoadingErrors),
     ValidationError(ValidationErrors),
     SegmentationError(SegmentationErrors),
@@ -36,5 +39,17 @@ impl From<RepositoryErrors> for ApplicationErrors {
 impl From<SegmentationErrors> for ApplicationErrors {
     fn from(value: SegmentationErrors) -> Self {
         Self::SegmentationError(value)
+    }
+}
+
+impl Code for ApplicationErrors {
+    fn code(&self) -> &str {
+        match self {
+            Self::DomainError(err) => err.code(),
+            Self::ImageLoadError(err) => err.code(),
+            Self::ValidationError(err) => err.code(),
+            Self::SegmentationError(err) => err.code(),
+            Self::RepositoryError(err) => err.code(),
+        }
     }
 }

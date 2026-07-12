@@ -1,16 +1,14 @@
 use crate::application::errors::application_errors::Code;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SessionErrors {
-    TimeOut,
-    ImageNotOwned,
+    InvalidSessionId,
 }
 
 impl Code for SessionErrors {
     fn code(&self) -> &str {
         match self {
-            Self::TimeOut => "INVALID_SESSION",
-            Self::ImageNotOwned => "NOT_OWNED_IMAGE",
+            Self::InvalidSessionId => "INVALID_SESSION_ID",
         }
     }
 }

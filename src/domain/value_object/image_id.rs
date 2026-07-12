@@ -1,12 +1,9 @@
 use uuid::Uuid;
+
+use crate::domain::errors::image_errors::ImageErrors;
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct ImageId {
     id: Uuid,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum ImageErrorType {
-    InvalidUuid,
 }
 
 impl ImageId {
@@ -18,11 +15,11 @@ impl ImageId {
         Self { id: id }
     }
 
-    pub fn from_str(id: &str) -> Result<Self, ImageErrorType> {
+    pub fn from_str(id: &str) -> Result<Self, ImageErrors> {
         let id_result = Uuid::parse_str(id);
         let id = match id_result {
             Ok(uuid) => uuid,
-            Err(_error) => return Err(ImageErrorType::InvalidUuid),
+            Err(_error) => return Err(ImageErrors::InvalidImageId),
         };
 
         Ok(Self { id: id })

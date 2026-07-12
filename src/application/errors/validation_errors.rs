@@ -1,3 +1,4 @@
+use crate::application::errors::application_errors::Code;
 use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
 use crate::application::errors::validation::session_errors::SessionErrors;
 
@@ -16,5 +17,14 @@ impl From<SessionErrors> for ValidationErrors {
 impl From<SegmentInputErrors> for ValidationErrors {
     fn from(value: SegmentInputErrors) -> Self {
         Self::Points(value)
+    }
+}
+
+impl Code for ValidationErrors {
+    fn code(&self) -> &str {
+        match self {
+            Self::Points(err) => err.code(),
+            Self::Session(err) => err.code(),
+        }
     }
 }

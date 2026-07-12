@@ -1,12 +1,9 @@
 use uuid::Uuid;
+
+use crate::domain::errors::session_errors::SessionErrors;
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct SessionId {
     id: Uuid,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum SessionErrorType {
-    InvalidUuid,
 }
 
 impl SessionId {
@@ -18,11 +15,11 @@ impl SessionId {
         Self { id: id }
     }
 
-    pub fn from_str(id: &str) -> Result<Self, SessionErrorType> {
+    pub fn from_str(id: &str) -> Result<Self, SessionErrors> {
         let id_result = Uuid::parse_str(id);
         let id = match id_result {
             Ok(uuid) => uuid,
-            Err(_error) => return Err(SessionErrorType::InvalidUuid),
+            Err(_error) => return Err(SessionErrors::InvalidSessionId),
         };
 
         Ok(Self { id: id })
