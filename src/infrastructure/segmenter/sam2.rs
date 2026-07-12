@@ -390,10 +390,10 @@ impl ImageSegmenter for Sam2Segmenter {
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
         let mut inference_context = SAM2InferenceContext::new(None);
 
-        for idx in 1..=input_points.len()-1 {
+        for idx in 1..=input_points.len() - 1 {
             let current_points = &input_points[..idx];
 
-            let temp_mask= self._inference(
+            let temp_mask = self._inference(
                 original_image,
                 static_context,
                 &inference_context,
@@ -406,10 +406,10 @@ impl ImageSegmenter for Sam2Segmenter {
         let current_points = input_points;
 
         let mask = self._inference(
-            original_image, 
-            static_context, 
-            &inference_context, 
-            current_points
+            original_image,
+            static_context,
+            &inference_context,
+            current_points,
         )?;
 
         let segmented_image = Self::_generate_image(&mask, original_image)?;
@@ -429,7 +429,7 @@ impl ImageSegmenter for Sam2Segmenter {
             image.image_size().height() as u32,
             img_data.clone(),
         )
-        .ok_or(SegmentationErrors::ImageLoadError(
+        .ok_or(SegmentationErrors::InitializeError(
             "It is not Raw RGB data".to_string(),
         ))?;
         let img = DynamicImage::ImageRgb8(rgb_image);
