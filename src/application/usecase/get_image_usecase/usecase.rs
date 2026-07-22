@@ -30,7 +30,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, input: GetImageInput) -> Result<GetImageOutput, ApplicationErrors> {
+    pub fn execute(&self, input: GetImageInput) -> Result<GetImageOutput, ApplicationErrors> {
         let (session_id, image_id, image_kind) = input.into_session_id_image_id_image_kind();
 
         let session: Session =

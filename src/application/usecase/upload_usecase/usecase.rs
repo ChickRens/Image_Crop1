@@ -61,7 +61,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
+    pub fn execute(&self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
         let input_image = input.into_image_data();
         let image_dto: LoadedImage = self.loader.load(input_image)?;
 

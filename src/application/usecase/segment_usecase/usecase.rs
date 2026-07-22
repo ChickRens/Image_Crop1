@@ -51,7 +51,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, input: SegmentInput) -> Result<SegmentOutput, ApplicationErrors> {
+    pub fn execute(&self, input: SegmentInput) -> Result<SegmentOutput, ApplicationErrors> {
         let (session_id, image_id, point) = input.into_parts();
         let original_image = self.image_repo.get(&image_id, ImageKind::Original).ok_or(
             ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),

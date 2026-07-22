@@ -54,7 +54,7 @@ where
         }
     }
 
-    pub fn execute(&mut self, redo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
+    pub fn execute(&self, redo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
         let session_id = redo_input.session_id();
         let session =
             self.session_repo
