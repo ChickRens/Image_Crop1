@@ -3,6 +3,6 @@ use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::image_kind::ImageKind;
 
 pub trait ImageRepository {
-    fn save(&mut self, image: Image, kind: ImageKind);
+    fn save(&self, image: Image, kind: ImageKind);
     fn get(&self, image_id: &ImageId, kind: ImageKind) -> Option<Image>;
 }

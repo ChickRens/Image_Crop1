@@ -6,12 +6,12 @@ pub trait EditingSessionRepository {
     type InferenceContext;
 
     fn save(
-        &mut self,
+        &self,
         session_id: &SessionId,
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     );
     fn get(
-        &mut self,
+        &self,
         session_id: &SessionId,
     ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>>;
 }
