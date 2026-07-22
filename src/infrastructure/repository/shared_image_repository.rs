@@ -1,5 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::domain::entity::image::Image;
 use crate::domain::repository::image_repository::ImageRepository;
@@ -9,23 +8,23 @@ use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory
 
 #[derive(Clone)]
 pub struct SharedImageRepository {
-    images: Rc<RefCell<ImageRepositoryInMemory>>,
+    images: Arc<ImageRepositoryInMemory>,
 }
 
 impl SharedImageRepository {
     pub fn new() -> Self {
         Self {
-            images: Rc::new(RefCell::new(ImageRepositoryInMemory::new())),
+            images: Arc::new(ImageRepositoryInMemory::new()),
         }
     }
 }
 
 impl ImageRepository for SharedImageRepository {
     fn get(&self, image_id: &ImageId, kind: ImageKind) -> Option<Image> {
-        self.images.borrow().get(image_id, kind)
+        self.images.get(image_id, kind)
     }
 
-    fn save(&mut self, image: Image, kind: ImageKind) {
-        self.images.borrow_mut().save(image, kind);
+    fn save(&self, image: Image, kind: ImageKind) {
+        self.images.save(image, kind);
     }
 }

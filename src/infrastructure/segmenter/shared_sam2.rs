@@ -1,5 +1,4 @@
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::interface::image_segmenter::ImageSegmenter;
@@ -12,7 +11,7 @@ type OrtResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[derive(Clone)]
 pub struct SharedSAM2Segmenter {
-    segmenter: Rc<RefCell<Sam2Segmenter>>,
+    segmenter: Arc<Sam2Segmenter>,
 }
 
 impl ImageSegmenter for SharedSAM2Segmenter {
@@ -26,13 +25,13 @@ impl ImageSegmenter for SharedSAM2Segmenter {
     // }
 
     fn segment(
-        &mut self,
+        &self,
         original_image: &Image,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
-        self.segmenter.borrow_mut().segment(
+        self.segmenter.segment(
             original_image,
             static_context,
             inference_context,
@@ -41,38 +40,38 @@ impl ImageSegmenter for SharedSAM2Segmenter {
     }
 
     fn rebuild(
-        &mut self,
+        &self,
         original_image: &Image,
         static_context: &Self::StaticContext,
         input_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmentationErrors> {
         self.segmenter
-            .borrow_mut()
             .rebuild(original_image, static_context, input_points)
     }
+
     fn prepare_inference_context(
-        &mut self,
+        &self,
         image: &Image,
     ) -> Result<Self::InferenceContext, SegmentationErrors> {
-        self.segmenter.borrow_mut().prepare_inference_context(image)
+        self.segmenter.prepare_inference_context(image)
     }
 
     fn prepare_static_context(
-        &mut self,
+        &self,
         image: &Image,
     ) -> Result<Self::StaticContext, SegmentationErrors> {
-        self.segmenter.borrow_mut().prepare_static_context(image)
+        self.segmenter.prepare_static_context(image)
     }
 }
 
 impl SharedSAM2Segmenter {
     pub fn new(model_dir: &str) -> OrtResult<Self> {
         // Self {
-        //     sessions: Rc::new(RefCell::new(SessionRepositoryInMemory::new())),
+        //     sessions: Arc::new(RwLock::new(SessionRepositoryInMemory::new())),
         // }
 
         Ok(Self {
-            segmenter: Rc::new(RefCell::new(Sam2Segmenter::new(model_dir)?)),
+            segmenter: Arc::new(Sam2Segmenter::new(model_dir)?),
         })
     }
 }
