@@ -20,7 +20,10 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
         session_id: &SessionId,
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     ) {
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self
+            .sessions
+            .lock()
+            .expect("EditingSessionRepository Mutex is Poisoned");
         sessions.insert(*session_id, editing_session);
     }
 
@@ -28,7 +31,10 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
         &self,
         session_id: &SessionId,
     ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self
+            .sessions
+            .lock()
+            .expect("EditingSessionRepository Mutex is Poisoned");
         sessions.remove(session_id)
     }
 }

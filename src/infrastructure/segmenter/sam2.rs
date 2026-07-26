@@ -63,11 +63,12 @@ impl Sam2Segmenter {
     {
         let (shape, data) = onnx_output[name]
             .try_extract_tensor::<OutputType>()
-            .unwrap();
+            .expect("Failed to extract tensor from ONNX output");
 
         let dims: Vec<usize> = shape.iter().map(|x| *x as usize).collect();
 
-        Array4::from_shape_vec(Ix4(dims[0], dims[1], dims[2], dims[3]), data.to_vec()).unwrap()
+        Array4::from_shape_vec(Ix4(dims[0], dims[1], dims[2], dims[3]), data.to_vec())
+            .expect("Failed to create Array4 from tensor data")
     }
 
     fn _tensor_to_array3<OutputType>(onnx_output: &SessionOutputs, name: &str) -> Array3<OutputType>
@@ -76,18 +77,22 @@ impl Sam2Segmenter {
     {
         let (shape, data) = onnx_output[name]
             .try_extract_tensor::<OutputType>()
-            .unwrap();
+            .expect("Failed to extract tensor from ONNX output");
 
         let dims: Vec<usize> = shape.iter().map(|x| *x as usize).collect();
 
-        Array3::from_shape_vec(Ix3(dims[0], dims[1], dims[2]), data.to_vec()).unwrap()
+        Array3::from_shape_vec(Ix3(dims[0], dims[1], dims[2]), data.to_vec())
+            .expect("Failed to create Array3 from tensor data")
     }
 
     fn _encode_image(
         &self,
         original_image: &DynamicImage,
     ) -> ort::Result<(ImageEmbeddings, HighResFeatureS0, HighResFeatureS1)> {
-        let mut session = self.image_encoder_session.lock().unwrap();
+        let mut session = self
+            .image_encoder_session
+            .lock()
+            .expect("ImageEncoderSession Mutex is Poisoned");
 
         let resized_image =
             original_image.resize_exact(1024, 1024, image::imageops::FilterType::CatmullRom);
@@ -161,7 +166,10 @@ impl Sam2Segmenter {
         // name: masks
         // tensor: float32[1,1,256,256]
 
-        let mut session = self.prompt_encoder_session.lock().unwrap();
+        let mut session = self
+            .prompt_encoder_session
+            .lock()
+            .expect("PromptEncoderSession Mutex is Poisoned");
 
         let mut input_coords: ArrayBase<OwnedRepr<f32>, Dim<[usize; 3]>, f32> =
             Array::zeros((1, points_coords.len(), 2));
@@ -251,7 +259,10 @@ impl Sam2Segmenter {
         // name: object_score_logits
         // tensor: float32[1,1]
 
-        let mut session = self.mask_decoder_session.lock().unwrap();
+        let mut session = self
+            .mask_decoder_session
+            .lock()
+            .expect("MaskDecoderSession Mutex is Poisoned");
 
         let input_image_embeddings: ArrayBase<ViewRepr<&f32>, Dim<[usize; 4]>, f32> =
             image_embeddings.view();

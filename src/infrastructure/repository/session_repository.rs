@@ -11,12 +11,18 @@ pub struct SessionRepositoryInMemory {
 
 impl SessionRepository for SessionRepositoryInMemory {
     fn save(&self, session: Session) {
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self
+            .sessions
+            .lock()
+            .expect("SessionRepositoryInMemory is Poisoned");
         sessions.insert(session.session_id().clone(), session);
     }
 
     fn get(&self, session_id: &SessionId) -> Option<Session> {
-        let sessions = self.sessions.lock().unwrap();
+        let sessions = self
+            .sessions
+            .lock()
+            .expect("SessionRepositoryInMemory is Poisoned");
         sessions.get(session_id).cloned()
     }
 }

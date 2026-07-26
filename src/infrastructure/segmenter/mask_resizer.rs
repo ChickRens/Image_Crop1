@@ -1,5 +1,3 @@
-use std::time;
-
 use ndarray::{Array4, Axis};
 
 pub struct SAM2MaskResizer;
@@ -10,7 +8,9 @@ impl SAM2MaskResizer {
         let mask = mask.index_axis(Axis(0), 0);
         let mask = mask.index_axis(Axis(0), 0);
 
-        let input = mask.as_slice().unwrap();
+        let input = mask
+            .as_slice()
+            .expect("Resizer requires contiguous ArrayView4");
 
         println!("batch       : {:?}", batch);
         println!("channel     : {:?}", channel);
@@ -21,7 +21,9 @@ impl SAM2MaskResizer {
         let mut output_view = output.index_axis_mut(Axis(0), 0);
         let mut output_view = output_view.index_axis_mut(Axis(0), 0);
 
-        let output_slice = output_view.as_slice_mut().unwrap();
+        let output_slice = output_view
+            .as_slice_mut()
+            .expect("Resizer requires contiguous ArrayView4");
 
         for y in 0..target_h {
             let src_y = (y as f32 + 0.5) * src_h as f32 / target_h as f32 - 0.5;
