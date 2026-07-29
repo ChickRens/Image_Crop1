@@ -1,6 +1,7 @@
-use crate::{
-    application::errors::application_errors::Code,
-    domain::errors::{image_errors::ImageErrors, session_errors::SessionErrors},
+use crate::domain::errors::{
+    image_errors::ImageErrors,
+    session_errors::SessionErrors,
+    traits::{Cause, Code},
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,6 +15,15 @@ impl Code for DomainErrors {
         match self {
             Self::ImageError(err) => err.code(),
             Self::SessionError(err) => err.code(),
+        }
+    }
+}
+
+impl Cause for DomainErrors {
+    fn cause(&self) -> Option<&str> {
+        match self {
+            Self::ImageError(err) => err.cause(),
+            Self::SessionError(err) => err.cause()
         }
     }
 }

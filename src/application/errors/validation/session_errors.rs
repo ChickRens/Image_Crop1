@@ -1,4 +1,4 @@
-use crate::application::errors::application_errors::Code;
+use crate::domain::errors::traits::{Cause, Code};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum SessionErrors {
@@ -11,6 +11,15 @@ impl Code for SessionErrors {
         match self {
             Self::TimeOut => "INVALID_SESSION",
             Self::ImageNotOwned => "NOT_OWNED_IMAGE",
+        }
+    }
+}
+
+impl Cause for SessionErrors {
+    fn cause(&self) -> Option<&str> {
+        match self {
+            Self::ImageNotOwned => None,
+            Self::TimeOut => None,
         }
     }
 }

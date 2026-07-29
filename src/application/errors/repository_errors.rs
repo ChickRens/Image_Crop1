@@ -1,4 +1,4 @@
-use crate::application::errors::application_errors::Code;
+use crate::domain::errors::traits::Code;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum RepositoryErrors {

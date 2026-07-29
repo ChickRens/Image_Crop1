@@ -1,6 +1,6 @@
-use crate::application::errors::application_errors::Code;
 use crate::application::errors::validation::segment_input_errors::SegmentInputErrors;
 use crate::application::errors::validation::session_errors::SessionErrors;
+use crate::domain::errors::traits::{Cause, Code};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ValidationErrors {
@@ -25,6 +25,15 @@ impl Code for ValidationErrors {
         match self {
             Self::Points(err) => err.code(),
             Self::Session(err) => err.code(),
+        }
+    }
+}
+
+impl Cause for ValidationErrors {
+    fn cause(&self) -> &str {
+        match self {
+            Self::Points(err) => err.cause(),
+            Self::Session(err) => err.cause()
         }
     }
 }

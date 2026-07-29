@@ -3,10 +3,7 @@ use crate::application::errors::repository_errors::RepositoryErrors;
 use crate::application::errors::segmentation_error::SegmentationErrors;
 use crate::application::errors::validation_errors::ValidationErrors;
 use crate::domain::errors::domain_errors::DomainErrors;
-
-pub trait Code {
-    fn code(&self) -> &str;
-}
+use crate::domain::errors::traits::Code;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum ApplicationErrors {
