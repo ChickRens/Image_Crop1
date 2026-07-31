@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use crate::application::interface::editing_session_repository::EditingSessionRepository;
+use crate::application::interface::editing_session_repository::error::EditingSessionRepositoryError;
+use crate::application::interface::editing_session_repository::repository::EditingSessionRepository;
 use crate::application::types::editing_session::CommonEditingSession;
 use crate::domain::value_object::session_id::SessionId;
 use crate::infrastructure::repository::editing_session_repository::SAM2EditingSessionRepository;
@@ -26,7 +27,7 @@ impl EditingSessionRepository for SharedEditingSessionRepository {
     fn get(
         &self,
         session_id: &SessionId,
-    ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
+    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, EditingSessionRepositoryError> {
         self.sessions.get(session_id)
     }
 

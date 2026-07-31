@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use crate::domain::entity::session::Session;
-use crate::domain::repository::session_repository::SessionRepository;
+use crate::domain::repository::session_repository::error::SessionRepositoryError;
+use crate::domain::repository::session_repository::repository::SessionRepository;
 use crate::domain::value_object::session_id::SessionId;
 use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
 
@@ -14,7 +15,7 @@ impl SessionRepository for SharedSessionRepository {
     fn save(&self, session: Session) {
         self.sessions.save(session);
     }
-    fn get(&self, session_id: &SessionId) -> Option<Session> {
+    fn get(&self, session_id: &SessionId) -> Result<Session, SessionRepositoryError> {
         self.sessions.get(session_id)
     }
 }

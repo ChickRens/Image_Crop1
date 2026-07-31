@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use crate::application::interface::editing_session_repository::EditingSessionRepository;
+use crate::application::interface::editing_session_repository::error::EditingSessionRepositoryError;
+use crate::application::interface::editing_session_repository::repository::EditingSessionRepository;
 use crate::application::types::editing_session::CommonEditingSession;
 use crate::domain::value_object::session_id::SessionId;
 use crate::infrastructure::segmenter::sam2_data::{SAM2InferenceContext, SAM2StaticContext};
@@ -30,12 +31,13 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
     fn get(
         &self,
         session_id: &SessionId,
-    ) -> Option<CommonEditingSession<Self::StaticContext, Self::InferenceContext>> {
+    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, EditingSessionRepositoryError>
+    {
         let mut sessions = self
             .sessions
             .lock()
             .expect("EditingSessionRepository Mutex is Poisoned");
-        sessions.remove(session_id)
+        sessions.remove(session_id).ok_or(EditingSessionRepositoryError::EditingSessionNotFound)
     }
 }
 

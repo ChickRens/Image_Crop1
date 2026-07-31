@@ -1,7 +1,8 @@
 use std::sync::Arc;
 
 use crate::domain::entity::image::Image;
-use crate::domain::repository::image_repository::ImageRepository;
+use crate::domain::repository::image_repository::error::ImageRepositoryError;
+use crate::domain::repository::image_repository::repository::ImageRepository;
 use crate::domain::value_object::image_id::ImageId;
 use crate::domain::value_object::image_kind::ImageKind;
 use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;
@@ -20,7 +21,7 @@ impl SharedImageRepository {
 }
 
 impl ImageRepository for SharedImageRepository {
-    fn get(&self, image_id: &ImageId, kind: ImageKind) -> Option<Image> {
+    fn get(&self, image_id: &ImageId, kind: ImageKind) -> Result<Image, ImageRepositoryError> {
         self.images.get(image_id, kind)
     }
 

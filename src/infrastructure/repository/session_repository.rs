@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 
 use crate::domain::entity::session::Session;
-use crate::domain::repository::session_repository::SessionRepository;
+use crate::domain::repository::session_repository::error::SessionRepositoryError;
+use crate::domain::repository::session_repository::repository::SessionRepository;
 use crate::domain::value_object::session_id::SessionId;
 
 pub struct SessionRepositoryInMemory {
@@ -18,12 +19,12 @@ impl SessionRepository for SessionRepositoryInMemory {
         sessions.insert(session.session_id().clone(), session);
     }
 
-    fn get(&self, session_id: &SessionId) -> Option<Session> {
+    fn get(&self, session_id: &SessionId) -> Result<Session, SessionRepositoryError> {
         let sessions = self
             .sessions
             .lock()
             .expect("SessionRepositoryInMemory is Poisoned");
-        sessions.get(session_id).cloned()
+        sessions.get(session_id).cloned().ok_or(SessionRepositoryError::SessionNotFound)
     }
 }
 
