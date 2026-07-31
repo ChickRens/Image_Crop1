@@ -1,5 +1,5 @@
-use crate::application::errors::segmentation_error::SegmentationErrors;
-use crate::application::interface::image_segmenter::ImageSegmenter;
+use crate::application::interface::image_segmenter::error::SegmentationErrors;
+use crate::application::interface::image_segmenter::segmenter::ImageSegmenter;
 use crate::application::types::segmented_image::SegmentedImage;
 use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_data::ImageData;
