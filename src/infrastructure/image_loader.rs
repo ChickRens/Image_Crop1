@@ -1,5 +1,5 @@
-use crate::application::errors::loading_errors::LoadingErrors;
-use crate::application::interface::image_loader::ImageLoader;
+use crate::application::interface::image_loader::error::LoadingErrors;
+use crate::application::interface::image_loader::loader::ImageLoader;
 use crate::application::types::loaded_image::LoadedImage;
 use crate::domain::entity::image::Image;
 use crate::domain::value_object::image_data::ImageData;
