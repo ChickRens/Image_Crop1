@@ -1,5 +1,5 @@
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::session_id::SessionId;
+use crate::domain::value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId};
+
 
 pub struct RedoOutput {
     session_id: SessionId,

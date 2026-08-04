@@ -1,6 +1,4 @@
-use crate::domain::value_object::image_data::ImageData;
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::image_size::ImageSize;
+use crate::domain::value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Image {

@@ -1,6 +1,4 @@
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::image_kind::ImageKind;
-use crate::domain::value_object::session_id::SessionId;
+use crate::domain::value_object::{image_id::image_id::ImageId, image_kind::ImageKind, session_id::session_id::SessionId};
 
 pub struct GetImageInput {
     session_id: SessionId,
