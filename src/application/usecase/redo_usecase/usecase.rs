@@ -1,18 +1,4 @@
-use crate::{
-    application::{
-        errors::{application_errors::ApplicationErrors, repository_errors::RepositoryErrors},
-        interface::{
-            editing_session_repository::EditingSessionRepository, image_segmenter::ImageSegmenter,
-        },
-        types::editing_session::EditingSession,
-        usecase::redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput},
-    },
-    domain::{
-        entity::image::Image,
-        repository::{image_repository::ImageRepository, session_repository::SessionRepository},
-        value_object::{image_id::ImageId, image_kind::ImageKind},
-    },
-};
+use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter}, types::editing_session::EditingSession, usecase::redo_usecase::{error::RedoUseCaseError, redo_input::RedoInput, redo_output::RedoOutput}}, domain::{entity::image::image::Image, repository::{image_repository::repository::ImageRepository, session_repository::repository::SessionRepository}, value_object::image_id::image_id::ImageId}};
 
 pub struct RedoUseCase<SR, IR, IS, ESR>
 where
@@ -54,23 +40,14 @@ where
         }
     }
 
-    pub fn execute(&self, redo_input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
+    pub fn execute(&self, redo_input: RedoInput) -> Result<RedoOutput, RedoUseCaseError> {
         let session_id = redo_input.session_id();
-        let session =
-            self.session_repo
-                .get(&session_id)
-                .ok_or(ApplicationErrors::RepositoryError(
-                    RepositoryErrors::SessionNotFound,
-                ))?;
+        let session = self.session_repo.get(&session_id)?;
 
         let image_id = session.image_id();
-        let image = self.image_repo.get(image_id, ImageKind::Original).ok_or(
-            ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
-        )?;
+        let image = self.image_repo.get(image_id)?;
 
-        let mut editing_session = self.editing_session_repo.get(&session_id).ok_or(
-            ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
-        )?;
+        let mut editing_session = self.editing_session_repo.get(&session_id)?;
 
         editing_session.redo();
         let points = editing_session.points();
@@ -88,11 +65,10 @@ where
         self.editing_session_repo.save(&session_id, editing_session);
 
         self.image_repo.save(
-            Image::new(segmented_image_data, segmented_image_id, size),
-            ImageKind::Segmented,
+            Image::new(segmented_image_data, segmented_image_id, size)
         );
 
-        let output = RedoOutput::new(session_id, segmented_image_id);
+        let output = RedoOutput::new(segmented_image_id);
         Ok(output)
     }
 }
