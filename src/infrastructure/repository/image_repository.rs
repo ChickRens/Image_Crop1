@@ -1,14 +1,14 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use crate::domain::{entity::image::image::Image, repository::image_repository::{error::ImageRepositoryError, repository::ImageRepository}, value_object::{image_id::image_id::ImageId, image_kind::ImageKind}};
+use crate::domain::{entity::image::image::Image, repository::image_repository::{error::ImageRepositoryError, repository::ImageRepository}, value_object::{image_id::image_id::ImageId}};
 
 pub struct ImageRepositoryInMemory {
-    images: Mutex<HashMap<(ImageId, ImageKind), Image>>,
+    images: Mutex<HashMap<ImageId, Image>>,
 }
 
 impl ImageRepository for ImageRepositoryInMemory {
-    fn save(&self, image: Image, kind: ImageKind) {
-        let key = (*image.image_id(), kind);
+    fn save(&self, image: Image) {
+        let key = *image.image_id();
         let mut images = self
             .images
             .lock()
@@ -16,12 +16,12 @@ impl ImageRepository for ImageRepositoryInMemory {
         images.insert(key, image);
     }
 
-    fn get(&self, image_id: &ImageId, kind: ImageKind) -> Result<Image, ImageRepositoryError> {
+    fn get(&self, image_id: &ImageId) -> Result<Image, ImageRepositoryError> {
         let images = self
             .images
             .lock()
             .expect("ImageRepositoryInMemory is Poisoned");
-        images.get(&(image_id.clone(), kind)).cloned().ok_or(ImageRepositoryError::ImageNotFound)
+        images.get(&image_id.clone()).cloned().ok_or(ImageRepositoryError::ImageNotFound)
     }
 }
 
