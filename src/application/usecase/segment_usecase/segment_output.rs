@@ -1,19 +1,17 @@
-use crate::domain::value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId};
+use crate::domain::value_object::image_id::image_id::ImageId;
 
 pub struct SegmentOutput {
-    session_id: SessionId,
     image_id: ImageId,
 }
 
 impl SegmentOutput {
-    pub fn new(session_id: SessionId, image_id: ImageId) -> Self {
+    pub fn new(image_id: ImageId) -> Self {
         Self {
-            session_id,
             image_id,
         }
     }
 
-    pub fn into_session_id_and_image_id(self) -> (SessionId, ImageId) {
-        (self.session_id, self.image_id)
+    pub fn image_id(&self) -> ImageId {
+        self.image_id
     }
 }

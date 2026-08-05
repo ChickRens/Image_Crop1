@@ -1,15 +1,4 @@
-use crate::application::errors::application_errors::ApplicationErrors;
-use crate::application::errors::repository_errors::RepositoryErrors;
-use crate::application::interface::editing_session_repository::EditingSessionRepository;
-use crate::application::interface::image_segmenter::ImageSegmenter;
-use crate::application::types::editing_session::EditingSession;
-use crate::application::usecase::segment_usecase::segment_input::SegmentInput;
-use crate::application::usecase::segment_usecase::segment_output::SegmentOutput;
-use crate::domain::entity::image::Image;
-use crate::domain::repository::image_repository::ImageRepository;
-use crate::domain::repository::session_repository::SessionRepository;
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::image_kind::ImageKind;
+use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter}, types::editing_session::EditingSession, usecase::segment_usecase::{error::SegmentUseCaseError, segment_input::SegmentInput, segment_output::SegmentOutput}}, domain::{entity::image::image::Image, repository::{image_repository::repository::ImageRepository, session_repository::repository::SessionRepository}, value_object::image_id::image_id::ImageId}};
 
 pub struct SegmentUseCase<SR, IR, IS, ESR>
 where
@@ -51,15 +40,14 @@ where
         }
     }
 
-    pub fn execute(&self, input: SegmentInput) -> Result<SegmentOutput, ApplicationErrors> {
-        let (session_id, image_id, point) = input.into_parts();
-        let original_image = self.image_repo.get(&image_id, ImageKind::Original).ok_or(
-            ApplicationErrors::RepositoryError(RepositoryErrors::ImageNotFound),
-        )?;
+    pub fn execute(&self, input: SegmentInput) -> Result<SegmentOutput, SegmentUseCaseError> {
+        let (session_id, point) = input.into_parts();
+        let session = self.session_repo.get(&session_id)?;
+        let image_id = session.image_id();
 
-        let mut editing_session = self.editing_session_repo.get(&session_id).ok_or(
-            ApplicationErrors::RepositoryError(RepositoryErrors::SessionNotFound),
-        )?;
+        let original_image = self.image_repo.get(image_id)?;
+
+        let mut editing_session = self.editing_session_repo.get(&session_id)?;
 
         editing_session.add_point(point);
 
@@ -78,10 +66,9 @@ where
 
         self.image_repo.save(
             Image::new(segmented_image_data, segmented_image_id, size),
-            ImageKind::Segmented,
         );
 
-        let output = SegmentOutput::new(session_id, segmented_image_id);
+        let output = SegmentOutput::new(segmented_image_id);
         Ok(output)
     }
 }
