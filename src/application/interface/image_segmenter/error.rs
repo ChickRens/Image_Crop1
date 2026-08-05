@@ -1,16 +1,9 @@
-use crate::domain::errors::traits::Code;
+use crate::leaf_detail_error;
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum SegmentationErrors {
-    InferenceError(String),
-    InitializeError(String),
-}
-
-impl Code for SegmentationErrors {
-    fn code(&self) -> &str {
-        match self {
-            Self::InferenceError(_) => "INFERENCE_ERROR",
-            Self::InitializeError(_) => "INITIALIZE_ERROR",
-        }
+leaf_detail_error!(
+    pub enum SegmenterError {
+        ModelLoadError => "MODEL_LOAD_ERROR",
+        InferenceError => "INFERENCE_ERROR",
+        PreProcessError => "PREPROCESS_ERROR",
     }
-}
+);

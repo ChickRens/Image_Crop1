@@ -13,9 +13,9 @@ pub struct FileImageLoader;
 impl ImageLoader for FileImageLoader {
     fn load(&self, data: Vec<u8>) -> Result<LoadedImage, LoadingError> {
         let img: DynamicImage = image::load_from_memory(&data).map_err(|err| match err {
-            ImageError::Unsupported(_) => LoadingError::UnsupportedFormat,
-            ImageError::Decoding(_) => LoadingError::CorruptedImage,
-            _ => LoadingError::CorruptedImage,
+            ImageError::Unsupported(e) => LoadingError::UnsupportedFormat(e.to_string()),
+            ImageError::Decoding(e) => LoadingError::CorruptedImage(e.to_string()),
+            error => LoadingError::CorruptedImage(error.to_string()),
         })?;
 
         let width: u32 = img.width();
