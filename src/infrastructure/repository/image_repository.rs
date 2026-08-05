@@ -1,11 +1,6 @@
-use std::collections::HashMap;
-use std::sync::Mutex;
+use std::{collections::HashMap, sync::Mutex};
 
-use crate::domain::entity::image::Image;
-use crate::domain::repository::image_repository::error::ImageRepositoryError;
-use crate::domain::repository::image_repository::repository::ImageRepository;
-use crate::domain::value_object::image_id::image_id::ImageId;
-use crate::domain::value_object::image_kind::ImageKind;
+use crate::domain::{entity::image::image::Image, repository::image_repository::{error::ImageRepositoryError, repository::ImageRepository}, value_object::{image_id::image_id::ImageId, image_kind::ImageKind}};
 
 pub struct ImageRepositoryInMemory {
     images: Mutex<HashMap<(ImageId, ImageKind), Image>>,
