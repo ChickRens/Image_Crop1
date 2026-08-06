@@ -1,7 +1,7 @@
 use crate::leaf_error;
 
 leaf_error!(
-    pub enum ImageRepositoryError {
+    pub enum OriginalImageRepositoryError {
         ImageNotFound => "IMAGE_NOT_FOUND",
     }
 );
