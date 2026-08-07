@@ -1,26 +1,26 @@
-use crate::{application::usecase::get_image_usecase::{error::GetImageUseCaseError, get_image_input::GetImageInput, get_image_output::GetImageOutput}, domain::repository::image_repository::repository::ImageRepository};
+use crate::application::{interface::rendered_image_cache::cache::RenderedImageCache, usecase::get_image_usecase::{error::GetImageUseCaseError, get_image_input::GetImageInput, get_image_output::GetImageOutput}};
 
-pub struct GetImageUseCase<IR>
+pub struct GetImageUseCase<IC>
 where
-    IR: ImageRepository,
+    IC: RenderedImageCache,
 {
-    image_repo: IR,
+    image_cache: IC,
 }
 
-impl<IR> GetImageUseCase<IR>
+impl<IC> GetImageUseCase<IC>
 where
-    IR: ImageRepository,
+    IC: RenderedImageCache,
 {
-    pub fn new(image_repository: IR) -> Self {
+    pub fn new(image_cache: IC) -> Self {
         Self {
-            image_repo: image_repository,
+            image_cache,
         }
     }
 
     pub fn execute(&self, input: GetImageInput) -> Result<GetImageOutput, GetImageUseCaseError> {
         let image_id = input.image_id();
 
-        let image = self.image_repo.get(&image_id)?;
+        let image = self.image_cache.take(image_id)?;
 
         let (data, _id, _size) = image.into_data();
         let output= GetImageOutput::new(data.into_image());
