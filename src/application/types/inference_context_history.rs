@@ -1,13 +1,11 @@
-use crate::domain::value_object::point::Point;
-
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct PointHistory {
-    items: Vec<Point>,
+pub struct InferenceContextHistory<T> {
+    items: Vec<T>,
     current_index: usize,
     max_items: usize,
 }
 
-impl PointHistory {
+impl<T> InferenceContextHistory<T> {
     pub fn new(max_history: usize) -> Self {
         Self {
             items: vec![],
@@ -16,7 +14,7 @@ impl PointHistory {
         }
     }
 
-    pub fn add(&mut self, item: Point) {
+    pub fn add(&mut self, item: T) {
         // current_index以降の履歴を削除（redo履歴を破棄）
         self.items.truncate(self.current_index);
         self.items.push(item);
@@ -24,8 +22,8 @@ impl PointHistory {
         self.current_index = self.items.len();
     }
 
-    pub fn current(&self) -> &[Point] {
-        &self.items[0..self.current_index]
+    pub fn current(&self) -> &T {
+        &self.items[self.current_index]
     }
 
     pub fn can_undo(&self) -> bool {
@@ -34,7 +32,7 @@ impl PointHistory {
         }
         true
     }
-
+    
     pub fn undo(&mut self) {
         self.current_index -= 1;
     }
