@@ -1,1 +1,1 @@
-pub mod inference_context_cache;
+pub mod rendered_image_cache;
