@@ -1,25 +1,9 @@
-use crate::application::errors::application_errors::ApplicationErrors;
-use crate::application::interface::editing_session_repository::EditingSessionRepository;
-use crate::application::interface::image_loader::ImageLoader;
-use crate::application::interface::image_segmenter::ImageSegmenter;
-use crate::application::types::editing_session::CommonEditingSession;
-use crate::application::types::loaded_image::LoadedImage;
-use crate::application::types::point_history::PointHistory;
-use crate::application::usecase::config::MAX_HISTORY;
-use crate::application::usecase::upload_usecase::upload_input::UploadInput;
-use crate::application::usecase::upload_usecase::upload_output::UploadOutput;
-use crate::domain::entity::image::Image;
-use crate::domain::entity::session::Session;
-use crate::domain::repository::image_repository::ImageRepository;
-use crate::domain::repository::session_repository::SessionRepository;
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::image_kind::ImageKind;
-use crate::domain::value_object::session_id::SessionId;
+use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter}, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory}, usecase::{config::MAX_HISTORY, upload_usecase::{error::UploadUseCaseError, upload_input::UploadInput, upload_output::UploadOutput}}}, domain::{entity::session::session::Session, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}};
 
 pub struct UploadUseCase<SR, IR, LD, IS, ESR>
 where
     SR: SessionRepository,
-    IR: ImageRepository,
+    IR: OriginalImageRepository,
     LD: ImageLoader,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
@@ -37,7 +21,7 @@ where
 impl<SR, IR, LD, IS, ESR> UploadUseCase<SR, IR, LD, IS, ESR>
 where
     SR: SessionRepository,
-    IR: ImageRepository,
+    IR: OriginalImageRepository,
     LD: ImageLoader,
     IS: ImageSegmenter,
     ESR: EditingSessionRepository<
@@ -61,24 +45,28 @@ where
         }
     }
 
-    pub fn execute(&self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
+    pub fn execute(&self, input: UploadInput) -> Result<UploadOutput, UploadUseCaseError> {
         let input_image = input.into_image_data();
-        let image_dto: LoadedImage = self.loader.load(input_image)?;
+        let loaded_image = self.loader.load(input_image)?;
 
-        let image_id: ImageId = ImageId::new();
+        let image_id= ImageId::new();
 
-        let image: Image = image_dto.into_image();
+        let image = loaded_image.into_image();
 
-        let session_id: SessionId = SessionId::new();
-        let session: Session = Session::new(session_id, image_id);
+        let session_id = SessionId::new();
+        let session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
         let inference_context = self.segmenter.prepare_inference_context(&image)?;
         let static_context = self.segmenter.prepare_static_context(&image)?;
-        let history = PointHistory::new(MAX_HISTORY);
-        let editing_session = CommonEditingSession::new(history, static_context, inference_context);
 
-        self.image_repo.save(image, ImageKind::Original);
+        let point_history = PointHistory::new(MAX_HISTORY);
+        let context_history = InferenceContextHistory::new(MAX_HISTORY);
+        
+        let mut editing_session = CommonEditingSession::new(point_history, static_context, context_history);
+        editing_session.update_inference_context(inference_context);
+
+        self.image_repo.save(image);
         self.editing_session_repo.save(&session_id, editing_session);
 
         let output = UploadOutput::new(session_id, image_id);
