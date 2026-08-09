@@ -1,6 +1,6 @@
 use crate::{common::traits::{Cause, Code}, domain::value_object::image_size::error::ImageSizeError};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoadingError {
     ImageSize(ImageSizeError),
     UnsupportedFormat(String),
