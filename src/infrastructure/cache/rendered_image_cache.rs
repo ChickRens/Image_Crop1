@@ -17,3 +17,9 @@ impl RenderedImageCache for RenderedImageCacheInMemory {
         caches.remove(&id).ok_or(RenderedCacheError::ImageNotFound)
     }
 }
+
+impl RenderedImageCacheInMemory {
+    pub fn new() -> Self {
+        Self { caches: Mutex::new(HashMap::new()) }
+    }
+}
