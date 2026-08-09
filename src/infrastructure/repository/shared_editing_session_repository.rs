@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::application::interface::editing_session_repository::error::EditingSessionRepositoryError;
 use crate::application::interface::editing_session_repository::repository::EditingSessionRepository;
-use crate::application::types::editing_session::CommonEditingSession;
+use crate::application::types::editing_session::session::CommonEditingSession;
 use crate::domain::value_object::session_id::session_id::SessionId;
 use crate::infrastructure::repository::editing_session_repository::SAM2EditingSessionRepository;
 use crate::infrastructure::segmenter::sam2_data::{SAM2InferenceContext, SAM2StaticContext};

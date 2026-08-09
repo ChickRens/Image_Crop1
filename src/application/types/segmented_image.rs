@@ -1,5 +1,4 @@
-use crate::domain::value_object::image_data::ImageData;
-use crate::domain::value_object::image_size::ImageSize;
+use crate::domain::value_object::{image_data::ImageData, image_size::image_size::ImageSize};
 
 pub struct SegmentedImage {
     image: ImageData,
