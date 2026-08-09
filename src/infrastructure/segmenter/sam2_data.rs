@@ -1,6 +1,6 @@
 use ndarray::{Array3, Array4, ArrayBase, ArrayView3, ArrayView4, Dim, OwnedRepr};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ImageEmbeddings {
     value: Array4<f32>,
 }
@@ -15,7 +15,7 @@ impl ImageEmbeddings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct HighResFeatureS0 {
     value: Array4<f32>,
 }
@@ -30,7 +30,7 @@ impl HighResFeatureS0 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct HighResFeatureS1 {
     value: Array4<f32>,
 }
@@ -45,7 +45,7 @@ impl HighResFeatureS1 {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SAM2StaticContext {
     image_embeddings: ImageEmbeddings,
     high_res_feature_s0: HighResFeatureS0,
@@ -74,7 +74,7 @@ impl SAM2StaticContext {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SparseEmbeddings {
     value: Array3<f32>,
 }
@@ -89,7 +89,7 @@ impl SparseEmbeddings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct DenseEmbeddings {
     value: Array4<f32>,
 }
@@ -104,7 +104,7 @@ impl DenseEmbeddings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Mask {
     value: Array4<f32>,
 }
@@ -123,7 +123,7 @@ impl Mask {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SAM2InferenceContext {
     masks: Option<Mask>,
 }

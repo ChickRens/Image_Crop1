@@ -1,5 +1,6 @@
 use crate::{application::types::{editing_session::error::EditingSessionError, inference_context_history::InferenceContextHistory, point_history::PointHistory}, domain::value_object::point::Point};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct CommonEditingSession<StaticContext, InferenceContext> {
     point_history: PointHistory,
     static_context: StaticContext,
