@@ -1,7 +1,6 @@
 use crate::{
     application::{
-        errors::{application_errors::ApplicationErrors, segmentation_error::SegmentationErrors},
-        usecase::{
+        error::ApplicationError, usecase::{
             get_image_usecase::{
                 get_image_input::GetImageInput, get_image_output::GetImageOutput,
                 usecase::GetImageUseCase,
@@ -15,55 +14,55 @@ use crate::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
             },
         },
-    },
-    infrastructure::{
-        image_loader::FileImageLoader,
-        repository::{
+    }, infrastructure::{
+        cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory, image_loader::FileImageLoader, repository::{
             shared_editing_session_repository::SharedEditingSessionRepository,
-            shared_image_repository::SharedImageRepository,
+            shared_image_repository::SharedOriginalImageRepository,
             shared_session_repository::SharedSessionRepository,
-        },
-        segmenter::shared_sam2::SharedSAM2Segmenter,
+        }, segmenter::shared_sam2::SharedSAM2Segmenter,
     },
 };
 
 pub struct App {
     upload_usecase: UploadUseCase<
         SharedSessionRepository,
-        SharedImageRepository,
+        SharedOriginalImageRepository,
         FileImageLoader,
         SharedSAM2Segmenter,
         SharedEditingSessionRepository,
     >,
     segment_usecase: SegmentUseCase<
         SharedSessionRepository,
-        SharedImageRepository,
+        SharedOriginalImageRepository,
         SharedSAM2Segmenter,
         SharedEditingSessionRepository,
+        SharedRenderedImageCacheInMemory,
     >,
     undo_usecase: UndoUseCase<
         SharedSessionRepository,
-        SharedImageRepository,
+        SharedOriginalImageRepository,
         SharedSAM2Segmenter,
         SharedEditingSessionRepository,
+        SharedRenderedImageCacheInMemory,
     >,
     redo_usecase: RedoUseCase<
         SharedSessionRepository,
-        SharedImageRepository,
+        SharedOriginalImageRepository,
         SharedSAM2Segmenter,
         SharedEditingSessionRepository,
+        SharedRenderedImageCacheInMemory,
     >,
-    get_image_usecase: GetImageUseCase<SharedSessionRepository, SharedImageRepository>,
+    get_image_usecase: GetImageUseCase<SharedRenderedImageCacheInMemory>,
 }
 
 impl App {
-    pub fn new() -> Result<Self, ApplicationErrors> {
+    pub fn new() -> Result<Self, ApplicationError> {
         let session_repo = SharedSessionRepository::new();
-        let image_repo = SharedImageRepository::new();
+        let image_repo = SharedOriginalImageRepository::new();
         let loader = FileImageLoader::new();
-        let segmenter = SharedSAM2Segmenter::new("models")
-            .map_err(|err| SegmentationErrors::InitializeError(err.to_string()))?;
+        let segmenter = SharedSAM2Segmenter::new("models").expect("Failed to load SAM2 model during app initialize");
         let editing_session_repo = SharedEditingSessionRepository::new();
+        let image_cache = SharedRenderedImageCacheInMemory::new();
 
         let upload_uc = UploadUseCase::new(
             session_repo.clone(),
@@ -77,20 +76,24 @@ impl App {
             image_repo.clone(),
             segmenter.clone(),
             editing_session_repo.clone(),
+            image_cache.clone(),
         );
         let undo_uc = UndoUseCase::new(
             session_repo.clone(),
             image_repo.clone(),
             segmenter.clone(),
             editing_session_repo.clone(),
+            image_cache.clone(),
         );
         let redo_uc = RedoUseCase::new(
             session_repo.clone(),
             image_repo.clone(),
             segmenter.clone(),
             editing_session_repo.clone(),
+            image_cache.clone(),
+
         );
-        let get_image_uc = GetImageUseCase::new(session_repo.clone(), image_repo.clone());
+        let get_image_uc = GetImageUseCase::new(image_cache.clone());
 
         Ok(App {
             upload_usecase: upload_uc,
@@ -101,23 +104,23 @@ impl App {
         })
     }
 
-    pub fn upload(&mut self, input: UploadInput) -> Result<UploadOutput, ApplicationErrors> {
-        self.upload_usecase.execute(input)
+    pub fn upload(&self, input: UploadInput) -> Result<UploadOutput, ApplicationError> {
+        Ok(self.upload_usecase.execute(input)?)
     }
 
-    pub fn segment(&mut self, input: SegmentInput) -> Result<SegmentOutput, ApplicationErrors> {
-        self.segment_usecase.execute(input)
+    pub fn segment(&self, input: SegmentInput) -> Result<SegmentOutput, ApplicationError> {
+        Ok(self.segment_usecase.execute(input)?)
     }
 
-    pub fn undo(&mut self, input: UndoInput) -> Result<UndoOutput, ApplicationErrors> {
-        self.undo_usecase.execute(input)
+    pub fn undo(&self, input: UndoInput) -> Result<UndoOutput, ApplicationError> {
+        Ok(self.undo_usecase.execute(input)?)
     }
 
-    pub fn redo(&mut self, input: RedoInput) -> Result<RedoOutput, ApplicationErrors> {
-        self.redo_usecase.execute(input)
+    pub fn redo(&self, input: RedoInput) -> Result<RedoOutput, ApplicationError> {
+        Ok(self.redo_usecase.execute(input)?)
     }
 
-    pub fn get_image(&mut self, input: GetImageInput) -> Result<GetImageOutput, ApplicationErrors> {
-        self.get_image_usecase.execute(input)
+    pub fn get_image(&self, input: GetImageInput) -> Result<GetImageOutput, ApplicationError> {
+        Ok(self.get_image_usecase.execute(input)?)
     }
 }
