@@ -1,5 +1,6 @@
 use crate::domain::value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize};
 
+#[derive(Debug, PartialEq, Clone)]
 pub struct RenderedImage {
     data: ImageData,
     id: ImageId,

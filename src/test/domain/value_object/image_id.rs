@@ -2,7 +2,7 @@
 mod image_size_tests {
     use uuid::Uuid;
 
-    use crate::domain::{errors::image_errors::ImageErrors, value_object::image_id::ImageId};
+use crate::domain::value_object::image_id::{error::ImageIdError, image_id::ImageId};
 
     #[test]
     fn test_normal_convert_from_uuid() {
@@ -24,6 +24,6 @@ mod image_size_tests {
     fn test_invalid_str() {
         let id = ImageId::from_str("asga129470tgiaehdsg9g8sph");
 
-        assert_eq!(id, Err(ImageErrors::InvalidImageId))
+        assert_eq!(id, Err(ImageIdError::InvalidImageId))
     }
 }

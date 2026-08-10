@@ -2,9 +2,7 @@
 mod image_size_tests {
     use uuid::Uuid;
 
-    use crate::domain::{
-        errors::session_errors::SessionErrors, value_object::session_id::SessionId,
-    };
+use crate::domain::value_object::session_id::{error::SessionIdError, session_id::SessionId};
 
     #[test]
     fn test_normal_convert_from_uuid() {
@@ -26,6 +24,6 @@ mod image_size_tests {
     fn test_invalid_str() {
         let id = SessionId::from_str("asga129470tgiaehdsg9g8sph");
 
-        assert_eq!(id, Err(SessionErrors::InvalidSessionId))
+        assert_eq!(id, Err(SessionIdError::InvalidSessionId))
     }
 }

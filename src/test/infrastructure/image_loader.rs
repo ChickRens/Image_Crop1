@@ -1,20 +1,13 @@
 #[cfg(test)]
 mod image_loader_test {
-
-    use crate::{
-        application::{
-            errors::loading_errors::LoadingErrors, interface::image_loader::ImageLoader,
-        },
-        infrastructure::image_loader::FileImageLoader,
-    };
-    use std::fs;
-    use std::path::Path;
+    use crate::{application::interface::image_loader::{error::LoadingError, loader::ImageLoader}, infrastructure::image_loader::FileImageLoader};
+    use std::{fs::read, path::Path};
 
     #[test]
     fn test_normal_load() {
         let loader = FileImageLoader::new();
 
-        let image = fs::read(
+        let image = read(
             Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Normal_Image.png"),
         )
         .unwrap();
@@ -32,38 +25,38 @@ mod image_loader_test {
     fn test_invalid_size() {
         let loader = FileImageLoader::new();
 
-        let image = fs::read(
+        let image = read(
             Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Huge_Image.png"),
         )
         .unwrap();
 
         let result = loader.load(image);
-        assert_eq!(result, Err(LoadingErrors::InvalidSize));
+        assert!(matches!(result, Err(LoadingError::ImageSize(_))));
     }
 
     #[test]
     fn test_broken_image() {
         let loader = FileImageLoader::new();
 
-        let image = fs::read(
+        let image = read(
             Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Broken_Image.png"),
         )
         .unwrap();
 
         let result = loader.load(image);
-        assert_eq!(result, Err(LoadingErrors::CorruptedImage))
+        assert!(matches!(result, Err(LoadingError::CorruptedImage(_))))
     }
 
     #[test]
     fn test_unsupported_extension() {
         let loader = FileImageLoader::new();
 
-        let image = fs::read(
+        let image = read(
             Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"),
         )
         .unwrap();
 
         let result = loader.load(image);
-        assert_eq!(result, Err(LoadingErrors::UnsupportedFormat));
+        assert!(matches!(result, Err(LoadingError::UnsupportedFormat(_))));
     }
 }

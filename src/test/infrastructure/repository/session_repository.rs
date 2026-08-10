@@ -1,14 +1,10 @@
 #[cfg(test)]
-mod image_meta_repository_in_memory_test {
-    use crate::domain::entity::session::Session;
-    use crate::domain::repository::session_repository::SessionRepository;
-    use crate::domain::value_object::image_id::ImageId;
-    use crate::domain::value_object::session_id::SessionId;
-    use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
+mod session_repository_test {
+    use crate::{domain::{entity::session::session::Session, repository::session_repository::{error::SessionRepositoryError, repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}, infrastructure::repository::session_repository::SessionRepositoryInMemory};
 
     #[test]
     fn test_normal_get() {
-        let mut repo = SessionRepositoryInMemory::new();
+        let repo = SessionRepositoryInMemory::new();
 
         let session_id1 = SessionId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let image_id1 = ImageId::from_str("aa223311-2634-49d2-aa9f-bc59db69435d").unwrap();
@@ -23,7 +19,7 @@ mod image_meta_repository_in_memory_test {
 
     #[test]
     fn test_unknown_image_get() {
-        let mut repo = SessionRepositoryInMemory::new();
+        let repo = SessionRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
 
@@ -35,12 +31,12 @@ mod image_meta_repository_in_memory_test {
 
         let got = repo.get(&session_id2);
 
-        assert_eq!(got, None);
+        assert_eq!(got, Err(SessionRepositoryError::SessionNotFound));
     }
 
     #[test]
     fn test_overwrite_save_existing_image() {
-        let mut repo = SessionRepositoryInMemory::new();
+        let repo = SessionRepositoryInMemory::new();
 
         let session_id = SessionId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let old_image_id = ImageId::from_str("22222222-2222-2222-2222-222222222222").unwrap();
@@ -54,12 +50,12 @@ mod image_meta_repository_in_memory_test {
 
         let got = repo.get(&session_id);
 
-        assert_eq!(got, Some(new_session));
+        assert_eq!(got, Ok(new_session));
     }
 
     #[test]
     fn test_multi_image() {
-        let mut repo = SessionRepositoryInMemory::new();
+        let repo = SessionRepositoryInMemory::new();
 
         let session_id1 = SessionId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let session_id2 = SessionId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
@@ -81,8 +77,8 @@ mod image_meta_repository_in_memory_test {
         let got2 = repo.get(&session_id2);
         let got3 = repo.get(&session_id3);
 
-        assert_eq!(got1, Some(session1));
-        assert_eq!(got2, Some(session2));
-        assert_eq!(got3, Some(session3));
+        assert_eq!(got1, Ok(session1));
+        assert_eq!(got2, Ok(session2));
+        assert_eq!(got3, Ok(session3));
     }
 }

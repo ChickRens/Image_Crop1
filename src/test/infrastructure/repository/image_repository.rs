@@ -1,15 +1,10 @@
 #[cfg(test)]
 mod image_repository_in_memory_test {
-    use crate::domain::entity::image::Image;
-    use crate::domain::repository::image_repository::ImageRepository;
-    use crate::domain::value_object::{
-        image_data::ImageData, image_id::ImageId, image_kind::ImageKind, image_size::ImageSize,
-    };
-    use crate::infrastructure::repository::image_repository::ImageRepositoryInMemory;
+    use crate::{domain::{entity::image::image::Image, repository::original_image_repository::{error::OriginalImageRepositoryError, repository::OriginalImageRepository}, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory};
 
     #[test]
     fn test_normal_get() {
-        let mut repo = ImageRepositoryInMemory::new();
+        let repo = OriginalImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
 
@@ -18,16 +13,16 @@ mod image_repository_in_memory_test {
             image_id1.clone(),
             ImageSize::new(2, 2).unwrap(),
         );
-        repo.save(image1.clone(), ImageKind::Original);
+        repo.save(image1.clone());
 
-        let got1 = repo.get(&image_id1, ImageKind::Original).unwrap();
+        let got1 = repo.get(&image_id1).unwrap();
 
         assert_eq!(got1, image1);
     }
 
     #[test]
     fn test_unknown_image_get() {
-        let mut repo = ImageRepositoryInMemory::new();
+        let repo = OriginalImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let image_id2 = ImageId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
@@ -37,16 +32,16 @@ mod image_repository_in_memory_test {
             image_id1.clone(),
             ImageSize::new(2, 2).unwrap(),
         );
-        repo.save(image1, ImageKind::Original);
+        repo.save(image1);
 
-        let got = repo.get(&image_id2, ImageKind::Original);
+        let got = repo.get(&image_id2);
 
-        assert_eq!(got, None);
+        assert_eq!(got, Err(OriginalImageRepositoryError::ImageNotFound));
     }
 
     #[test]
     fn test_overwrite_save_existing_image() {
-        let mut repo = ImageRepositoryInMemory::new();
+        let repo = OriginalImageRepositoryInMemory::new();
 
         let image_id = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
 
@@ -61,17 +56,17 @@ mod image_repository_in_memory_test {
             ImageSize::new(2, 2).unwrap(),
         );
 
-        repo.save(old_image.clone(), ImageKind::Original);
-        repo.save(new_image.clone(), ImageKind::Original);
+        repo.save(old_image.clone());
+        repo.save(new_image.clone());
 
-        let got = repo.get(&image_id, ImageKind::Original);
+        let got = repo.get(&image_id);
 
-        assert_eq!(got, Some(new_image));
+        assert_eq!(got, Ok(new_image));
     }
 
     #[test]
     fn test_multi_image() {
-        let mut repo = ImageRepositoryInMemory::new();
+        let repo = OriginalImageRepositoryInMemory::new();
 
         let image_id1 = ImageId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
         let image_id2 = ImageId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
@@ -93,16 +88,16 @@ mod image_repository_in_memory_test {
             ImageSize::new(2, 2).unwrap(),
         );
 
-        repo.save(image1.clone(), ImageKind::Original);
-        repo.save(image2.clone(), ImageKind::Original);
-        repo.save(image3.clone(), ImageKind::Original);
+        repo.save(image1.clone());
+        repo.save(image2.clone());
+        repo.save(image3.clone());
 
-        let got1 = repo.get(&image_id1, ImageKind::Original);
-        let got2 = repo.get(&image_id2, ImageKind::Original);
-        let got3 = repo.get(&image_id3, ImageKind::Original);
+        let got1 = repo.get(&image_id1);
+        let got2 = repo.get(&image_id2);
+        let got3 = repo.get(&image_id3);
 
-        assert_eq!(got1, Some(image1));
-        assert_eq!(got2, Some(image2));
-        assert_eq!(got3, Some(image3));
+        assert_eq!(got1, Ok(image1));
+        assert_eq!(got2, Ok(image2));
+        assert_eq!(got3, Ok(image3));
     }
 }

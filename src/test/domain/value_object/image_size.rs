@@ -1,10 +1,10 @@
 #[cfg(test)]
 mod image_size_tests {
-    use crate::domain::{errors::image_errors::ImageErrors, value_object::image_size::ImageSize};
+    use crate::domain::value_object::image_size::{error::ImageSizeError, image_size::ImageSize};
 
     #[test]
     fn test_valid_size() {
-        let size: ImageSize = ImageSize::new(200, 1000).unwrap();
+        let size = ImageSize::new(200, 1000).unwrap();
         assert_eq!(size.height(), 200);
         assert_eq!(size.width(), 1000);
     }
@@ -12,25 +12,25 @@ mod image_size_tests {
     #[test]
     fn test_long_height() {
         let size = ImageSize::new(3001, 2000);
-        assert_eq!(size, Err(ImageErrors::LongHeight))
+        assert_eq!(size, Err(ImageSizeError::LongHeight))
     }
 
     #[test]
     fn test_short_height() {
         let size = ImageSize::new(1, 3);
-        assert_eq!(size, Err(ImageErrors::ShortHeight))
+        assert_eq!(size, Err(ImageSizeError::ShortHeight))
     }
 
     #[test]
     fn test_long_width() {
         let size = ImageSize::new(3000, 3001);
-        assert_eq!(size, Err(ImageErrors::LongWidth))
+        assert_eq!(size, Err(ImageSizeError::LongWidth))
     }
 
     #[test]
     fn test_short_width() {
         let size = ImageSize::new(400, 0);
-        assert_eq!(size, Err(ImageErrors::ShortWidth))
+        assert_eq!(size, Err(ImageSizeError::ShortWidth))
     }
 
     #[test]

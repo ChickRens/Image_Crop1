@@ -1,15 +1,9 @@
 #[cfg(test)]
 mod segmenter_tests {
     use image::RgbaImage;
-    use ndarray::Array4;
+use ndarray::Array4;
 
-    use crate::{
-        domain::{
-            entity::image::Image,
-            value_object::{image_data::ImageData, image_id::ImageId, image_size::ImageSize},
-        },
-        infrastructure::segmenter::mask_applier::SAM2MaskApplier,
-    };
+use crate::{domain::{entity::image::image::Image, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::segmenter::mask_applier::SAM2MaskApplier};
 
     fn _create_5x5_rgb_image() -> Image {
         let image_pixels: [u8; 75] = [
