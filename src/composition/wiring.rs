@@ -30,6 +30,7 @@ pub struct App {
         FileImageLoader,
         SharedSAM2Segmenter,
         SharedEditingSessionRepository,
+        SharedRenderedImageCacheInMemory,
     >,
     segment_usecase: SegmentUseCase<
         SharedSessionRepository,
@@ -70,6 +71,7 @@ impl App {
             loader,
             segmenter.clone(),
             editing_session_repo.clone(),
+            image_cache.clone()
         );
         let segment_uc = SegmentUseCase::new(
             session_repo.clone(),

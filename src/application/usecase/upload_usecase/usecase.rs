@@ -1,6 +1,6 @@
-use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter}, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory}, usecase::{config::MAX_HISTORY, upload_usecase::{error::UploadUseCaseError, upload_input::UploadInput, upload_output::UploadOutput}}}, domain::{entity::session::session::Session, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}};
+use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter, rendered_image_cache::cache::RenderedImageCache}, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory, rendered_image::RenderedImage}, usecase::{config::MAX_HISTORY, upload_usecase::{error::UploadUseCaseError, upload_input::UploadInput, upload_output::UploadOutput}}}, domain::{entity::session::session::Session, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}};
 
-pub struct UploadUseCase<SR, IR, LD, IS, ESR>
+pub struct UploadUseCase<SR, IR, LD, IS, ESR, IC>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
@@ -10,15 +10,17 @@ where
             StaticContext = IS::StaticContext,
             InferenceContext = IS::InferenceContext,
         >,
+    IC: RenderedImageCache,
 {
     session_repo: SR,
     image_repo: IR,
     loader: LD,
     segmenter: IS,
     editing_session_repo: ESR,
+    image_cache: IC,
 }
 
-impl<SR, IR, LD, IS, ESR> UploadUseCase<SR, IR, LD, IS, ESR>
+impl<SR, IR, LD, IS, ESR, IC> UploadUseCase<SR, IR, LD, IS, ESR, IC>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
@@ -28,6 +30,7 @@ where
             StaticContext = IS::StaticContext,
             InferenceContext = IS::InferenceContext,
         >,
+    IC: RenderedImageCache,
 {
     pub fn new(
         session_repository: SR,
@@ -35,6 +38,7 @@ where
         image_loader: LD,
         image_segmenter: IS,
         editing_session_repository: ESR,
+        rendered_image_cache: IC,
     ) -> Self {
         Self {
             session_repo: session_repository,
@@ -42,6 +46,7 @@ where
             loader: image_loader,
             segmenter: image_segmenter,
             editing_session_repo: editing_session_repository,
+            image_cache: rendered_image_cache,
         }
     }
 
@@ -62,12 +67,16 @@ where
 
         let point_history = PointHistory::new(MAX_HISTORY);
         let context_history = InferenceContextHistory::new(MAX_HISTORY);
-        
+
         let mut editing_session = CommonEditingSession::new(point_history, static_context, context_history);
         editing_session.update_inference_context(inference_context);
 
-        self.image_repo.save(image);
+        self.image_repo.save(image.clone());
         self.editing_session_repo.save(&session_id, editing_session);
+
+        let (image_data, _, size) = image.into_data();
+
+        self.image_cache.save(RenderedImage::new(image_data, image_id, size));
 
         let output = UploadOutput::new(session_id, image_id);
 
