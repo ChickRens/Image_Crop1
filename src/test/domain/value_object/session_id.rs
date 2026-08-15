@@ -2,7 +2,7 @@
 mod image_size_tests {
     use uuid::Uuid;
 
-use crate::domain::value_object::session_id::{error::SessionIdError, session_id::SessionId};
+    use crate::domain::value_object::session_id::{error::SessionIdError, session_id::SessionId};
 
     #[test]
     fn test_normal_convert_from_uuid() {

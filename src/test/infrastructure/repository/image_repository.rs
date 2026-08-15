@@ -1,6 +1,18 @@
 #[cfg(test)]
 mod image_repository_in_memory_test {
-    use crate::{domain::{entity::image::image::Image, repository::original_image_repository::{error::OriginalImageRepositoryError, repository::OriginalImageRepository}, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory};
+    use crate::{
+        domain::{
+            entity::image::image::Image,
+            repository::original_image_repository::{
+                error::OriginalImageRepositoryError, repository::OriginalImageRepository,
+            },
+            value_object::{
+                image_data::ImageData, image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
+    };
 
     #[test]
     fn test_normal_get() {

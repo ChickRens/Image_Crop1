@@ -17,10 +17,7 @@ mod inference_context_history_tests {
         assert_eq!(history.current(), &value2.clone());
 
         history.add(value3.clone());
-        assert_eq!(
-            history.current(),
-            &value3.clone()
-        );
+        assert_eq!(history.current(), &value3.clone());
     }
 
     #[test]

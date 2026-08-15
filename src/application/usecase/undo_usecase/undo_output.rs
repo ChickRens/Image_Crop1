@@ -6,9 +6,7 @@ pub struct UndoOutput {
 
 impl UndoOutput {
     pub fn new(image_id: ImageId) -> Self {
-        Self {
-            image_id,
-        }
+        Self { image_id }
     }
 
     pub fn image_id(self) -> ImageId {

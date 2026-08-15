@@ -1,6 +1,15 @@
 use std::sync::Arc;
 
-use crate::{domain::{entity::image::image::Image, repository::original_image_repository::{error::OriginalImageRepositoryError, repository::OriginalImageRepository}, value_object::{image_id::image_id::ImageId}}, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory};
+use crate::{
+    domain::{
+        entity::image::image::Image,
+        repository::original_image_repository::{
+            error::OriginalImageRepositoryError, repository::OriginalImageRepository,
+        },
+        value_object::image_id::image_id::ImageId,
+    },
+    infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
+};
 
 #[derive(Clone)]
 pub struct SharedOriginalImageRepository {

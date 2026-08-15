@@ -1,9 +1,46 @@
 #[cfg(test)]
 mod upload_usecase_test {
-    use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::error::LoadingError, rendered_image_cache::cache::RenderedImageCache}, usecase::upload_usecase::{error::UploadUseCaseError, upload_input::UploadInput, usecase::UploadUseCase}}, domain::repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, infrastructure::{cache::{rendered_image_cache::RenderedImageCacheInMemory, shared_rendered_image_cache::SharedRenderedImageCacheInMemory}, image_loader::FileImageLoader, repository::{editing_session_repository::SAM2EditingSessionRepository, image_repository::OriginalImageRepositoryInMemory, session_repository::SessionRepositoryInMemory, shared_editing_session_repository::SharedEditingSessionRepository, shared_image_repository::SharedOriginalImageRepository, shared_session_repository::SharedSessionRepository}, segmenter::sam2::Sam2Segmenter}};
+    use crate::{
+        application::{
+            interface::{
+                editing_session_repository::repository::EditingSessionRepository,
+                image_loader::error::LoadingError, rendered_image_cache::cache::RenderedImageCache,
+            },
+            usecase::upload_usecase::{
+                error::UploadUseCaseError, upload_input::UploadInput, usecase::UploadUseCase,
+            },
+        },
+        domain::repository::{
+            original_image_repository::repository::OriginalImageRepository,
+            session_repository::repository::SessionRepository,
+        },
+        infrastructure::{
+            cache::{
+                rendered_image_cache::RenderedImageCacheInMemory,
+                shared_rendered_image_cache::SharedRenderedImageCacheInMemory,
+            },
+            image_loader::FileImageLoader,
+            repository::{
+                editing_session_repository::SAM2EditingSessionRepository,
+                image_repository::OriginalImageRepositoryInMemory,
+                session_repository::SessionRepositoryInMemory,
+                shared_editing_session_repository::SharedEditingSessionRepository,
+                shared_image_repository::SharedOriginalImageRepository,
+                shared_session_repository::SharedSessionRepository,
+            },
+            segmenter::sam2::Sam2Segmenter,
+        },
+    };
     use std::{fs::read, path::Path};
 
-    fn _set_up() -> (SharedSessionRepository, SharedOriginalImageRepository, FileImageLoader, Sam2Segmenter, SharedEditingSessionRepository, SharedRenderedImageCacheInMemory) {
+    fn _set_up() -> (
+        SharedSessionRepository,
+        SharedOriginalImageRepository,
+        FileImageLoader,
+        Sam2Segmenter,
+        SharedEditingSessionRepository,
+        SharedRenderedImageCacheInMemory,
+    ) {
         let model_dir = "models";
         let session_repo = SharedSessionRepository::new();
         let image_repo = SharedOriginalImageRepository::new();
@@ -12,7 +49,14 @@ mod upload_usecase_test {
         let editing_session_repo = SharedEditingSessionRepository::new();
         let image_cache = SharedRenderedImageCacheInMemory::new();
 
-        (session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache)
+        (
+            session_repo,
+            image_repo,
+            loader,
+            segmenter,
+            editing_session_repo,
+            image_cache,
+        )
     }
 
     #[test]
@@ -22,8 +66,16 @@ mod upload_usecase_test {
         )
         .unwrap();
 
-        let (session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache) = _set_up();
-        let usecase = UploadUseCase::new(session_repo.clone(), image_repo.clone(), loader, segmenter, editing_session_repo.clone(), image_cache.clone());
+        let (session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache) =
+            _set_up();
+        let usecase = UploadUseCase::new(
+            session_repo.clone(),
+            image_repo.clone(),
+            loader,
+            segmenter,
+            editing_session_repo.clone(),
+            image_cache.clone(),
+        );
 
         let input = UploadInput::new(image_jpg);
         let output = usecase.execute(input).unwrap();
@@ -52,13 +104,20 @@ mod upload_usecase_test {
 
     #[test]
     fn test_invalid_input() {
-        let image = read(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"),
-        )
-        .unwrap();
+        let image =
+            read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"))
+                .unwrap();
 
-        let (session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache) = _set_up();
-        let usecase = UploadUseCase::new(session_repo.clone(), image_repo.clone(), loader, segmenter, editing_session_repo.clone(), image_cache.clone());
+        let (session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache) =
+            _set_up();
+        let usecase = UploadUseCase::new(
+            session_repo.clone(),
+            image_repo.clone(),
+            loader,
+            segmenter,
+            editing_session_repo.clone(),
+            image_cache.clone(),
+        );
 
         let input = UploadInput::new(image);
 
@@ -66,7 +125,9 @@ mod upload_usecase_test {
 
         assert!(matches!(
             result,
-            Err(UploadUseCaseError::Loader(LoadingError::UnsupportedFormat(_)))
+            Err(UploadUseCaseError::Loader(LoadingError::UnsupportedFormat(
+                _
+            )))
         ));
     }
 }

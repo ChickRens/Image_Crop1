@@ -1,10 +1,17 @@
 use std::sync::Arc;
 
-use crate::{application::{interface::rendered_image_cache::{cache::RenderedImageCache, error::RenderedCacheError}, types::rendered_image::RenderedImage}, domain::value_object::image_id::image_id::ImageId, infrastructure::cache::rendered_image_cache::RenderedImageCacheInMemory};
+use crate::{
+    application::{
+        interface::rendered_image_cache::{cache::RenderedImageCache, error::RenderedCacheError},
+        types::rendered_image::RenderedImage,
+    },
+    domain::value_object::image_id::image_id::ImageId,
+    infrastructure::cache::rendered_image_cache::RenderedImageCacheInMemory,
+};
 
 #[derive(Clone)]
 pub struct SharedRenderedImageCacheInMemory {
-    caches: Arc<RenderedImageCacheInMemory>
+    caches: Arc<RenderedImageCacheInMemory>,
 }
 
 impl RenderedImageCache for SharedRenderedImageCacheInMemory {
@@ -19,6 +26,8 @@ impl RenderedImageCache for SharedRenderedImageCacheInMemory {
 
 impl SharedRenderedImageCacheInMemory {
     pub fn new() -> Self {
-        Self { caches: Arc::new(RenderedImageCacheInMemory::new()) }
+        Self {
+            caches: Arc::new(RenderedImageCacheInMemory::new()),
+        }
     }
 }

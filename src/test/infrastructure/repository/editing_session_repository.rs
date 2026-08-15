@@ -5,13 +5,11 @@ mod editing_session_repository_in_memory_test {
     use crate::{
         application::{
             interface::editing_session_repository::{
-                error::EditingSessionRepositoryError,
-                repository::EditingSessionRepository,
+                error::EditingSessionRepositoryError, repository::EditingSessionRepository,
             },
             types::{
                 editing_session::session::CommonEditingSession,
-                inference_context_history::InferenceContextHistory,
-                point_history::PointHistory,
+                inference_context_history::InferenceContextHistory, point_history::PointHistory,
             },
         },
         domain::value_object::session_id::session_id::SessionId,
@@ -34,7 +32,12 @@ mod editing_session_repository_in_memory_test {
         let inference_context = SAM2InferenceContext::new(None);
         let inference_history = InferenceContextHistory::new(5);
 
-        CommonEditingSession::new(PointHistory::new(5), static_context, inference_history, inference_context)
+        CommonEditingSession::new(
+            PointHistory::new(5),
+            static_context,
+            inference_history,
+            inference_context,
+        )
     }
 
     #[test]
@@ -54,14 +57,18 @@ mod editing_session_repository_in_memory_test {
     fn test_unknown_session_get() {
         let repo = SAM2EditingSessionRepository::new();
         let session_id = SessionId::from_str("65921fe2-2634-49d2-aa9f-bc59db69435d").unwrap();
-        let unknown_session_id = SessionId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
+        let unknown_session_id =
+            SessionId::from_str("12345678-9abc-def0-1234-56789abcdef0").unwrap();
         let editing_session = create_editing_session();
 
         repo.save(&session_id, editing_session);
 
         let got = repo.get(&unknown_session_id);
 
-        assert_eq!(got, Err(EditingSessionRepositoryError::EditingSessionNotFound));
+        assert_eq!(
+            got,
+            Err(EditingSessionRepositoryError::EditingSessionNotFound)
+        );
     }
 
     #[test]

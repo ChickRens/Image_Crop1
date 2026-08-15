@@ -1,6 +1,15 @@
 #[cfg(test)]
 mod session_repository_test {
-    use crate::{domain::{entity::session::session::Session, repository::session_repository::{error::SessionRepositoryError, repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}, infrastructure::repository::session_repository::SessionRepositoryInMemory};
+    use crate::{
+        domain::{
+            entity::session::session::Session,
+            repository::session_repository::{
+                error::SessionRepositoryError, repository::SessionRepository,
+            },
+            value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId},
+        },
+        infrastructure::repository::session_repository::SessionRepositoryInMemory,
+    };
 
     #[test]
     fn test_normal_get() {

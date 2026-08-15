@@ -2,10 +2,14 @@
 mod rendered_image_cache_test {
     use crate::{
         application::{
-            interface::rendered_image_cache::{cache::RenderedImageCache, error::RenderedCacheError},
+            interface::rendered_image_cache::{
+                cache::RenderedImageCache, error::RenderedCacheError,
+            },
             types::rendered_image::RenderedImage,
         },
-        domain::value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize},
+        domain::value_object::{
+            image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize,
+        },
         infrastructure::cache::rendered_image_cache::RenderedImageCacheInMemory,
     };
 

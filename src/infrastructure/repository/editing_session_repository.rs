@@ -31,13 +31,17 @@ impl EditingSessionRepository for SAM2EditingSessionRepository {
     fn get(
         &self,
         session_id: &SessionId,
-    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, EditingSessionRepositoryError>
-    {
+    ) -> Result<
+        CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+        EditingSessionRepositoryError,
+    > {
         let mut sessions = self
             .sessions
             .lock()
             .expect("EditingSessionRepository Mutex is Poisoned");
-        sessions.remove(session_id).ok_or(EditingSessionRepositoryError::EditingSessionNotFound)
+        sessions
+            .remove(session_id)
+            .ok_or(EditingSessionRepositoryError::EditingSessionNotFound)
     }
 }
 

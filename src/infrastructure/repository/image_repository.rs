@@ -1,6 +1,12 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use crate::domain::{entity::image::image::Image, repository::original_image_repository::{error::OriginalImageRepositoryError, repository::OriginalImageRepository}, value_object::{image_id::image_id::ImageId}};
+use crate::domain::{
+    entity::image::image::Image,
+    repository::original_image_repository::{
+        error::OriginalImageRepositoryError, repository::OriginalImageRepository,
+    },
+    value_object::image_id::image_id::ImageId,
+};
 
 pub struct OriginalImageRepositoryInMemory {
     images: Mutex<HashMap<ImageId, Image>>,
@@ -21,7 +27,10 @@ impl OriginalImageRepository for OriginalImageRepositoryInMemory {
             .images
             .lock()
             .expect("ImageRepositoryInMemory is Poisoned");
-        images.get(&image_id.clone()).cloned().ok_or(OriginalImageRepositoryError::ImageNotFound)
+        images
+            .get(&image_id.clone())
+            .cloned()
+            .ok_or(OriginalImageRepositoryError::ImageNotFound)
     }
 }
 

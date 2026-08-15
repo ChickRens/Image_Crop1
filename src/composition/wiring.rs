@@ -1,6 +1,7 @@
 use crate::{
     application::{
-        error::ApplicationError, usecase::{
+        error::ApplicationError,
+        usecase::{
             get_image_usecase::{
                 get_image_input::GetImageInput, get_image_output::GetImageOutput,
                 usecase::GetImageUseCase,
@@ -14,12 +15,16 @@ use crate::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
             },
         },
-    }, infrastructure::{
-        cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory, image_loader::FileImageLoader, repository::{
+    },
+    infrastructure::{
+        cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory,
+        image_loader::FileImageLoader,
+        repository::{
             shared_editing_session_repository::SharedEditingSessionRepository,
             shared_image_repository::SharedOriginalImageRepository,
             shared_session_repository::SharedSessionRepository,
-        }, segmenter::shared_sam2::SharedSAM2Segmenter,
+        },
+        segmenter::shared_sam2::SharedSAM2Segmenter,
     },
 };
 
@@ -61,7 +66,8 @@ impl App {
         let session_repo = SharedSessionRepository::new();
         let image_repo = SharedOriginalImageRepository::new();
         let loader = FileImageLoader::new();
-        let segmenter = SharedSAM2Segmenter::new("models").expect("Failed to load SAM2 model during app initialize");
+        let segmenter = SharedSAM2Segmenter::new("models")
+            .expect("Failed to load SAM2 model during app initialize");
         let editing_session_repo = SharedEditingSessionRepository::new();
         let image_cache = SharedRenderedImageCacheInMemory::new();
 
@@ -71,7 +77,7 @@ impl App {
             loader,
             segmenter.clone(),
             editing_session_repo.clone(),
-            image_cache.clone()
+            image_cache.clone(),
         );
         let segment_uc = SegmentUseCase::new(
             session_repo.clone(),
@@ -93,7 +99,6 @@ impl App {
             segmenter.clone(),
             editing_session_repo.clone(),
             image_cache.clone(),
-
         );
         let get_image_uc = GetImageUseCase::new(image_cache.clone());
 

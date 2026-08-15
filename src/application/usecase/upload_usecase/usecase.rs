@@ -1,4 +1,32 @@
-use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter, rendered_image_cache::cache::RenderedImageCache}, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory, rendered_image::RenderedImage}, usecase::{config::MAX_HISTORY, upload_usecase::{error::UploadUseCaseError, upload_input::UploadInput, upload_output::UploadOutput}}}, domain::{entity::session::session::Session, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}}};
+use crate::{
+    application::{
+        interface::{
+            editing_session_repository::repository::EditingSessionRepository,
+            image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter,
+            rendered_image_cache::cache::RenderedImageCache,
+        },
+        types::{
+            editing_session::session::{CommonEditingSession, EditingSession},
+            inference_context_history::InferenceContextHistory,
+            point_history::PointHistory,
+            rendered_image::RenderedImage,
+        },
+        usecase::{
+            config::MAX_HISTORY,
+            upload_usecase::{
+                error::UploadUseCaseError, upload_input::UploadInput, upload_output::UploadOutput,
+            },
+        },
+    },
+    domain::{
+        entity::session::session::Session,
+        repository::{
+            original_image_repository::repository::OriginalImageRepository,
+            session_repository::repository::SessionRepository,
+        },
+        value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId},
+    },
+};
 
 pub struct UploadUseCase<SR, IR, LD, IS, ESR, IC>
 where
@@ -55,8 +83,8 @@ where
         let loaded_image = self.loader.load(input_image)?;
 
         let image = loaded_image.into_image();
-        
-        let image_id= *image.image_id();
+
+        let image_id = *image.image_id();
 
         let session_id = SessionId::new();
         let session = Session::new(session_id, image_id);
@@ -68,14 +96,20 @@ where
         let point_history = PointHistory::new(MAX_HISTORY);
         let context_history = InferenceContextHistory::new(MAX_HISTORY);
 
-        let editing_session = CommonEditingSession::new(point_history, static_context, context_history, inference_context);
+        let editing_session = CommonEditingSession::new(
+            point_history,
+            static_context,
+            context_history,
+            inference_context,
+        );
 
         self.image_repo.save(image.clone());
         self.editing_session_repo.save(&session_id, editing_session);
 
         let (image_data, _, size) = image.into_data();
 
-        self.image_cache.save(RenderedImage::new(image_data, image_id, size));
+        self.image_cache
+            .save(RenderedImage::new(image_data, image_id, size));
 
         let output = UploadOutput::new(session_id, image_id);
 

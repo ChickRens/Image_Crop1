@@ -2,7 +2,27 @@
 mod segmenter_tests {
     use image::RgbaImage;
 
-use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory}}, domain::{entity::image::image::Image, value_object::{coordinate::Coordinate, image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize, point::{Point, PointLabel}}}, infrastructure::segmenter::sam2::Sam2Segmenter};
+    use crate::{
+        application::{
+            interface::image_segmenter::segmenter::ImageSegmenter,
+            types::{
+                editing_session::session::{CommonEditingSession, EditingSession},
+                inference_context_history::InferenceContextHistory,
+                point_history::PointHistory,
+            },
+        },
+        domain::{
+            entity::image::image::Image,
+            value_object::{
+                coordinate::Coordinate,
+                image_data::ImageData,
+                image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+                point::{Point, PointLabel},
+            },
+        },
+        infrastructure::segmenter::sam2::Sam2Segmenter,
+    };
 
     fn _create_5x5_rgb() -> Image {
         let image_pixels: [u8; 75] = [
@@ -58,8 +78,12 @@ use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter,
         let static_context = segmenter.prepare_static_context(&image).unwrap();
         let inference_context = segmenter.prepare_inference_context(&image).unwrap();
 
-        let editing_session =
-            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30), inference_context);
+        let editing_session = CommonEditingSession::new(
+            PointHistory::new(30),
+            static_context,
+            InferenceContextHistory::new(30),
+            inference_context,
+        );
 
         let segmented_res = segmenter.segment(
             &image,
@@ -97,8 +121,12 @@ use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter,
         let static_context = segmenter.prepare_static_context(&image).unwrap();
         let inference_context = segmenter.prepare_inference_context(&image).unwrap();
 
-        let editing_session =
-            CommonEditingSession::new(PointHistory::new(40), static_context, InferenceContextHistory::new(40), inference_context);
+        let editing_session = CommonEditingSession::new(
+            PointHistory::new(40),
+            static_context,
+            InferenceContextHistory::new(40),
+            inference_context,
+        );
 
         let segmented_res = segmenter.segment(
             &image,

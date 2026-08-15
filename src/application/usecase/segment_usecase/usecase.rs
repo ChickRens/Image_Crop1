@@ -1,4 +1,23 @@
-use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, rendered_image_cache::cache::RenderedImageCache}, types::{editing_session::session::EditingSession, rendered_image::RenderedImage}, usecase::segment_usecase::{error::SegmentUseCaseError, segment_input::SegmentInput, segment_output::SegmentOutput}}, domain::{repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::image_id::image_id::ImageId}};
+use crate::{
+    application::{
+        interface::{
+            editing_session_repository::repository::EditingSessionRepository,
+            image_segmenter::segmenter::ImageSegmenter,
+            rendered_image_cache::cache::RenderedImageCache,
+        },
+        types::{editing_session::session::EditingSession, rendered_image::RenderedImage},
+        usecase::segment_usecase::{
+            error::SegmentUseCaseError, segment_input::SegmentInput, segment_output::SegmentOutput,
+        },
+    },
+    domain::{
+        repository::{
+            original_image_repository::repository::OriginalImageRepository,
+            session_repository::repository::SessionRepository,
+        },
+        value_object::image_id::image_id::ImageId,
+    },
+};
 
 pub struct SegmentUseCase<SR, IR, IS, ESR, IC>
 where
@@ -41,7 +60,7 @@ where
             image_repo: image_repository,
             segmenter: image_segmenter,
             editing_session_repo: editing_session_repository,
-            image_cache: rendered_image_cache
+            image_cache: rendered_image_cache,
         }
     }
 
@@ -61,16 +80,18 @@ where
         let (new_inference_context, segmented_image) =
             self.segmenter
                 .segment(&original_image, static_context, inference_context, points)?;
-            
+
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
         editing_session.apply_edit(point, new_inference_context);
 
         self.editing_session_repo.save(&session_id, editing_session);
 
-        self.image_cache.save(
-            RenderedImage::new(segmented_image_data, segmented_image_id, size)
-        );
+        self.image_cache.save(RenderedImage::new(
+            segmented_image_data,
+            segmented_image_id,
+            size,
+        ));
 
         let output = SegmentOutput::new(segmented_image_id);
         Ok(output)

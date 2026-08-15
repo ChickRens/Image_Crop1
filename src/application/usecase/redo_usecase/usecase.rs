@@ -1,4 +1,23 @@
-use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, rendered_image_cache::cache::RenderedImageCache}, types::{editing_session::session::EditingSession, rendered_image::RenderedImage}, usecase::redo_usecase::{error::RedoUseCaseError, redo_input::RedoInput, redo_output::RedoOutput}}, domain::{repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::image_id::image_id::ImageId}};
+use crate::{
+    application::{
+        interface::{
+            editing_session_repository::repository::EditingSessionRepository,
+            image_segmenter::segmenter::ImageSegmenter,
+            rendered_image_cache::cache::RenderedImageCache,
+        },
+        types::{editing_session::session::EditingSession, rendered_image::RenderedImage},
+        usecase::redo_usecase::{
+            error::RedoUseCaseError, redo_input::RedoInput, redo_output::RedoOutput,
+        },
+    },
+    domain::{
+        repository::{
+            original_image_repository::repository::OriginalImageRepository,
+            session_repository::repository::SessionRepository,
+        },
+        value_object::image_id::image_id::ImageId,
+    },
+};
 
 pub struct RedoUseCase<SR, IR, IS, ESR, IC>
 where
@@ -9,13 +28,13 @@ where
             StaticContext = <IS as ImageSegmenter>::StaticContext,
             InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
-    IC: RenderedImageCache
+    IC: RenderedImageCache,
 {
     session_repo: SR,
     image_repo: IR,
     segmenter: IS,
     editing_session_repo: ESR,
-    image_cache: IC
+    image_cache: IC,
 }
 
 impl<SR, IR, IS, ESR, IC> RedoUseCase<SR, IR, IS, ESR, IC>
@@ -27,14 +46,14 @@ where
             StaticContext = <IS as ImageSegmenter>::StaticContext,
             InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
-    IC: RenderedImageCache
+    IC: RenderedImageCache,
 {
     pub fn new(
         session_repository: SR,
         image_repository: IR,
         image_segmenter: IS,
         editing_session_repository: ESR,
-        rendered_image_cache: IC
+        rendered_image_cache: IC,
     ) -> Self {
         Self {
             session_repo: session_repository,
@@ -69,7 +88,10 @@ where
         self.editing_session_repo.save(&session_id, editing_session);
 
         self.image_cache.save(RenderedImage::new(
-            segmented_image_data, segmented_image_id, size));
+            segmented_image_data,
+            segmented_image_id,
+            size,
+        ));
 
         let output = RedoOutput::new(segmented_image_id);
         Ok(output)

@@ -1,10 +1,16 @@
-use crate::{application::types::{editing_session::error::EditingSessionError, inference_context_history::InferenceContextHistory, point_history::PointHistory}, domain::value_object::point::Point};
+use crate::{
+    application::types::{
+        editing_session::error::EditingSessionError,
+        inference_context_history::InferenceContextHistory, point_history::PointHistory,
+    },
+    domain::value_object::point::Point,
+};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct CommonEditingSession<StaticContext, InferenceContext> {
     point_history: PointHistory,
     static_context: StaticContext,
-    inference_context_history: InferenceContextHistory<InferenceContext>
+    inference_context_history: InferenceContextHistory<InferenceContext>,
 }
 
 pub trait EditingSession {
@@ -49,7 +55,7 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
         let points = self.point_history.current();
         match points {
             Some(points) => points,
-            None => &[]
+            None => &[],
         }
     }
 
@@ -74,13 +80,18 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
 }
 
 impl<S, I> CommonEditingSession<S, I> {
-    pub fn new(history: PointHistory, static_context: S, mut inference_context_history: InferenceContextHistory<I>, initial_inference_context: I) -> Self {
+    pub fn new(
+        history: PointHistory,
+        static_context: S,
+        mut inference_context_history: InferenceContextHistory<I>,
+        initial_inference_context: I,
+    ) -> Self {
         inference_context_history.add(initial_inference_context);
 
         Self {
             point_history: history,
             static_context: static_context,
-            inference_context_history: inference_context_history
+            inference_context_history: inference_context_history,
         }
     }
 }

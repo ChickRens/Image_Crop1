@@ -1,4 +1,7 @@
-use crate::{common::traits::{Cause, Code}, domain::value_object::image_size::error::ImageSizeError};
+use crate::{
+    common::traits::{Cause, Code},
+    domain::value_object::image_size::error::ImageSizeError,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoadingError {

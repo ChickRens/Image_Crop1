@@ -2,7 +2,10 @@
 mod session_tests {
     use uuid::Uuid;
 
-use crate::domain::{entity::session::session::Session, value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId}};
+    use crate::domain::{
+        entity::session::session::Session,
+        value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId},
+    };
 
     #[test]
     fn test_session_new_and_accessors() {

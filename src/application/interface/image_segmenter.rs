@@ -1,2 +1,2 @@
-pub mod segmenter;
 pub mod error;
+pub mod segmenter;

@@ -1,6 +1,6 @@
 pub mod get_image_usecase;
+pub mod inference_context_history;
 pub mod point_history;
 pub mod segment_usecase;
 pub mod undo_redo_usecase;
 pub mod upload_usecase;
-pub mod inference_context_history;

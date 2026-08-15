@@ -1,4 +1,10 @@
-use crate::application::{interface::rendered_image_cache::cache::RenderedImageCache, usecase::get_image_usecase::{error::GetImageUseCaseError, get_image_input::GetImageInput, get_image_output::GetImageOutput}};
+use crate::application::{
+    interface::rendered_image_cache::cache::RenderedImageCache,
+    usecase::get_image_usecase::{
+        error::GetImageUseCaseError, get_image_input::GetImageInput,
+        get_image_output::GetImageOutput,
+    },
+};
 
 pub struct GetImageUseCase<IC>
 where
@@ -12,9 +18,7 @@ where
     IC: RenderedImageCache,
 {
     pub fn new(image_cache: IC) -> Self {
-        Self {
-            image_cache,
-        }
+        Self { image_cache }
     }
 
     pub fn execute(&self, input: GetImageInput) -> Result<GetImageOutput, GetImageUseCaseError> {
@@ -23,7 +27,7 @@ where
         let image = self.image_cache.take(image_id)?;
 
         let (data, _id, _size) = image.into_data();
-        let output= GetImageOutput::new(data.into_image());
+        let output = GetImageOutput::new(data.into_image());
 
         Ok(output)
     }

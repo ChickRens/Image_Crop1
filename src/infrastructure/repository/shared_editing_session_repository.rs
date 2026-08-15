@@ -27,7 +27,10 @@ impl EditingSessionRepository for SharedEditingSessionRepository {
     fn get(
         &self,
         session_id: &SessionId,
-    ) -> Result<CommonEditingSession<Self::StaticContext, Self::InferenceContext>, EditingSessionRepositoryError> {
+    ) -> Result<
+        CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+        EditingSessionRepositoryError,
+    > {
         self.sessions.get(session_id)
     }
 

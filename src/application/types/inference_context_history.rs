@@ -32,7 +32,7 @@ impl<T> InferenceContextHistory<T> {
         }
         true
     }
-    
+
     pub fn undo(&mut self) {
         self.current_index -= 1;
     }

@@ -1,6 +1,5 @@
 use crate::domain::value_object::session_id::session_id::SessionId;
 
-
 pub struct UndoInput {
     session_id: SessionId,
 }

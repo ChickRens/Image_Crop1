@@ -1,6 +1,16 @@
 use std::sync::Arc;
 
-use crate::{application::{interface::image_segmenter::{error::SegmenterError, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage}, domain::{entity::image::image::Image, value_object::point::Point}, infrastructure::segmenter::{sam2::Sam2Segmenter, sam2_data::{SAM2InferenceContext, SAM2StaticContext}}};
+use crate::{
+    application::{
+        interface::image_segmenter::{error::SegmenterError, segmenter::ImageSegmenter},
+        types::segmented_image::SegmentedImage,
+    },
+    domain::{entity::image::image::Image, value_object::point::Point},
+    infrastructure::segmenter::{
+        sam2::Sam2Segmenter,
+        sam2_data::{SAM2InferenceContext, SAM2StaticContext},
+    },
+};
 
 #[derive(Clone)]
 pub struct SharedSAM2Segmenter {
@@ -43,10 +53,7 @@ impl ImageSegmenter for SharedSAM2Segmenter {
         self.segmenter.prepare_inference_context(image)
     }
 
-    fn prepare_static_context(
-        &self,
-        image: &Image,
-    ) -> Result<Self::StaticContext, SegmenterError> {
+    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterError> {
         self.segmenter.prepare_static_context(image)
     }
 }

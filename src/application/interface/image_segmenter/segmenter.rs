@@ -1,4 +1,9 @@
-use crate::{application::{interface::image_segmenter::error::SegmenterError, types::segmented_image::SegmentedImage}, domain::{entity::image::image::Image, value_object::point::Point}};
+use crate::{
+    application::{
+        interface::image_segmenter::error::SegmenterError, types::segmented_image::SegmentedImage,
+    },
+    domain::{entity::image::image::Image, value_object::point::Point},
+};
 
 pub trait ImageSegmenter {
     type StaticContext;
@@ -8,10 +13,7 @@ pub trait ImageSegmenter {
         &self,
         image: &Image,
     ) -> Result<Self::InferenceContext, SegmenterError>;
-    fn prepare_static_context(
-        &self,
-        image: &Image,
-    ) -> Result<Self::StaticContext, SegmenterError>;
+    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterError>;
     fn rebuild(
         &self,
         original_image: &Image,

@@ -3,21 +3,21 @@ mod get_image_usecase_test {
     use std::fs;
     use std::path::Path;
 
-use crate::application::interface::image_loader::loader::ImageLoader;
-use crate::application::usecase::get_image_usecase::error::GetImageUseCaseError;
-use crate::application::usecase::get_image_usecase::get_image_input::GetImageInput;
-use crate::application::usecase::get_image_usecase::usecase::GetImageUseCase;
-use crate::application::usecase::upload_usecase::upload_input::UploadInput;
-use crate::application::usecase::upload_usecase::usecase::UploadUseCase;
-use crate::domain::value_object::image_id::image_id::ImageId;
-use crate::infrastructure::cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory;
-use crate::infrastructure::image_loader::FileImageLoader;
-use crate::infrastructure::repository::editing_session_repository::SAM2EditingSessionRepository;
-use crate::infrastructure::repository::image_repository::OriginalImageRepositoryInMemory;
-use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
-use crate::infrastructure::segmenter::sam2::Sam2Segmenter;
+    use crate::application::interface::image_loader::loader::ImageLoader;
+    use crate::application::usecase::get_image_usecase::error::GetImageUseCaseError;
+    use crate::application::usecase::get_image_usecase::get_image_input::GetImageInput;
+    use crate::application::usecase::get_image_usecase::usecase::GetImageUseCase;
+    use crate::application::usecase::upload_usecase::upload_input::UploadInput;
+    use crate::application::usecase::upload_usecase::usecase::UploadUseCase;
+    use crate::domain::value_object::image_id::image_id::ImageId;
+    use crate::infrastructure::cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory;
+    use crate::infrastructure::image_loader::FileImageLoader;
+    use crate::infrastructure::repository::editing_session_repository::SAM2EditingSessionRepository;
+    use crate::infrastructure::repository::image_repository::OriginalImageRepositoryInMemory;
+    use crate::infrastructure::repository::session_repository::SessionRepositoryInMemory;
+    use crate::infrastructure::segmenter::sam2::Sam2Segmenter;
 
-    fn _set_up(image_jpg: Vec<u8>) -> (SharedRenderedImageCacheInMemory, ImageId){
+    fn _set_up(image_jpg: Vec<u8>) -> (SharedRenderedImageCacheInMemory, ImageId) {
         let model_dir = "models";
         let loader = FileImageLoader::new();
         let session_repo = SessionRepositoryInMemory::new();
@@ -27,7 +27,14 @@ use crate::infrastructure::segmenter::sam2::Sam2Segmenter;
 
         let editing_session_repo = SAM2EditingSessionRepository::new();
 
-        let usecase = UploadUseCase::new(session_repo, image_repo, loader, segmenter, editing_session_repo, image_cache.clone());
+        let usecase = UploadUseCase::new(
+            session_repo,
+            image_repo,
+            loader,
+            segmenter,
+            editing_session_repo,
+            image_cache.clone(),
+        );
         let input = UploadInput::new(image_jpg);
         let output = usecase.execute(input).unwrap();
         let (_, id) = output.into_session_id_and_image_id();
@@ -70,9 +77,6 @@ use crate::infrastructure::segmenter::sam2::Sam2Segmenter;
 
         let result = usecase.execute(input);
 
-        assert!(matches!(
-            result,
-            Err(GetImageUseCaseError::ImageCache(_))
-        ))
+        assert!(matches!(result, Err(GetImageUseCaseError::ImageCache(_))))
     }
 }

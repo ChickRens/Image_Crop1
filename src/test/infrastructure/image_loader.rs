@@ -1,6 +1,9 @@
 #[cfg(test)]
 mod image_loader_test {
-    use crate::{application::interface::image_loader::{error::LoadingError, loader::ImageLoader}, infrastructure::image_loader::FileImageLoader};
+    use crate::{
+        application::interface::image_loader::{error::LoadingError, loader::ImageLoader},
+        infrastructure::image_loader::FileImageLoader,
+    };
     use std::{fs::read, path::Path};
 
     #[test]
@@ -25,10 +28,9 @@ mod image_loader_test {
     fn test_invalid_size() {
         let loader = FileImageLoader::new();
 
-        let image = read(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Huge_Image.png"),
-        )
-        .unwrap();
+        let image =
+            read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Huge_Image.png"))
+                .unwrap();
 
         let result = loader.load(image);
         assert!(matches!(result, Err(LoadingError::ImageSize(_))));
@@ -51,10 +53,9 @@ mod image_loader_test {
     fn test_unsupported_extension() {
         let loader = FileImageLoader::new();
 
-        let image = read(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"),
-        )
-        .unwrap();
+        let image =
+            read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Unsupported.wav"))
+                .unwrap();
 
         let result = loader.load(image);
         assert!(matches!(result, Err(LoadingError::UnsupportedFormat(_))));

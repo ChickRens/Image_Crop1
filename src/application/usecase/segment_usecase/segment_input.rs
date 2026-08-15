@@ -11,9 +11,6 @@ impl SegmentInput {
     }
 
     pub fn new(session_id: SessionId, point: Point) -> Self {
-        Self {
-            session_id,
-            point,
-        }
+        Self { session_id, point }
     }
 }

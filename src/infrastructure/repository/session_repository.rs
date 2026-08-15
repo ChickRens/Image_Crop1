@@ -24,7 +24,10 @@ impl SessionRepository for SessionRepositoryInMemory {
             .sessions
             .lock()
             .expect("SessionRepositoryInMemory is Poisoned");
-        sessions.get(session_id).cloned().ok_or(SessionRepositoryError::SessionNotFound)
+        sessions
+            .get(session_id)
+            .cloned()
+            .ok_or(SessionRepositoryError::SessionNotFound)
     }
 }
 

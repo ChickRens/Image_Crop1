@@ -21,7 +21,10 @@ mod point_history_tests {
         assert_eq!(history.current(), Some(&[point1.clone()][..]));
 
         history.add(point2.clone());
-        assert_eq!(history.current(), Some(&[point1.clone(), point2.clone()][..]));
+        assert_eq!(
+            history.current(),
+            Some(&[point1.clone(), point2.clone()][..])
+        );
 
         history.add(point3.clone());
         assert_eq!(
@@ -46,7 +49,10 @@ mod point_history_tests {
         assert!(history.can_undo());
         history.undo();
 
-        assert_eq!(history.current(), Some(&[point1.clone(), point2.clone()][..]));
+        assert_eq!(
+            history.current(),
+            Some(&[point1.clone(), point2.clone()][..])
+        );
     }
 
     #[test]
@@ -80,7 +86,10 @@ mod point_history_tests {
         assert!(history.can_redo());
         history.redo();
 
-        assert_eq!(history.current(), Some(&[point1.clone(), point2.clone()][..]));
+        assert_eq!(
+            history.current(),
+            Some(&[point1.clone(), point2.clone()][..])
+        );
     }
 
     #[test]
@@ -122,7 +131,10 @@ mod point_history_tests {
         );
 
         history.undo();
-        assert_eq!(history.current(), Some(&[point1.clone(), point2.clone()][..]));
+        assert_eq!(
+            history.current(),
+            Some(&[point1.clone(), point2.clone()][..])
+        );
     }
 
     // #[test]
