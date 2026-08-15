@@ -54,9 +54,9 @@ where
         let input_image = input.into_image_data();
         let loaded_image = self.loader.load(input_image)?;
 
-        let image_id= ImageId::new();
-
         let image = loaded_image.into_image();
+        
+        let image_id= *image.image_id();
 
         let session_id = SessionId::new();
         let session = Session::new(session_id, image_id);
@@ -68,8 +68,7 @@ where
         let point_history = PointHistory::new(MAX_HISTORY);
         let context_history = InferenceContextHistory::new(MAX_HISTORY);
 
-        let mut editing_session = CommonEditingSession::new(point_history, static_context, context_history);
-        editing_session.update_inference_context(inference_context);
+        let editing_session = CommonEditingSession::new(point_history, static_context, context_history, inference_context);
 
         self.image_repo.save(image.clone());
         self.editing_session_repo.save(&session_id, editing_session);
