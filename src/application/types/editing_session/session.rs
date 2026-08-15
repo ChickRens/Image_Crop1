@@ -14,11 +14,11 @@ pub trait EditingSession {
     fn undo(&mut self) -> Result<(), EditingSessionError>;
     fn redo(&mut self) -> Result<(), EditingSessionError>;
     fn points(&self) -> &[Point];
-    fn add_point(&mut self, point: Point);
+    fn points_with(&self, point: Point) -> Vec<Point>;
     fn static_context(&self) -> &Self::StaticContext;
     fn inference_context(&self) -> &Self::InferenceContext;
 
-    fn update_inference_context(&mut self, inference_context: Self::InferenceContext);
+    fn apply_edit(&mut self, point: Point, inference_context: Self::InferenceContext);
 }
 
 impl<S, I> EditingSession for CommonEditingSession<S, I> {
@@ -46,11 +46,22 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     }
 
     fn points(&self) -> &[Point] {
-        self.point_history.current()
+        let points = self.point_history.current();
+        match points {
+            Some(points) => points,
+            None => &[]
+        }
     }
 
-    fn add_point(&mut self, point: Point) {
+    fn points_with(&self, point: Point) -> Vec<Point> {
+        let mut points = self.points().to_vec();
+        points.push(point);
+        points
+    }
+
+    fn apply_edit(&mut self, point: Point, inference_context: Self::InferenceContext) {
         self.point_history.add(point);
+        self.inference_context_history.add(inference_context);
     }
 
     fn inference_context(&self) -> &Self::InferenceContext {
@@ -60,14 +71,12 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     fn static_context(&self) -> &Self::StaticContext {
         &self.static_context
     }
-
-    fn update_inference_context(&mut self, inference_context: Self::InferenceContext) {
-        self.inference_context_history.add(inference_context);
-    }
 }
 
 impl<S, I> CommonEditingSession<S, I> {
-    pub fn new(history: PointHistory, static_context: S, inference_context_history: InferenceContextHistory<I>) -> Self {
+    pub fn new(history: PointHistory, static_context: S, mut inference_context_history: InferenceContextHistory<I>, initial_inference_context: I) -> Self {
+        inference_context_history.add(initial_inference_context);
+
         Self {
             point_history: history,
             static_context: static_context,
