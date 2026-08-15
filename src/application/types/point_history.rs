@@ -24,8 +24,8 @@ impl PointHistory {
         self.current_index = self.items.len();
     }
 
-    pub fn current(&self) -> &[Point] {
-        &self.items[0..self.current_index]
+    pub fn current(&self) -> Option<&[Point]> {
+        self.items.get(0..self.current_index)
     }
 
     pub fn can_undo(&self) -> bool {

@@ -23,11 +23,11 @@ impl<T> InferenceContextHistory<T> {
     }
 
     pub fn current(&self) -> &T {
-        &self.items[self.current_index]
+        &self.items[self.current_index - 1]
     }
 
     pub fn can_undo(&self) -> bool {
-        if self.current_index < 1 {
+        if self.current_index <= 1 {
             return false;
         }
         true
