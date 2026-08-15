@@ -1,3 +1,7 @@
 /target
 /models
 /.venv
+/results
+/src/presentation
+/frontend
+/.cargo
