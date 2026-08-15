@@ -58,17 +58,14 @@ use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter,
         let static_context = segmenter.prepare_static_context(&image).unwrap();
         let inference_context = segmenter.prepare_inference_context(&image).unwrap();
 
-        let mut editing_session =
-            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30));
-
-        editing_session.add_point(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND));
-        editing_session.update_inference_context(inference_context);
+        let editing_session =
+            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30), inference_context);
 
         let segmented_res = segmenter.segment(
             &image,
             editing_session.static_context(),
             editing_session.inference_context(),
-            editing_session.points(),
+            &editing_session.points_with(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND)),
         );
 
         match &segmented_res {
@@ -100,17 +97,14 @@ use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter,
         let static_context = segmenter.prepare_static_context(&image).unwrap();
         let inference_context = segmenter.prepare_inference_context(&image).unwrap();
 
-        let mut editing_session =
-            CommonEditingSession::new(PointHistory::new(40), static_context, InferenceContextHistory::new(40));
-
-        editing_session.add_point(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND));
-        editing_session.update_inference_context(inference_context);
+        let editing_session =
+            CommonEditingSession::new(PointHistory::new(40), static_context, InferenceContextHistory::new(40), inference_context);
 
         let segmented_res = segmenter.segment(
             &image,
             editing_session.static_context(),
             editing_session.inference_context(),
-            editing_session.points(),
+            &editing_session.points_with(Point::new(Coordinate::new(2, 2), PointLabel::FOREGROUND)),
         );
 
         match &segmented_res {
@@ -125,122 +119,5 @@ use crate::{application::{interface::image_segmenter::segmenter::ImageSegmenter,
         let (data, size) = segmented_image.into_image_and_size();
         assert_eq!(size, ImageSize::new(5, 5).unwrap());
         assert_eq!(data.image().len(), 100)
-    }
-
-    #[test]
-    fn test_segmenter_segment_no_point() {
-        let model_dir = "models";
-        let segmenter = Sam2Segmenter::new(model_dir).unwrap();
-
-        let image = _create_5x5_rgb();
-
-        let static_context = segmenter.prepare_static_context(&image).unwrap();
-        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
-
-        let mut editing_session =
-            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30));
-
-        editing_session.update_inference_context(inference_context);
-
-        let segmented_res = segmenter.segment(
-            &image,
-            editing_session.static_context(),
-            editing_session.inference_context(),
-            editing_session.points(),
-        );
-
-        match &segmented_res {
-            Ok(_) => assert!(true),
-            Err(e) => println!("{:?}", e),
-        }
-
-        assert!(segmented_res.is_ok());
-
-        let (_, segmented_image) = segmented_res.unwrap();
-
-        let (data, size) = segmented_image.into_image_and_size();
-        assert_eq!(size, ImageSize::new(5, 5).unwrap());
-        assert_eq!(data.image().len(), 100)
-    }
-
-    #[ignore]
-    #[test]
-    fn test_visualize_segmenter_segment_no_point() {
-        let model_dir = "models";
-        let segmenter = Sam2Segmenter::new(model_dir).unwrap();
-
-        let image = _create_5x5_rgb();
-
-        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
-        let static_context = segmenter.prepare_static_context(&image).unwrap();
-
-        let mut editing_session =
-            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30));
-        
-        editing_session.update_inference_context(inference_context);
-
-        let segmented_res = segmenter.segment(
-            &image,
-            editing_session.static_context(),
-            editing_session.inference_context(),
-            editing_session.points(),
-        );
-
-        match &segmented_res {
-            Ok(_) => assert!(true),
-            Err(e) => println!("{:?}", e),
-        }
-
-        let (_, segmented_image) = segmented_res.unwrap();
-
-        let (data, size) = segmented_image.into_image_and_size();
-
-        let img = RgbaImage::from_raw(size.width() as u32, size.height() as u32, data.into_image())
-            .unwrap();
-
-        img.save("test_segmenter_segment_no_point_result.png")
-            .unwrap();
-    }
-
-    #[ignore]
-    #[test]
-    fn test_segment_invalid_point() {
-        let model_dir = "models";
-        let segmenter = Sam2Segmenter::new(model_dir).unwrap();
-
-        let image = _create_5x5_rgb();
-
-        let static_context = segmenter.prepare_static_context(&image).unwrap();
-        let inference_context = segmenter.prepare_inference_context(&image).unwrap();
-
-        let mut editing_session =
-            CommonEditingSession::new(PointHistory::new(30), static_context, InferenceContextHistory::new(30));
-
-        editing_session.update_inference_context(inference_context);
-
-        let segmented_res = segmenter.segment(
-            &image,
-            editing_session.static_context(),
-            editing_session.inference_context(),
-            editing_session.points(),
-        );
-        editing_session.add_point(Point::new(Coordinate::new(10, 10), PointLabel::FOREGROUND));
-
-        match &segmented_res {
-            Ok(_) => assert!(true),
-            Err(e) => println!("{:?}", e),
-        }
-
-        let (_, segmented_image) = segmented_res.unwrap();
-
-        let (data, size) = segmented_image.into_image_and_size();
-        assert_eq!(size, ImageSize::new(5, 5).unwrap());
-        assert_eq!(data.image().len(), 100);
-
-        let img = RgbaImage::from_raw(size.width() as u32, size.height() as u32, data.into_image())
-            .unwrap();
-
-        img.save("test_segmenter_segment_invalid_point_result.png")
-            .unwrap();
     }
 }

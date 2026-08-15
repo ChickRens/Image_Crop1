@@ -4,246 +4,119 @@ mod undo_redo_usecase_test {
 
     use crate::{
         application::{
-            interface::{
-                editing_session_repository::EditingSessionRepository, image_loader::ImageLoader,
-                image_segmenter::ImageSegmenter,
-            },
-            types::{
-                editing_session::{CommonEditingSession, EditingSession},
-                point_history::PointHistory,
-            },
-            usecase::{
-                redo_usecase::{redo_input::RedoInput, usecase::RedoUseCase},
-                undo_usecase::{undo_input::UndoInput, usecase::UndoUseCase},
-            },
-        },
-        domain::{
-            entity::{image::Image, session::Session},
-            repository::{
-                image_repository::ImageRepository, session_repository::SessionRepository,
-            },
-            value_object::{
-                coordinate::Coordinate,
-                image_kind::ImageKind,
-                point::{Point, PointLabel},
-                session_id::SessionId,
-            },
-        },
-        infrastructure::{
-            image_loader::FileImageLoader,
-            repository::{
-                editing_session_repository::SAM2EditingSessionRepository,
+            interface::{editing_session_repository::repository::EditingSessionRepository, image_loader::loader::ImageLoader, image_segmenter::segmenter::ImageSegmenter, rendered_image_cache::cache::RenderedImageCache}, types::{editing_session::session::{CommonEditingSession, EditingSession}, inference_context_history::InferenceContextHistory, point_history::PointHistory, rendered_image::RenderedImage}, usecase::{redo_usecase::{redo_input::RedoInput, usecase::RedoUseCase}, segment_usecase::{segment_input::SegmentInput, usecase::SegmentUseCase}, undo_usecase::{undo_input::UndoInput, usecase::UndoUseCase}, upload_usecase::{upload_input::UploadInput, usecase::UploadUseCase}},
+        }, domain::{
+            entity::{image::image::Image, session::session::Session}, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{coordinate::Coordinate, point::{Point, PointLabel}, session_id::session_id::SessionId},
+        }, infrastructure::{
+            cache::shared_rendered_image_cache::SharedRenderedImageCacheInMemory, image_loader::FileImageLoader, repository::{
                 shared_editing_session_repository::SharedEditingSessionRepository,
-                shared_image_repository::SharedImageRepository,
+                shared_image_repository::SharedOriginalImageRepository,
                 shared_session_repository::SharedSessionRepository,
-            },
-            segmenter::{
-                sam2_data::{SAM2InferenceContext, SAM2StaticContext},
-                shared_sam2::SharedSAM2Segmenter,
-            },
+            }, segmenter::{sam2_data::SAM2InferenceContext, shared_sam2::SharedSAM2Segmenter},
         },
     };
 
-    fn _set_up() -> (
-        SharedSessionRepository,
-        SharedImageRepository,
-        SharedSAM2Segmenter,
-        SharedEditingSessionRepository,
-        CommonEditingSession<SAM2StaticContext, SAM2InferenceContext>,
-        Image,
-        SessionId,
-    ) {
-        let model_dir = "models";
+    fn _set_up() -> (SharedSessionRepository, SharedOriginalImageRepository, SharedSAM2Segmenter, SharedEditingSessionRepository, SharedRenderedImageCacheInMemory, SessionId) {
         let loader = FileImageLoader::new();
-        let mut session_repo = SharedSessionRepository::new();
-        let image_repo = SharedImageRepository::new();
-        let mut segmenter = SharedSAM2Segmenter::new(model_dir).unwrap();
+        let session_repo = SharedSessionRepository::new();
+        let image_repo = SharedOriginalImageRepository::new();
+        let segmenter = SharedSAM2Segmenter::new("models").unwrap();
         let editing_session_repo = SharedEditingSessionRepository::new();
-        let history = PointHistory::new(40);
+        let image_cache = SharedRenderedImageCacheInMemory::new();
 
-        let image_jpg =
-            fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Tumbler.jpg"))
-                .unwrap();
+        let image_jpg = fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/test/test_image/Tumbler.jpg")).unwrap();
 
-        let loaded_image = loader.load(image_jpg).unwrap();
-        let original_image = loaded_image.into_image();
-        let original_image_id = original_image.image_id().clone();
+        let upload_usecase = UploadUseCase::new(session_repo.clone(), image_repo.clone(), loader, segmenter.clone(), editing_session_repo.clone(), image_cache.clone());
+        let upload_input = UploadInput::new(image_jpg);
+        let output = upload_usecase.execute(upload_input).unwrap();
+        let (session_id, original_image_id) = output.into_session_id_and_image_id();
 
-        let original_session_id = SessionId::new();
-        let original_session = Session::new(original_session_id, original_image_id.clone());
+        let segment_usecase = SegmentUseCase::new(session_repo.clone(), image_repo.clone(), segmenter.clone(), editing_session_repo.clone(), image_cache.clone());
+        let segment_input = SegmentInput::new(session_id, Point::new(Coordinate::new(30, 40), PointLabel::BACKGROUND));
+        let output = segment_usecase.execute(segment_input).unwrap();
+        let segmented_image_id = output.image_id();
 
-        let static_context = segmenter.prepare_static_context(&original_image).unwrap();
-        let inference_context = segmenter
-            .prepare_inference_context(&original_image)
-            .unwrap();
-
-        let editing_session = CommonEditingSession::new(history, static_context, inference_context);
-
-        session_repo.save(original_session);
-
-        (
-            session_repo,
-            image_repo,
-            segmenter,
-            editing_session_repo,
-            editing_session,
-            original_image,
-            original_session_id,
-        )
+        (session_repo, image_repo, segmenter, editing_session_repo, image_cache, session_id)
     }
 
     #[test]
-    fn test_normal_undo_execute() {
-        let (
-            session_repo,
-            mut image_repo,
-            mut segmenter,
-            mut editing_session_repo,
-            mut editing_session,
-            original_image,
-            original_session_id,
-        ) = _set_up();
+    fn test_undo_execute_returns_segmented_image() {
+        let (session_repo, image_repo, segmenter, editing_session_repo, image_cache, session_id) = _set_up();
+        let usecase = UndoUseCase::new(session_repo.clone(), image_repo.clone(), segmenter.clone(), editing_session_repo.clone(), image_cache.clone());
 
-        let point = Point::new(Coordinate::new(50, 100), PointLabel::FOREGROUND);
-        editing_session.add_point(point);
-
-        let (first_context, first_segment) = segmenter
-            .segment(
-                &original_image,
-                editing_session.static_context(),
-                editing_session.inference_context(),
-                editing_session.points(),
-            )
-            .unwrap();
-
-        editing_session.set_inference_context(first_context);
-        editing_session_repo.save(&original_session_id, editing_session);
-
-        let mut editing_session = editing_session_repo.get(&original_session_id).unwrap();
-
-        let point = Point::new(Coordinate::new(60, 140), PointLabel::FOREGROUND);
-        editing_session.add_point(point);
-
-        let (second_context, _second_segment) = segmenter
-            .segment(
-                &original_image,
-                editing_session.static_context(),
-                editing_session.inference_context(),
-                editing_session.points(),
-            )
-            .unwrap();
-
-        editing_session.set_inference_context(second_context);
-        editing_session_repo.save(&original_session_id, editing_session);
-
-        image_repo.save(original_image.clone(), ImageKind::Original);
-
-        let mut usecase = UndoUseCase::new(
-            session_repo,
-            image_repo.clone(),
-            segmenter,
-            editing_session_repo,
-        );
-        let input = UndoInput::new(original_session_id);
-
+        let input = UndoInput::new(session_id);
         let output = usecase.execute(input).unwrap();
 
-        let (output_session_id, image_id) = output.into_session_id_and_image_id();
-        assert_eq!(output_session_id, original_session_id);
+        let session = session_repo.get(&session_id).unwrap();
+        let original_image_id = session.image_id();
+        let original_image = image_repo.get(original_image_id).unwrap();
 
-        let output_image = image_repo.get(&image_id, ImageKind::Segmented).unwrap();
+        let output_image_id = output.image_id();
+        let output_rendered_image = image_cache.take(output_image_id).unwrap();
+        let (output_image_data, _, _) = output_rendered_image.into_data();
 
-        let output_data = output_image.image_data();
-        let (first_segment_data, _) = first_segment.into_image_and_size();
-
-        assert_eq!(output_data, &first_segment_data)
+        assert_eq!(*original_image.image_data(), output_image_data);
     }
 
     #[test]
-    fn test_normal_redo_execute() {
-        let (
-            session_repo,
-            mut image_repo,
-            mut segmenter,
-            mut editing_session_repo,
-            mut editing_session,
-            original_image,
-            original_session_id,
-        ) = _set_up();
+    fn test_undo_redo_execute_returns_segmented_image() {
+        let (session_repo, image_repo, segmenter, editing_session_repo, image_cache, session_id) = _set_up();
+        let undo_usecase = UndoUseCase::new(session_repo.clone(), image_repo.clone(), segmenter.clone(), editing_session_repo.clone(), image_cache.clone());
+        let redo_usecase = RedoUseCase::new(session_repo.clone(), image_repo.clone(), segmenter.clone(), editing_session_repo.clone(), image_cache.clone());
 
-        let point = Point::new(Coordinate::new(50, 100), PointLabel::FOREGROUND);
-        editing_session.add_point(point);
+        let input = UndoInput::new(session_id);
+        let _output = undo_usecase.execute(input).unwrap();
 
-        let (first_context, first_segment) = segmenter
-            .segment(
-                &original_image,
-                editing_session.static_context(),
-                editing_session.inference_context(),
-                editing_session.points(),
-            )
-            .unwrap();
+        let input = RedoInput::new(session_id);
+        let output = redo_usecase.execute(input).unwrap();
 
-        editing_session.set_inference_context(first_context);
-        editing_session_repo.save(&original_session_id, editing_session);
+        let id = output.image_id();
+        assert!(image_cache.take(id).is_ok())
+    }
 
-        let mut editing_session = editing_session_repo.get(&original_session_id).unwrap();
+    #[test]
+    fn test_undo_with_missing_session_returns_error() {
+        let (session_repo, image_repo, segmenter, editing_session_repo, image_cache, _) = _set_up();
+        let usecase = UndoUseCase::new(session_repo, image_repo, segmenter, editing_session_repo, image_cache);
 
-        let point = Point::new(Coordinate::new(60, 140), PointLabel::FOREGROUND);
-        editing_session.add_point(point);
+        let input = UndoInput::new(SessionId::new());
+        let result = usecase.execute(input);
 
-        let (second_context, second_segment) = segmenter
-            .segment(
-                &original_image,
-                editing_session.static_context(),
-                editing_session.inference_context(),
-                editing_session.points(),
-            )
-            .unwrap();
+        assert!(result.is_err());
+    }
 
-        editing_session.set_inference_context(second_context);
-        editing_session_repo.save(&original_session_id, editing_session);
+    #[test]
+    fn test_undo_with_missing_image_returns_error() {
+        let (session_repo, _, segmenter, editing_session_repo, image_cache, session_id) = _set_up();
+        let image_repo = SharedOriginalImageRepository::new();
+        let usecase = UndoUseCase::new(session_repo, image_repo, segmenter, editing_session_repo, image_cache);
 
-        image_repo.save(original_image.clone(), ImageKind::Original);
+        let input = UndoInput::new(session_id);
+        let result = usecase.execute(input);
 
-        let mut undo_usecase = UndoUseCase::new(
-            session_repo.clone(),
-            image_repo.clone(),
-            segmenter.clone(),
-            editing_session_repo.clone(),
-        );
-        let input = UndoInput::new(original_session_id);
+        assert!(result.is_err());
+    }
 
-        let output = undo_usecase.execute(input).unwrap();
+    #[test]
+    fn test_undo_with_missing_editing_session_returns_error() {
+        let (session_repo, image_repo, segmenter, _, image_cache, session_id) = _set_up();
+        let editing_session_repo = SharedEditingSessionRepository::new();
+        let usecase = UndoUseCase::new(session_repo, image_repo, segmenter, editing_session_repo, image_cache);
 
-        let (output_session_id, image_id) = output.into_session_id_and_image_id();
-        assert_eq!(output_session_id, original_session_id);
+        let input = UndoInput::new(session_id);
+        let result = usecase.execute(input);
 
-        let output_image = image_repo.get(&image_id, ImageKind::Segmented).unwrap();
+        assert!(result.is_err());
+    }
 
-        let output_data = output_image.image_data();
-        let (first_segment_data, _) = first_segment.into_image_and_size();
+    #[test]
+    fn test_redo_without_prior_undo_returns_error() {
+        let (session_repo, image_repo, segmenter, editing_session_repo, image_cache, session_id) = _set_up();
+        let usecase = RedoUseCase::new(session_repo, image_repo, segmenter, editing_session_repo, image_cache);
 
-        assert_eq!(output_data, &first_segment_data);
+        let input = RedoInput::new(session_id);
+        let result = usecase.execute(input);
 
-        let mut redo_usecase = RedoUseCase::new(
-            session_repo.clone(),
-            image_repo.clone(),
-            segmenter.clone(),
-            editing_session_repo.clone(),
-        );
-
-        let redo_input = RedoInput::new(original_session_id);
-        let output = redo_usecase.execute(redo_input).unwrap();
-
-        let (output_session_id, output_image_id) = output.into_session_id_and_image_id();
-        let output_image = image_repo
-            .get(&output_image_id, ImageKind::Segmented)
-            .unwrap();
-        assert_eq!(output_session_id, original_session_id);
-
-        let output_data = output_image.image_data();
-        let (second_segment_data, _) = second_segment.into_image_and_size();
-
-        assert_eq!(output_data, &second_segment_data);
+        assert!(result.is_err());
     }
 }

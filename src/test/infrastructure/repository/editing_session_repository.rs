@@ -32,10 +32,9 @@ mod editing_session_repository_in_memory_test {
         );
 
         let inference_context = SAM2InferenceContext::new(None);
-        let mut inference_history = InferenceContextHistory::new(5);
-        inference_history.add(inference_context);
+        let inference_history = InferenceContextHistory::new(5);
 
-        CommonEditingSession::new(PointHistory::new(5), static_context, inference_history)
+        CommonEditingSession::new(PointHistory::new(5), static_context, inference_history, inference_context)
     }
 
     #[test]
