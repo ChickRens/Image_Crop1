@@ -54,11 +54,9 @@ where
 
         let mut editing_session = self.editing_session_repo.get(&session_id)?;
 
-        editing_session.add_point(point);
-
         let static_context = editing_session.static_context();
         let inference_context = editing_session.inference_context();
-        let points = editing_session.points();
+        let points = &editing_session.points_with(point.clone());
 
         let (new_inference_context, segmented_image) =
             self.segmenter
@@ -66,7 +64,7 @@ where
             
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
-        editing_session.update_inference_context(new_inference_context);
+        editing_session.apply_edit(point, new_inference_context);
 
         self.editing_session_repo.save(&session_id, editing_session);
 
