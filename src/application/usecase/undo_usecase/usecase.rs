@@ -56,22 +56,29 @@ where
 
         editing_session.undo()?;
         let points = editing_session.points();
-        let static_context = editing_session.static_context();
-        let inference_context = editing_session.inference_context();
 
-        let (new_context, segmented_image) = self.segmenter.segment(&original_image, static_context, inference_context, points)?;
-        editing_session.update_inference_context(new_context);
+        if points.is_empty() {
+            self.editing_session_repo.save(&session_id, editing_session);
+            Ok(UndoOutput::new(*original_image_id))
+        }
+        
+        else {    
+            let static_context = editing_session.static_context();
+            let inference_context = editing_session.inference_context();
 
-        let (segmented_image_data, size) = segmented_image.into_image_and_size();
-        let segmented_image_id = ImageId::new();
+            let (new_context, segmented_image) = self.segmenter.segment(&original_image, static_context, inference_context, points)?;
 
-        self.editing_session_repo.save(&session_id, editing_session);
+            let (segmented_image_data, size) = segmented_image.into_image_and_size();
+            let segmented_image_id = ImageId::new();
 
-        self.image_cache.save(
-            RenderedImage::new(segmented_image_data, segmented_image_id, size),
-        );
+            self.editing_session_repo.save(&session_id, editing_session);
 
-        let output = UndoOutput::new(segmented_image_id);
-        Ok(output)
+            self.image_cache.save(
+                RenderedImage::new(segmented_image_data, segmented_image_id, size),
+            );
+
+            let output = UndoOutput::new(segmented_image_id);
+            Ok(output)
+        }
     }
 }
