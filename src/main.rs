@@ -1,12 +1,24 @@
-mod domain;
 mod application;
-mod infrastructure;
+mod common;
 mod composition;
+mod domain;
+mod infrastructure;
+mod presentation;
 mod test;
 
-use crate::domain::entity::image::Image;
-use crate::domain::value_object::image_id::ImageId;
-use crate::domain::value_object::image_size::{ImageSize, SizeErrorType};
-use uuid::Uuid;
+// use std::sync::Arc;
 
-fn main() {}
+// use presentation::router;
+// use tokio::net::TcpListener;
+
+// use crate::composition::wiring::App;
+
+#[tokio::main]
+async fn main() {
+    // let app = Arc::new(App::new().unwrap());
+    // let router = router::route(app);
+    // println!("Server running on http://localhost:3000");
+
+    // let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    // axum::serve(listener, router).await.unwrap();
+}
