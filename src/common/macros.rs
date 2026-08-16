@@ -34,6 +34,16 @@ macro_rules! parent_error {
             }
         }
 
+        impl $crate::common::traits::ErrorTypeProvider for $name {
+            fn error_type(&self) -> $crate::common::traits::ErrorType {
+                match self {
+                    $(
+                        Self::$variant(err) => err.error_type(),
+                    )*
+                }
+            }
+        }
+
         $(
             impl ::std::convert::From<$child> for $name {
                 fn from(value: $child) -> Self {
@@ -49,7 +59,7 @@ macro_rules! leaf_error {
     (
         $vis:vis enum $name:ident {
             $(
-                $variant:ident => $str:expr,
+                $variant:ident => ($str:expr, $err:expr),
             )*
         }
     ) => {
@@ -79,6 +89,16 @@ macro_rules! leaf_error {
                 }
             }
         }
+
+        impl $crate::common::traits::ErrorTypeProvider for $name {
+            fn error_type(&self) -> $crate::common::traits::ErrorType {
+                match self {
+                    $(
+                        Self::$variant => $err,
+                    )*
+                }
+            }
+        }
     };
 }
 
@@ -87,7 +107,7 @@ macro_rules! leaf_detail_error {
     (
         $vis:vis enum $name:ident {
             $(
-                $variant:ident => $str:expr,
+                $variant:ident => ($str:expr, $err:expr),
             )*
         }
     ) => {
@@ -113,6 +133,16 @@ macro_rules! leaf_detail_error {
                 match self {
                     $(
                         Self::$variant(err) => Some(err),
+                    )*
+                }
+            }
+        }
+        
+        impl $crate::common::traits::ErrorTypeProvider for $name {
+            fn error_type(&self) -> $crate::common::traits::ErrorType {
+                match self {
+                    $(
+                        Self::$variant(_) => $err,
                     )*
                 }
             }
