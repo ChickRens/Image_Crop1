@@ -32,6 +32,10 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     type StaticContext = S;
 
     fn undo(&mut self) -> Result<(), EditingSessionError> {
+        if self.inference_context_history.can_undo() != self.point_history.can_undo() {
+            return Err(EditingSessionError::HistoryCorrupted);
+        }
+
         if !(self.inference_context_history.can_undo() && self.point_history.can_undo()) {
             return Err(EditingSessionError::UndoFailed);
         }
@@ -42,9 +46,14 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     }
 
     fn redo(&mut self) -> Result<(), EditingSessionError> {
+        if self.inference_context_history.can_undo() != self.point_history.can_undo() {
+            return Err(EditingSessionError::HistoryCorrupted);
+        }
+
         if !(self.inference_context_history.can_redo() && self.point_history.can_redo()) {
             return Err(EditingSessionError::RedoFailed);
         }
+
         self.point_history.redo();
         self.inference_context_history.redo();
 
