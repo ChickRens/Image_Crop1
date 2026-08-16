@@ -1,6 +1,5 @@
 use crate::{
-    common::traits::{Cause, Code},
-    domain::value_object::image_size::error::ImageSizeError,
+    common::traits::{Cause, Code, ErrorType, ErrorTypeProvider}, domain::value_object::image_size::error::ImageSizeError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -26,6 +25,16 @@ impl Cause for LoadingError {
             Self::ImageSize(err) => err.cause(),
             Self::UnsupportedFormat(err) => Some(err),
             Self::CorruptedImage(err) => Some(err),
+        }
+    }
+}
+
+impl ErrorTypeProvider for LoadingError {
+    fn error_type(&self) -> ErrorType {
+        match self {
+            Self::ImageSize(err) => err.error_type(),
+            Self::CorruptedImage(_) => ErrorType::InvalidInput,
+            Self::UnsupportedFormat(_) => ErrorType::InvalidInput,
         }
     }
 }

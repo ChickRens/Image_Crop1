@@ -1,10 +1,10 @@
-use crate::leaf_error;
+use crate::{common::traits::ErrorType::InvalidInput, leaf_error};
 
 leaf_error!(
     pub enum ImageSizeError {
-        LongHeight => "LONG_HEIGHT",
-        LongWidth => "LONG_WIDTH",
-        ShortHeight => "SHORT_HEIGHT",
-        ShortWidth => "SHORT_WIDTH",
+        LongHeight => ("LONG_HEIGHT", InvalidInput),
+        LongWidth => ("LONG_WIDTH", InvalidInput),
+        ShortHeight => ("SHORT_HEIGHT", InvalidInput),
+        ShortWidth => ("SHORT_WIDTH", InvalidInput),
     }
 );

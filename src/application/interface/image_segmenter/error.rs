@@ -1,9 +1,9 @@
-use crate::leaf_detail_error;
+use crate::{common::traits::ErrorType::Internal, leaf_detail_error};
 
 leaf_detail_error!(
     pub enum SegmenterError {
-        ModelLoadError => "MODEL_LOAD_ERROR",
-        InferenceError => "INFERENCE_ERROR",
-        PreProcessError => "PREPROCESS_ERROR",
+        ModelLoadError => ("MODEL_LOAD_ERROR", Internal),
+        InferenceError => ("INFERENCE_ERROR", Internal),
+        PreProcessError => ("PREPROCESS_ERROR", Internal),
     }
 );
