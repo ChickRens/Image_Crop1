@@ -5,3 +5,15 @@ pub trait Code {
 pub trait Cause {
     fn cause(&self) -> Option<&str>;
 }
+
+pub enum ErrorType {
+    InvalidInput,
+    Conflict,
+    NotFound,
+    Internal,
+}
+
+pub trait ErrorTypeProvider {
+    fn error_type(&self) -> ErrorType;
+}
+
