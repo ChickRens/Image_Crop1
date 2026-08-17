@@ -39,9 +39,7 @@ pub async fn upload(
             }
 
             None => {
-                return Err(PresentationError::NoName(
-                    "No Name".to_string(),
-                ).into());
+                Err(PresentationError::NoName)?;
             }
         }
     }
