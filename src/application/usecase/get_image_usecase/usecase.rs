@@ -26,8 +26,8 @@ where
 
         let image = self.image_cache.take(image_id)?;
 
-        let (data, _id, _size) = image.into_data();
-        let output = GetImageOutput::new(data.into_image());
+        let (data, _id, size) = image.into_data();
+        let output = GetImageOutput::new(data.into_image(), size);
 
         Ok(output)
     }
