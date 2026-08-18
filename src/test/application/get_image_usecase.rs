@@ -59,7 +59,7 @@ mod get_image_usecase_test {
         let loaded_image = loader.load(image_jpg).unwrap();
         let (original_data, _, _) = loaded_image.into_image().into_data();
 
-        assert_eq!(output.into_image_data(), original_data.into_image());
+        assert_eq!(output.into_image_data().0, original_data.into_image());
     }
 
     #[test]
