@@ -1,18 +1,20 @@
 use std::{io::Cursor, sync::Arc};
 
-use axum::{body::Body, extract::State, response::Response};
+use axum::{Json, body::Body, extract::State, response::Response};
 use image::RgbaImage;
 
-use crate::{application::usecase::get_image_usecase::get_image_input::GetImageInput, composition::wiring::App, domain::value_object::image_id::image_id::ImageId, presentation::errors::{app_error::AppError, presentation_error::PresentationError}};
+use crate::{application::usecase::get_image_usecase::get_image_input::GetImageInput, composition::wiring::App, domain::value_object::image_id::image_id::ImageId, presentation::{errors::{app_error::AppError, presentation_error::PresentationError}, handler::get_image::request::GetImageRequest}};
 
 #[axum::debug_handler]
 pub async fn get_image(
     State(app): State<Arc<App>>,
-    image_id: String,
+    Json(request): Json<GetImageRequest>
 ) -> Result<Response, AppError>{
+    let image_id = request.image_id;
     let image_id = ImageId::from_str(&image_id)
         .map_err(|err| PresentationError::from(err))?;
     let input = GetImageInput::new(image_id);
+    
     let output = app.get_image(input)?;
 
     let (image, size) = output.into_image_data();
