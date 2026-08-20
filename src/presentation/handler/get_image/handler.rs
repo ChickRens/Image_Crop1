@@ -20,13 +20,13 @@ pub async fn get_image(
     let output = app.get_image(input)?;
     
     let (image, size) = output.into_image_data();
-    let rgb_image = RgbImage::from_raw(size.width() as u32, size.height() as u32, image)
+    let rgba_image = RgbaImage::from_raw(size.width() as u32, size.height() as u32, image)
     .ok_or(PresentationError::Loading)?;
 
     let mut bytes = Vec::new();
     let mut cursor = Cursor::new(&mut bytes);
     
-    rgb_image.write_to(&mut cursor, image::ImageFormat::Png).map_err(|err| PresentationError::ConvertToPng(err.to_string()))?;
+    rgba_image.write_to(&mut cursor, image::ImageFormat::Png).map_err(|err| PresentationError::ConvertToPng(err.to_string()))?;
 
     Ok(Response::builder()
         .header("Content-Type", "image/png")
