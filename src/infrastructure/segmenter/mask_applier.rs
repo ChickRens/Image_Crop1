@@ -20,7 +20,7 @@ impl SAM2MaskApplier {
         for y in 0..height {
             for x in 0..width {
                 let rgba_index = (y * width + x) * 4;
-                let rgb_index = (y * width + x) * 3;
+                let rgb_index = (y * width + x) * 4;
 
                 let mask_value = &mask_2d[[y, x]];
 
