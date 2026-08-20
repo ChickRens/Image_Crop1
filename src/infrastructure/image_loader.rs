@@ -23,8 +23,8 @@ impl ImageLoader for FileImageLoader {
 
         let image_size = ImageSize::new(height as u16, width as u16)?;
 
-        let rgb_image = img.to_rgb8();
-        let raw_pixels = rgb_image.into_raw();
+        let rgba_image = img.to_rgba8();
+        let raw_pixels = rgba_image.into_raw();
 
         let image_data = ImageData::new(raw_pixels);
         let image_id = ImageId::new();
