@@ -1,7 +1,7 @@
 use std::{io::Cursor, sync::Arc};
 
 use axum::{Json, body::Body, extract::State, response::Response};
-use image::RgbaImage;
+use image::{RgbImage, RgbaImage};
 
 use crate::{application::usecase::get_image_usecase::get_image_input::GetImageInput, composition::wiring::App, domain::value_object::image_id::image_id::ImageId, presentation::{errors::{app_error::AppError, presentation_error::PresentationError}, handler::get_image::request::GetImageRequest}};
 
@@ -10,20 +10,22 @@ pub async fn get_image(
     State(app): State<Arc<App>>,
     Json(request): Json<GetImageRequest>
 ) -> Result<Response, AppError>{
+    println!("Getting image");
     let image_id = request.image_id;
     let image_id = ImageId::from_str(&image_id)
         .map_err(|err| PresentationError::from(err))?;
+
     let input = GetImageInput::new(image_id);
     
     let output = app.get_image(input)?;
-
+    
     let (image, size) = output.into_image_data();
-    let rgb_image = RgbaImage::from_raw(size.width() as u32, size.height() as u32, image)
-        .ok_or(PresentationError::Loading)?;
+    let rgb_image = RgbImage::from_raw(size.width() as u32, size.height() as u32, image)
+    .ok_or(PresentationError::Loading)?;
 
     let mut bytes = Vec::new();
     let mut cursor = Cursor::new(&mut bytes);
-
+    
     rgb_image.write_to(&mut cursor, image::ImageFormat::Png).map_err(|err| PresentationError::ConvertToPng(err.to_string()))?;
 
     Ok(Response::builder()
