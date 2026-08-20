@@ -429,7 +429,7 @@ impl ImageSegmenter for Sam2Segmenter {
 
     fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterError> {
         let img_data = image.image_data().image();
-        let rgb_image = ImageBuffer::from_raw(
+        let rgba_image = ImageBuffer::from_raw(
             image.image_size().width() as u32,
             image.image_size().height() as u32,
             img_data.clone(),
@@ -438,7 +438,7 @@ impl ImageSegmenter for Sam2Segmenter {
             "It is not Raw RGB data".to_string(),
         ))?;
 
-        let img = DynamicImage::ImageRgb8(rgb_image);
+        let img = DynamicImage::ImageRgba8(rgba_image);
 
         let (embedding, s0, s1) = self
             ._encode_image(&img)
