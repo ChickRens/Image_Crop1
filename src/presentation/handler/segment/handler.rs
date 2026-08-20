@@ -10,7 +10,8 @@ pub async fn segment(
     Json(request): Json<SegmentRequest>,
 ) -> Result<Json<SegmentResponse>, AppError>{
     let session_id = request.session_id;
-    let (x, y) = request.point;
+    let x = request.x;
+    let y = request.y;
     let is_foreground = request.is_foreground;
     let session_id = SessionId::from_str(&session_id)
         .map_err(|err| PresentationError::from(err))?;
