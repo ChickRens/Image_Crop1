@@ -19,7 +19,7 @@ use crate::{
         },
     },
     domain::{
-        entity::session::session::Session,
+        entity::session::Session,
         repository::{
             original_image_repository::repository::OriginalImageRepository,
             session_repository::repository::SessionRepository,

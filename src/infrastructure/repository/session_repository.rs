@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use crate::domain::entity::session::session::Session;
+use crate::domain::entity::session::Session;
 use crate::domain::repository::session_repository::error::SessionRepositoryError;
 use crate::domain::repository::session_repository::repository::SessionRepository;
 use crate::domain::value_object::session_id::session_id::SessionId;
