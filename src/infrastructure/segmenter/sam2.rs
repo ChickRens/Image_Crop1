@@ -9,14 +9,11 @@ use ort::{
 
 use crate::{
     application::{
-        interface::image_segmenter::{error::SegmenterError, segmenter::ImageSegmenter},
-        types::segmented_image::SegmentedImage,
-    },
-    domain::{
+        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
+    }, domain::{
         entity::image::Image,
         value_object::{image_data::ImageData, point::Point},
-    },
-    infrastructure::segmenter::{
+    }, infrastructure::segmenter::{
         mask_applier::SAM2MaskApplier,
         mask_resizer::SAM2MaskResizer,
         sam2_data::{
@@ -35,7 +32,7 @@ pub struct Sam2Segmenter {
 }
 
 impl Sam2Segmenter {
-    pub fn new(model_dir: &str) -> Result<Self, SegmenterError> {
+    pub fn new(model_dir: &str) -> Result<Self, SegmenterModelError> {
         Ok(Self {
             image_encoder_session: Mutex::new(Self::build_session(format!(
                 "{}/sam2.1_hiera_small_image_encoder.onnx",
@@ -51,21 +48,21 @@ impl Sam2Segmenter {
             ))?),
             image_pe: {
                 let bin_file = read("models/image_pe.bin")
-                    .map_err(|e| SegmenterError::ModelLoadError(e.to_string()))?;
+                    .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string()))?;
                 let data: &[f32] = bytemuck::cast_slice(&bin_file);
                 Array4::from_shape_vec((1, 256, 64, 64), data.to_vec())
-                    .map_err(|e| SegmenterError::ModelLoadError(e.to_string()))?
+                    .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string()))?
             },
         })
     }
 
-    fn build_session(path: String) -> Result<Session, SegmenterError> {
+    fn build_session(path: String) -> Result<Session, SegmenterModelError> {
         Ok(Session::builder()
-            .map_err(|e| SegmenterError::ModelLoadError(e.to_string()))?
+            .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string()))?
             .with_optimization_level(GraphOptimizationLevel::Level3)
-            .map_err(|e| SegmenterError::ModelLoadError(e.to_string()))?
+            .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string()))?
             .commit_from_file(path)
-            .map_err(|e| SegmenterError::ModelLoadError(e.to_string())))?
+            .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string())))?
     }
 
     fn _tensor_to_array4<OutputType>(onnx_output: &SessionOutputs, name: &str) -> Array4<OutputType>
@@ -297,7 +294,7 @@ impl Sam2Segmenter {
         static_context: &SAM2StaticContext,
         inference_context: &SAM2InferenceContext,
         input_points: &[Point],
-    ) -> Result<Mask, SegmenterError> {
+    ) -> Result<Mask, SegmenterRuntimeError> {
         let sam2_required_height = 1024;
         let sam2_required_width = 1024;
 
@@ -331,12 +328,12 @@ impl Sam2Segmenter {
         let (sparse_emb, dense_emb) = self
             ._encode_prompt(scaled_coords, labels, mask_value)
             .map_err(|e| {
-                SegmenterError::InferenceError(format!("Prompt encoding failed: {}", e))
+                SegmenterRuntimeError::InferenceError(format!("Prompt encoding failed: {}", e))
             })?;
 
         let mask = self
             ._decode_mask(&image_emb, &sparse_emb, &dense_emb, s0, s1)
-            .map_err(|e| SegmenterError::InferenceError(format!("Mask decoding failed: {}", e)))?;
+            .map_err(|e| SegmenterRuntimeError::InferenceError(format!("Mask decoding failed: {}", e)))?;
 
         Ok(mask)
     }
@@ -344,7 +341,7 @@ impl Sam2Segmenter {
     fn _generate_image(
         mask: &Mask,
         original_image: &Image,
-    ) -> Result<SegmentedImage, SegmenterError> {
+    ) -> Result<SegmentedImage, SegmenterRuntimeError> {
         let resized_mask = SAM2MaskResizer::resize_mask(
             &mask.view().to_owned(),
             original_image.image_size().height() as usize,
@@ -370,7 +367,7 @@ impl ImageSegmenter for Sam2Segmenter {
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterError> {
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
         let mask = self._inference(
             original_image,
             static_context,
@@ -390,51 +387,14 @@ impl ImageSegmenter for Sam2Segmenter {
         Ok((inference_context, segmented))
     }
 
-    fn rebuild(
-        &self,
-        original_image: &Image,
-        static_context: &Self::StaticContext,
-        input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterError> {
-        let mut inference_context = SAM2InferenceContext::new(None);
-
-        for idx in 1..=input_points.len() - 1 {
-            let current_points = &input_points[..idx];
-
-            let temp_mask = self._inference(
-                original_image,
-                static_context,
-                &inference_context,
-                current_points,
-            )?;
-
-            inference_context = SAM2InferenceContext::new(Some(temp_mask));
-        }
-
-        let current_points = input_points;
-
-        let mask = self._inference(
-            original_image,
-            static_context,
-            &inference_context,
-            current_points,
-        )?;
-
-        let segmented_image = Self::_generate_image(&mask, original_image)?;
-
-        inference_context = SAM2InferenceContext::new(Some(mask));
-
-        Ok((inference_context, segmented_image))
-    }
-
-    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterError> {
+    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterLoadingError> {
         let img_data = image.image_data().image();
         let rgba_image = ImageBuffer::from_raw(
             image.image_size().width() as u32,
             image.image_size().height() as u32,
             img_data.clone(),
         )
-        .ok_or(SegmenterError::PreProcessError(
+        .ok_or(SegmenterLoadingError::PreProcessError(
             "It is not Raw RGB data".to_string(),
         ))?;
 
@@ -442,7 +402,7 @@ impl ImageSegmenter for Sam2Segmenter {
 
         let (embedding, s0, s1) = self
             ._encode_image(&img)
-            .map_err(|e| SegmenterError::InferenceError(format!("Image encoding failed: {}", e)))?;
+            .map_err(|e| SegmenterLoadingError::PreProcessError(format!("Image encoding failed: {}", e)))?;
 
         let static_context = SAM2StaticContext::new(embedding, s0, s1);
         Ok(static_context)
@@ -451,7 +411,7 @@ impl ImageSegmenter for Sam2Segmenter {
     fn prepare_inference_context(
         &self,
         _image: &Image,
-    ) -> Result<Self::InferenceContext, SegmenterError> {
+    ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         let inference_context = SAM2InferenceContext::new(None);
         Ok(inference_context)
     }

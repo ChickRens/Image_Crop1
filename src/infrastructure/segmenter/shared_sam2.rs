@@ -2,11 +2,8 @@ use std::sync::Arc;
 
 use crate::{
     application::{
-        interface::image_segmenter::{error::SegmenterError, segmenter::ImageSegmenter},
-        types::segmented_image::SegmentedImage,
-    },
-    domain::{entity::image::Image, value_object::point::Point},
-    infrastructure::segmenter::{
+        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
+    }, domain::{entity::image::Image, value_object::point::Point}, infrastructure::segmenter::{
         sam2::Sam2Segmenter,
         sam2_data::{SAM2InferenceContext, SAM2StaticContext},
     },
@@ -27,7 +24,7 @@ impl ImageSegmenter for SharedSAM2Segmenter {
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterError> {
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
         self.segmenter.segment(
             original_image,
             static_context,
@@ -36,30 +33,20 @@ impl ImageSegmenter for SharedSAM2Segmenter {
         )
     }
 
-    fn rebuild(
-        &self,
-        original_image: &Image,
-        static_context: &Self::StaticContext,
-        input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterError> {
-        self.segmenter
-            .rebuild(original_image, static_context, input_points)
-    }
-
     fn prepare_inference_context(
         &self,
         image: &Image,
-    ) -> Result<Self::InferenceContext, SegmenterError> {
+    ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         self.segmenter.prepare_inference_context(image)
     }
 
-    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterError> {
+    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterLoadingError> {
         self.segmenter.prepare_static_context(image)
     }
 }
 
 impl SharedSAM2Segmenter {
-    pub fn new(model_dir: &str) -> Result<Self, SegmenterError> {
+    pub fn new(model_dir: &str) -> Result<Self, SegmenterModelError> {
         // Self {
         //     sessions: Arc::new(RwLock::new(SessionRepositoryInMemory::new())),
         // }
