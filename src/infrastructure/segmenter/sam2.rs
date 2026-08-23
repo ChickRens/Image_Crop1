@@ -13,7 +13,7 @@ use crate::{
         types::segmented_image::SegmentedImage,
     },
     domain::{
-        entity::image::image::Image,
+        entity::image::Image,
         value_object::{image_data::ImageData, point::Point},
     },
     infrastructure::segmenter::{

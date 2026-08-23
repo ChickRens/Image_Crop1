@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     domain::{
-        entity::image::image::Image,
+        entity::image::Image,
         repository::original_image_repository::{
             error::OriginalImageRepositoryError, repository::OriginalImageRepository,
         },

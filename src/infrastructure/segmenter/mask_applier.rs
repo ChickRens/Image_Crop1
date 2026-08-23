@@ -1,7 +1,7 @@
 use ndarray::prelude::{ArrayBase, Dim};
 use ndarray::{Array4, ViewRepr, s};
 
-use crate::domain::entity::image::image::Image;
+use crate::domain::entity::image::Image;
 
 pub struct SAM2MaskApplier;
 

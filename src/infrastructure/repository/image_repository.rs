@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use crate::domain::{
-    entity::image::image::Image,
+    entity::image::Image,
     repository::original_image_repository::{
         error::OriginalImageRepositoryError, repository::OriginalImageRepository,
     },

@@ -5,7 +5,7 @@ use crate::{
         interface::image_segmenter::{error::SegmenterError, segmenter::ImageSegmenter},
         types::segmented_image::SegmentedImage,
     },
-    domain::{entity::image::image::Image, value_object::point::Point},
+    domain::{entity::image::Image, value_object::point::Point},
     infrastructure::segmenter::{
         sam2::Sam2Segmenter,
         sam2_data::{SAM2InferenceContext, SAM2StaticContext},

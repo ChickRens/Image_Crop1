@@ -2,7 +2,7 @@ use crate::{
     application::{
         interface::image_segmenter::error::SegmenterError, types::segmented_image::SegmentedImage,
     },
-    domain::{entity::image::image::Image, value_object::point::Point},
+    domain::{entity::image::Image, value_object::point::Point},
 };
 
 pub trait ImageSegmenter {
