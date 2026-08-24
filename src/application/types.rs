@@ -5,3 +5,4 @@ pub mod point_history;
 pub mod rendered_image;
 pub mod segmented_image;
 pub mod segmenter_input_image;
+pub mod preview_image;
