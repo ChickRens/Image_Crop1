@@ -1,5 +1,5 @@
-use crate::{application::types::segmenter_input_image::SegmenterInputImage, domain::entity::image::Image};
+use crate::{application::types::segmenter_input_image::SegmenterInputImage, domain::entity::original_image::OriginalImage};
 
 pub trait SegmenterInputImageGenerator {
-    fn generate(&self, image: Image) -> SegmenterInputImage;
+    fn generate(&self, image: OriginalImage) -> SegmenterInputImage;
 }
