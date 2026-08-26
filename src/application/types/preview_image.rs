@@ -1,4 +1,4 @@
-use crate::domain::entity::image::Image;
+use crate::domain::{entity::image::Image, value_object::{image_data::ImageData, image_size::image_size::ImageSize}};
 
 pub struct PreviewImage {
     image: Image
@@ -9,7 +9,11 @@ impl PreviewImage {
         Self { image }
     }
 
-    pub fn into_image(self) -> Image {
-        self.image
+    pub fn image_data(&self) -> &ImageData {
+        self.image.image_data()
+    }
+
+    pub fn image_size(&self) -> &ImageSize {
+        self.image.image_size()
     }
 }
