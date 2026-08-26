@@ -14,6 +14,10 @@ impl OriginalImage {
         self.image
     }
 
+    pub fn image(&self) -> &Image {
+        &self.image
+    }
+
     pub fn image_id(&self) -> ImageId {
         *self.image.image_id()
     }
