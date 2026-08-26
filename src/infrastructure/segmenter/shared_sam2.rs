@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     application::{
         interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
-    }, domain::{entity::image::Image, value_object::point::Point}, infrastructure::segmenter::{
+    }, domain::{entity::original_image::OriginalImage, value_object::point::Point}, infrastructure::segmenter::{
         sam2::Sam2Segmenter,
         sam2_data::{SAM2InferenceContext, SAM2StaticContext},
     },
@@ -20,7 +20,7 @@ impl ImageSegmenter for SharedSAM2Segmenter {
 
     fn segment(
         &self,
-        original_image: &Image,
+        original_image: &OriginalImage,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
@@ -35,12 +35,12 @@ impl ImageSegmenter for SharedSAM2Segmenter {
 
     fn prepare_inference_context(
         &self,
-        image: &Image,
+        image: &OriginalImage,
     ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         self.segmenter.prepare_inference_context(image)
     }
 
-    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterLoadingError> {
+    fn prepare_static_context(&self, image: &OriginalImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
         self.segmenter.prepare_static_context(image)
     }
 }
