@@ -2,13 +2,10 @@ use std::sync::Arc;
 
 use crate::{
     domain::{
-        entity::image::Image,
-        repository::original_image_repository::{
+        entity::original_image::OriginalImage, repository::original_image_repository::{
             error::OriginalImageRepositoryError, repository::OriginalImageRepository,
-        },
-        value_object::image_id::image_id::ImageId,
-    },
-    infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
+        }, value_object::image_id::image_id::ImageId,
+    }, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
 };
 
 #[derive(Clone)]
@@ -25,11 +22,11 @@ impl SharedOriginalImageRepository {
 }
 
 impl OriginalImageRepository for SharedOriginalImageRepository {
-    fn get(&self, image_id: &ImageId) -> Result<Image, OriginalImageRepositoryError> {
+    fn get(&self, image_id: &ImageId) -> Result<OriginalImage, OriginalImageRepositoryError> {
         self.images.get(image_id)
     }
 
-    fn save(&self, image: Image) {
+    fn save(&self, image: OriginalImage) {
         self.images.save(image);
     }
 }
