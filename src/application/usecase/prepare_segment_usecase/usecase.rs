@@ -60,7 +60,7 @@ where
         let editing_session = CommonEditingSession::new(point_history, static_context, inference_context_history, inference_context);
         self.editing_session_repo.save(&session_id, editing_session);
 
-        let segmenter_input = self.input_generator.generate(original_image);
+        let segmenter_input = self.input_generator.generate(&original_image);
         self.input_storage.save(segmenter_input);
 
         Ok(())
