@@ -63,11 +63,11 @@ where
         let session = Session::new(session_id, image_id);
         self.session_repo.save(session);
         
-        let original_image = OriginalImage::new(image.clone());
-        self.image_repo.save(original_image);
-
-        let preview = self.preview_generator.generate(image);
+        let preview = self.preview_generator.generate(&image);
         self.preview_storage.save(preview);
+        
+        let original_image = OriginalImage::new(image);
+        self.image_repo.save(original_image);
 
         let output = UploadOutput::new(session_id, image_id);
 
