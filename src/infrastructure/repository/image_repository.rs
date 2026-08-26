@@ -1,20 +1,18 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use crate::domain::{
-    entity::image::Image,
-    repository::original_image_repository::{
+    entity::original_image::OriginalImage, repository::original_image_repository::{
         error::OriginalImageRepositoryError, repository::OriginalImageRepository,
-    },
-    value_object::image_id::image_id::ImageId,
+    }, value_object::image_id::image_id::ImageId,
 };
 
 pub struct OriginalImageRepositoryInMemory {
-    images: Mutex<HashMap<ImageId, Image>>,
+    images: Mutex<HashMap<ImageId, OriginalImage>>,
 }
 
 impl OriginalImageRepository for OriginalImageRepositoryInMemory {
-    fn save(&self, image: Image) {
-        let key = *image.image_id();
+    fn save(&self, image: OriginalImage) {
+        let key = image.image_id();
         let mut images = self
             .images
             .lock()
@@ -22,7 +20,7 @@ impl OriginalImageRepository for OriginalImageRepositoryInMemory {
         images.insert(key, image);
     }
 
-    fn get(&self, image_id: &ImageId) -> Result<Image, OriginalImageRepositoryError> {
+    fn get(&self, image_id: &ImageId) -> Result<OriginalImage, OriginalImageRepositoryError> {
         let images = self
             .images
             .lock()
