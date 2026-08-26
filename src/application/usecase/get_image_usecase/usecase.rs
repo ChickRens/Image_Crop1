@@ -1,33 +1,34 @@
 use crate::application::{
-    interface::rendered_image_cache::cache::RenderedImageCache,
-    usecase::get_image_usecase::{
+    interface::preview_storage::storage::PreviewStorage, usecase::get_image_usecase::{
         error::GetImageUseCaseError, get_image_input::GetImageInput,
         get_image_output::GetImageOutput,
     },
 };
 
-pub struct GetImageUseCase<IC>
+pub struct GetImageUseCase<PS>
 where
-    IC: RenderedImageCache,
+    PS: PreviewStorage
 {
-    image_cache: IC,
+    storage: PS,
 }
 
-impl<IC> GetImageUseCase<IC>
+impl<PS> GetImageUseCase<PS>
 where
-    IC: RenderedImageCache,
+    PS: PreviewStorage,
 {
-    pub fn new(image_cache: IC) -> Self {
-        Self { image_cache }
+    pub fn new(preview_storage: PS) -> Self {
+        Self { storage: preview_storage }
     }
 
     pub fn execute(&self, input: GetImageInput) -> Result<GetImageOutput, GetImageUseCaseError> {
         let image_id = input.image_id();
 
-        let image = self.image_cache.take(image_id)?;
+        let preview = self.storage.get(image_id)?;
 
-        let (data, _id, size) = image.into_data();
-        let output = GetImageOutput::new(data.into_image(), size);
+        let data = preview.image_data();
+        let size = preview.image_size();
+
+        let output = GetImageOutput::new(data.image(), size.clone());
 
         Ok(output)
     }
