@@ -11,8 +11,7 @@ use crate::{
     application::{
         interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
     }, domain::{
-        entity::image::Image,
-        value_object::{image_data::ImageData, point::Point},
+        entity::{image::Image, original_image::OriginalImage}, value_object::{image_data::ImageData, point::Point},
     }, infrastructure::segmenter::{
         mask_applier::SAM2MaskApplier,
         mask_resizer::SAM2MaskResizer,
@@ -363,19 +362,20 @@ impl ImageSegmenter for Sam2Segmenter {
 
     fn segment(
         &self,
-        original_image: &Image,
+        original_image: &OriginalImage,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
+        let image = original_image.image();
         let mask = self._inference(
-            original_image,
+            image,
             static_context,
             inference_context,
             input_points,
         )?;
 
-        let segmented = Self::_generate_image(&mask, original_image)?;
+        let segmented = Self::_generate_image(&mask, image)?;
 
         let inference_context = SAM2InferenceContext::new(Some(mask));
 
@@ -387,7 +387,8 @@ impl ImageSegmenter for Sam2Segmenter {
         Ok((inference_context, segmented))
     }
 
-    fn prepare_static_context(&self, image: &Image) -> Result<Self::StaticContext, SegmenterLoadingError> {
+    fn prepare_static_context(&self, image: &OriginalImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
+        let image = image.image();
         let img_data = image.image_data().image();
         let rgba_image = ImageBuffer::from_raw(
             image.image_size().width() as u32,
@@ -410,7 +411,7 @@ impl ImageSegmenter for Sam2Segmenter {
 
     fn prepare_inference_context(
         &self,
-        _image: &Image,
+        _image: &OriginalImage,
     ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         let inference_context = SAM2InferenceContext::new(None);
         Ok(inference_context)
