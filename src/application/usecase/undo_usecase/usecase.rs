@@ -1,25 +1,19 @@
 use crate::{
     application::{
         interface::{
-            editing_session_repository::repository::EditingSessionRepository,
-            image_segmenter::segmenter::ImageSegmenter,
-            rendered_image_cache::cache::RenderedImageCache,
-        },
-        types::{editing_session::session::EditingSession, rendered_image::RenderedImage},
-        usecase::undo_usecase::{
+            editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, preview_image_generator::PreviewImageGenerator, preview_storage::storage::PreviewStorage,
+        }, types::editing_session::session::EditingSession, usecase::undo_usecase::{
             error::UndoUseCaseError, undo_input::UndoInput, undo_output::UndoOutput,
         },
-    },
-    domain::{
-        repository::{
+    }, domain::{
+        entity::image::Image, repository::{
             original_image_repository::repository::OriginalImageRepository,
             session_repository::repository::SessionRepository,
-        },
-        value_object::image_id::image_id::ImageId,
+        }, value_object::image_id::image_id::ImageId,
     },
 };
 
-pub struct UndoUseCase<SR, IR, IS, ESR, IC>
+pub struct UndoUseCase<SR, IR, IS, ESR, PS, PG>
 where
     SR: SessionRepository,
     IS: ImageSegmenter,
@@ -28,16 +22,18 @@ where
             StaticContext = <IS as ImageSegmenter>::StaticContext,
             InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
-    IC: RenderedImageCache,
+    PS: PreviewStorage,
+    PG: PreviewImageGenerator,
 {
     session_repo: SR,
     image_repo: IR,
     segmenter: IS,
     editing_session_repo: ESR,
-    image_cache: IC,
+    preview_storage: PS,
+    preview_generator: PG,
 }
 
-impl<SR, IR, IS, ESR, IC> UndoUseCase<SR, IR, IS, ESR, IC>
+impl<SR, IR, IS, ESR, PS, PG> UndoUseCase<SR, IR, IS, ESR, PS, PG>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
@@ -46,21 +42,24 @@ where
             StaticContext = <IS as ImageSegmenter>::StaticContext,
             InferenceContext = <IS as ImageSegmenter>::InferenceContext,
         >,
-    IC: RenderedImageCache,
+    PS: PreviewStorage,
+    PG: PreviewImageGenerator,
 {
     pub fn new(
         session_repository: SR,
         image_repository: IR,
         image_segmenter: IS,
         editing_session_repository: ESR,
-        rendered_image_cache: IC,
+        preview_storage: PS,
+        preview_generator: PG,
     ) -> Self {
         Self {
             session_repo: session_repository,
             image_repo: image_repository,
             segmenter: image_segmenter,
             editing_session_repo: editing_session_repository,
-            image_cache: rendered_image_cache,
+            preview_storage: preview_storage,
+            preview_generator: preview_generator,
         }
     }
 
@@ -78,31 +77,28 @@ where
 
         if points.is_empty() {
             self.editing_session_repo.save(&session_id, editing_session);
-            Ok(UndoOutput::new(*original_image_id))
-        } else {
-            let static_context = editing_session.static_context();
-            let inference_context = editing_session.inference_context();
-
-            let (new_context, segmented_image) = self.segmenter.segment(
-                &original_image,
-                static_context,
-                inference_context,
-                points,
-            )?;
-
-            let (segmented_image_data, size) = segmented_image.into_image_and_size();
-            let segmented_image_id = ImageId::new();
-
-            self.editing_session_repo.save(&session_id, editing_session);
-
-            self.image_cache.save(RenderedImage::new(
-                segmented_image_data,
-                segmented_image_id,
-                size,
-            ));
-
-            let output = UndoOutput::new(segmented_image_id);
-            Ok(output)
+            return Ok(UndoOutput::new(*original_image_id));
         }
+
+        let static_context = editing_session.static_context();
+        let inference_context = editing_session.inference_context();
+
+        let (_, segmented_image) = self.segmenter.segment(
+            &original_image,
+            static_context,
+            inference_context,
+            points,
+        )?;
+
+        let (segmented_image_data, size) = segmented_image.into_image_and_size();
+        let segmented_image_id = ImageId::new();
+        let segmented_image = Image::new(segmented_image_data, segmented_image_id, size);
+
+        self.editing_session_repo.save(&session_id, editing_session);
+        let preview = self.preview_generator.generate(&segmented_image);
+        self.preview_storage.save(preview);
+
+        let output = UndoOutput::new(segmented_image_id);
+        Ok(output)
     }
 }
