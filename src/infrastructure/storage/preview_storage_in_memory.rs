@@ -18,3 +18,10 @@ impl PreviewStorage for PreviewStorageInMemory {
         images.get(&image_id).cloned().ok_or(PreviewStorageError::ImageNotFound)
     }
 }
+
+impl PreviewStorageInMemory {
+    pub fn new() -> Self {
+        Self { images: Mutex::new(HashMap::new()) }
+    }
+}
+
