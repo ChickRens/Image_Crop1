@@ -25,10 +25,9 @@ where
 
         let preview = self.storage.get(image_id)?;
 
-        let data = preview.image_data();
-        let size = preview.image_size();
+        let (data, _, size) = preview.into_data();
 
-        let output = GetImageOutput::new(data.image(), size.clone());
+        let output = GetImageOutput::new(data.into_image(), size.clone());
 
         Ok(output)
     }
