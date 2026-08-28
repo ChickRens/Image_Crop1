@@ -1,5 +1,6 @@
-use crate::domain::{entity::image::Image, value_object::{image_data::ImageData, image_size::image_size::ImageSize}};
+use crate::domain::{entity::image::Image, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}};
 
+#[derive(Debug, Clone ,PartialEq, Eq)]
 pub struct PreviewImage {
     image: Image
 }
@@ -9,11 +10,11 @@ impl PreviewImage {
         Self { image }
     }
 
-    pub fn image_data(&self) -> &ImageData {
-        self.image.image_data()
+    pub fn image_id(&self) -> ImageId {
+        *self.image.image_id()
     }
 
-    pub fn image_size(&self) -> &ImageSize {
-        self.image.image_size()
+    pub fn into_data(self) -> (ImageData, ImageId, ImageSize) {
+        self.image.into_data()
     }
 }
