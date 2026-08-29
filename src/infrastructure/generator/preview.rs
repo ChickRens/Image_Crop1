@@ -17,6 +17,7 @@ use crate::{
     },
 };
 
+#[derive(Debug)]
 pub struct WebPPreviewImageGenerator {
     long_side: f32
 }

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::{application::{interface::preview_storage::{error::PreviewStorageError, storage::PreviewStorage}, types::preview_image::PreviewImage}, domain::value_object::image_id::image_id::ImageId, infrastructure::storage::preview_storage_in_memory::PreviewStorageInMemory};
 
+#[derive(Debug, Clone)]
 pub struct SharedPreviewStorage {
     storage: Arc<PreviewStorageInMemory>
 }

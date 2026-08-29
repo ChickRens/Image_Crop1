@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use crate::{application::{interface::preview_storage::{error::PreviewStorageError, storage::PreviewStorage}, types::preview_image::PreviewImage}, domain::value_object::image_id::image_id::ImageId};
 
+#[derive(Debug)]
 pub struct PreviewStorageInMemory {
     images: Mutex<HashMap<ImageId, PreviewImage>>
 }
