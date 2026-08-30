@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use crate::domain::value_object::coordinate::Coordinate;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -23,5 +25,13 @@ impl Point {
 
     pub fn label(&self) -> PointLabel {
         self.label.clone()
+    }
+}
+
+impl Mul<f64> for Point {
+    type Output = Self;
+
+    fn mul(self, scale: f64) -> Self {
+        Self { coordinate: self.coordinate * scale, label: self.label }
     }
 }

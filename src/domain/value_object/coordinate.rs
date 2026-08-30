@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Coordinate {
     x: u16,
@@ -15,5 +17,13 @@ impl Coordinate {
 
     pub fn y(&self) -> u16 {
         self.y
+    }
+}
+
+impl Mul<f64> for Coordinate {
+    type Output = Self;
+
+    fn mul(self, scale: f64) -> Self {
+        Self { x: (self.x as f64 * scale) as u16, y: (self.y as f64 * scale) as u16 }
     }
 }
