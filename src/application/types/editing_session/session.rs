@@ -11,6 +11,7 @@ pub struct CommonEditingSession<StaticContext, InferenceContext> {
     point_history: PointHistory,
     static_context: StaticContext,
     inference_context_history: InferenceContextHistory<InferenceContext>,
+    point_scale: f64,
 }
 
 pub trait EditingSession {
@@ -70,12 +71,12 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
 
     fn points_with(&self, point: Point) -> Vec<Point> {
         let mut points = self.points().to_vec();
-        points.push(point);
+        points.push(point * self.point_scale);
         points
     }
 
     fn apply_edit(&mut self, point: Point, inference_context: Self::InferenceContext) {
-        self.point_history.add(point);
+        self.point_history.add(point * self.point_scale);
         self.inference_context_history.add(inference_context);
     }
 
@@ -94,6 +95,7 @@ impl<S, I> CommonEditingSession<S, I> {
         static_context: S,
         mut inference_context_history: InferenceContextHistory<I>,
         initial_inference_context: I,
+        point_scaler: f64
     ) -> Self {
         inference_context_history.add(initial_inference_context);
 
@@ -101,6 +103,7 @@ impl<S, I> CommonEditingSession<S, I> {
             point_history: history,
             static_context: static_context,
             inference_context_history: inference_context_history,
+            point_scale: point_scaler,
         }
     }
 }
