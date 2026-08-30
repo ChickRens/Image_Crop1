@@ -8,7 +8,7 @@ pub struct SharedPreviewGenerator {
 }
 
 impl PreviewImageGenerator for SharedPreviewGenerator {
-    fn generate(&self, image: &Image) -> PreviewImage {
+    fn generate(&self, image: &Image) -> (PreviewImage, f64) {
         self.generator.generate(image)
     }
 }

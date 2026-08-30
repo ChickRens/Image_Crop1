@@ -19,15 +19,15 @@ use crate::{
 
 #[derive(Debug)]
 pub struct WebPPreviewImageGenerator {
-    long_side: f32
+    long_side: f64
 }
 
 impl PreviewImageGenerator for WebPPreviewImageGenerator {
-    fn generate(&self, image: &Image) -> PreviewImage {
+    fn generate(&self, image: &Image) -> (PreviewImage, f64) {
         let source_size = image.image_size();
-        let scale = self.long_side / source_size.height().max(source_size.width()) as f32;
-        let width = ((source_size.width() as f32 * scale).round() as u16).max(2);
-        let height = ((source_size.height() as f32 * scale).round() as u16).max(2);
+        let scale = self.long_side / source_size.height().max(source_size.width()) as f64;
+        let width = ((source_size.width() as f64 * scale).round() as u16).max(2);
+        let height = ((source_size.height() as f64 * scale).round() as u16).max(2);
         let preview_size = ImageSize::new(height, width).expect("preview size is invalid");
 
         let rgba_image = RgbaImage::from_raw(
@@ -55,16 +55,16 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
             )
             .expect("failed to encode preview as WebP");
 
-        PreviewImage::new(Image::new(
+        (PreviewImage::new(Image::new(
             ImageData::new(webp),
             *image.image_id(),
             preview_size,
-        ))
+        )), scale)
     }
 }
 
 impl WebPPreviewImageGenerator {
     pub fn new(preview_image_long_side: u16) -> Self {
-        Self { long_side: preview_image_long_side as f32 }
+        Self { long_side: preview_image_long_side as f64 }
     }
 }
