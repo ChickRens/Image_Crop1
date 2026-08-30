@@ -48,19 +48,20 @@ where
     pub fn execute(&self, input: PrepareSegmentInput) -> Result<(), PrepareSegmentUseCaseError> {
         let image_id = input.image_id();
         let session_id = input.session_id();
+        let preview_to_original_scale = input.point_scale();
 
         let original_image = self.image_repo.get(&image_id)?;
+        let segmenter_input = self.input_generator.generate(&original_image);
 
-        let static_context = self.segmenter.prepare_static_context(&original_image)?;
-        let inference_context = self.segmenter.prepare_inference_context(&original_image)?;
+        let static_context = self.segmenter.prepare_static_context(&segmenter_input)?;
+        let inference_context = self.segmenter.prepare_inference_context(&segmenter_input)?;
 
         let point_history = PointHistory::new(MAX_HISTORY);
         let inference_context_history = InferenceContextHistory::new(MAX_HISTORY);
 
-        let editing_session = CommonEditingSession::new(point_history, static_context, inference_context_history, inference_context);
+        let editing_session = CommonEditingSession::new(point_history, static_context, inference_context_history, inference_context, preview_to_original_scale);
         self.editing_session_repo.save(&session_id, editing_session);
 
-        let segmenter_input = self.input_generator.generate(&original_image);
         self.input_storage.save(segmenter_input);
 
         Ok(())
