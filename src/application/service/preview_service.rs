@@ -18,9 +18,10 @@ where
         Self { generator: preview_generator, storage: preview_storage }
     }
 
-    pub fn generate_and_save(&self, image: &Image) {
-        let (preview, _) = self.generator.generate(image);
+    pub fn generate_and_save(&self, image: &Image) -> f64 {
+        let (preview, scale) = self.generator.generate(image);
         self.storage.save(preview);
+        scale
     }
 
     pub fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
