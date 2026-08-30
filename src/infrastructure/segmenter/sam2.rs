@@ -9,9 +9,9 @@ use ort::{
 
 use crate::{
     application::{
-        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
+        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
     }, domain::{
-        entity::{image::Image, original_image::OriginalImage}, value_object::{image_data::ImageData, point::Point},
+        entity::image::Image, value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
     }, infrastructure::segmenter::{
         mask_applier::SAM2MaskApplier,
         mask_resizer::SAM2MaskResizer,
@@ -101,11 +101,8 @@ impl Sam2Segmenter {
             .lock()
             .expect("ImageEncoderSession Mutex is Poisoned");
 
-        let resized_image =
-            original_image.resize_exact(1024, 1024, image::imageops::FilterType::CatmullRom);
-
         let mut input: Array4<f32> = Array4::zeros((1, 3, 1024, 1024));
-        for pixel in resized_image.pixels() {
+        for pixel in original_image.pixels() {
             let x = pixel.0 as usize;
             let y = pixel.1 as usize;
             let channels = pixel.2.channels();
@@ -289,10 +286,10 @@ impl Sam2Segmenter {
 
     fn _inference(
         &self,
-        original_image: &Image,
+        original_size: &ImageSize,
         static_context: &SAM2StaticContext,
         inference_context: &SAM2InferenceContext,
-        input_points: &[Point],
+        input_scaled_points: &[Point],
     ) -> Result<Mask, SegmenterRuntimeError> {
         let sam2_required_height = 1024;
         let sam2_required_width = 1024;
@@ -304,7 +301,7 @@ impl Sam2Segmenter {
         let mut labels: Vec<i64> = Vec::new();
         let mut mask_value: Option<ArrayView4<f32>> = None;
 
-        for point in input_points {
+        for point in input_scaled_points {
             let point_x = point.coordinate().x() as f32;
             let point_y = point.coordinate().y() as f32;
             let label = point.label() as i64;
@@ -318,8 +315,8 @@ impl Sam2Segmenter {
 
         let scaled_coords = Self::_scale_prompt(
             coords,
-            original_image.image_size().height(),
-            original_image.image_size().width(),
+            original_size.height(),
+            original_size.width(),
             sam2_required_height,
             sam2_required_width,
         );
@@ -362,17 +359,18 @@ impl ImageSegmenter for Sam2Segmenter {
 
     fn segment(
         &self,
-        original_image: &OriginalImage,
+        input_image: &SegmenterInputImage,
+        original_size: &ImageSize,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
-        input_points: &[Point],
+        input_scaled_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
-        let image = original_image.image();
+        let image = input_image.image();
         let mask = self._inference(
-            image,
+            original_size,
             static_context,
             inference_context,
-            input_points,
+            input_scaled_points,
         )?;
 
         let segmented = Self::_generate_image(&mask, image)?;
@@ -387,7 +385,7 @@ impl ImageSegmenter for Sam2Segmenter {
         Ok((inference_context, segmented))
     }
 
-    fn prepare_static_context(&self, image: &OriginalImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
+    fn prepare_static_context(&self, image: &SegmenterInputImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
         let image = image.image();
         let img_data = image.image_data().image();
         let rgba_image = ImageBuffer::from_raw(
@@ -411,7 +409,7 @@ impl ImageSegmenter for Sam2Segmenter {
 
     fn prepare_inference_context(
         &self,
-        _image: &OriginalImage,
+        _image: &SegmenterInputImage,
     ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         let inference_context = SAM2InferenceContext::new(None);
         Ok(inference_context)

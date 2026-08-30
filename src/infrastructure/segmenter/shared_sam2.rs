@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use crate::{
     application::{
-        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::segmented_image::SegmentedImage,
-    }, domain::{entity::original_image::OriginalImage, value_object::point::Point}, infrastructure::segmenter::{
+        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
+    }, domain::value_object::{image_size::image_size::ImageSize, point::Point}, infrastructure::segmenter::{
         sam2::Sam2Segmenter,
         sam2_data::{SAM2InferenceContext, SAM2StaticContext},
     },
@@ -20,13 +20,15 @@ impl ImageSegmenter for SharedSAM2Segmenter {
 
     fn segment(
         &self,
-        original_image: &OriginalImage,
+        input_image: &SegmenterInputImage,
+        original_size: &ImageSize,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
         self.segmenter.segment(
-            original_image,
+            input_image,
+            original_size,
             static_context,
             inference_context,
             input_points,
@@ -35,12 +37,12 @@ impl ImageSegmenter for SharedSAM2Segmenter {
 
     fn prepare_inference_context(
         &self,
-        image: &OriginalImage,
+        image: &SegmenterInputImage,
     ) -> Result<Self::InferenceContext, SegmenterLoadingError> {
         self.segmenter.prepare_inference_context(image)
     }
 
-    fn prepare_static_context(&self, image: &OriginalImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
+    fn prepare_static_context(&self, image: &SegmenterInputImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
         self.segmenter.prepare_static_context(image)
     }
 }
