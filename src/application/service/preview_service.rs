@@ -1,6 +1,13 @@
+use std::sync::Arc;
+
 use crate::{application::{interface::{preview_image_generator::PreviewImageGenerator, preview_storage::{error::PreviewStorageError, storage::PreviewStorage}}, types::preview_image::PreviewImage}, domain::{entity::image::Image, value_object::image_id::image_id::ImageId}};
 
-pub struct PreviewService<PG, PS>
+pub trait PreviewService {
+    fn generate_and_save(&self, image: &Image) -> f64;
+    fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError>;
+}
+
+pub struct PreviewServiceImpl<PG, PS>
 where
     PG: PreviewImageGenerator,
     PS: PreviewStorage,
@@ -9,7 +16,23 @@ where
     storage: PS,
 }
 
-impl<PG, PS> PreviewService<PG, PS>
+impl<PG, PS> PreviewService for PreviewServiceImpl<PG, PS>
+where 
+    PG: PreviewImageGenerator,
+    PS: PreviewStorage,
+{
+    fn generate_and_save(&self, image: &Image) -> f64 {
+        let (preview, scale) = self.generator.generate(image);
+        self.storage.save(preview);
+        scale
+    }
+
+    fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
+        self.storage.get(image_id)
+    }
+}
+
+impl<PG, PS> PreviewServiceImpl<PG, PS>
 where 
     PG: PreviewImageGenerator,
     PS: PreviewStorage,
@@ -17,14 +40,36 @@ where
     pub fn new(preview_generator: PG, preview_storage: PS) -> Self {
         Self { generator: preview_generator, storage: preview_storage }
     }
+}
 
-    pub fn generate_and_save(&self, image: &Image) -> f64 {
-        let (preview, scale) = self.generator.generate(image);
-        self.storage.save(preview);
-        scale
+pub struct SharedPreviewService<PG, PS> 
+where
+    PG: PreviewImageGenerator,
+    PS: PreviewStorage,
+{
+    service: Arc<PreviewServiceImpl<PG, PS>>
+}
+
+impl<PG, PS> PreviewService for SharedPreviewService<PG, PS> 
+where
+    PG: PreviewImageGenerator,
+    PS: PreviewStorage,
+{
+    fn generate_and_save(&self, image: &Image) -> f64 {
+        self.service.generate_and_save(image)
     }
 
-    pub fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
-        self.storage.get(image_id)
+    fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
+        self.service.get(image_id)
+    }
+}
+
+impl<PG, PS> SharedPreviewService<PG, PS> 
+where
+    PG: PreviewImageGenerator,
+    PS: PreviewStorage,
+{
+    pub fn new(preview_generator: PG, preview_storage: PS) -> Self{
+        Self { service: Arc::new(PreviewServiceImpl::new(preview_generator, preview_storage)) }
     }
 }
