@@ -1,19 +1,25 @@
 use crate::{
     application::{
         interface::{
-            editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, preview_image_generator::PreviewImageGenerator, preview_storage::storage::PreviewStorage,
-        }, types::editing_session::session::EditingSession, usecase::undo_usecase::{
-            error::UndoUseCaseError, undo_input::UndoInput, undo_output::UndoOutput,
+            editing_session_repository::repository::EditingSessionRepository,
+            image_segmenter::segmenter::ImageSegmenter,
+            preview_image_generator::PreviewImageGenerator,
+            preview_storage::storage::PreviewStorage,
+            segmenter_input_image_storage::storage::SegmenterInputImageStorage,
+        }, service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::undo_usecase::{
+            error::UndoUseCaseError,
+            undo_input::UndoInput,
+            undo_output::UndoOutput,
         },
     }, domain::{
-        entity::image::Image, repository::{
+        repository::{
             original_image_repository::repository::OriginalImageRepository,
             session_repository::repository::SessionRepository,
-        }, value_object::image_id::image_id::ImageId,
+        },
     },
 };
 
-pub struct UndoUseCase<SR, IR, IS, ESR, PS, PG>
+pub struct UndoUseCase<SR, IR, IS, ESR, PS, PG, SS>
 where
     SR: SessionRepository,
     IS: ImageSegmenter,
@@ -24,16 +30,13 @@ where
         >,
     PS: PreviewStorage,
     PG: PreviewImageGenerator,
+    SS: SegmenterInputImageStorage,
 {
-    session_repo: SR,
-    image_repo: IR,
-    segmenter: IS,
-    editing_session_repo: ESR,
-    preview_storage: PS,
-    preview_generator: PG,
+    segment_service: SegmentService<SR, IS, IR, ESR, SS>,
+    preview_service: PreviewService<PG, PS>,
 }
 
-impl<SR, IR, IS, ESR, PS, PG> UndoUseCase<SR, IR, IS, ESR, PS, PG>
+impl<SR, IR, IS, ESR, PS, PG, SS> UndoUseCase<SR, IR, IS, ESR, PS, PG, SS>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
@@ -44,59 +47,24 @@ where
         >,
     PS: PreviewStorage,
     PG: PreviewImageGenerator,
+    SS: SegmenterInputImageStorage,
 {
     pub fn new(
-        session_repository: SR,
-        image_repository: IR,
-        image_segmenter: IS,
-        editing_session_repository: ESR,
-        preview_storage: PS,
-        preview_generator: PG,
+        segment_service: SegmentService<SR, IS, IR, ESR, SS>,
+        preview_service: PreviewService<PG, PS>,
     ) -> Self {
         Self {
-            session_repo: session_repository,
-            image_repo: image_repository,
-            segmenter: image_segmenter,
-            editing_session_repo: editing_session_repository,
-            preview_storage: preview_storage,
-            preview_generator: preview_generator,
+            segment_service,
+            preview_service,
         }
     }
 
     pub fn execute(&self, undo_input: UndoInput) -> Result<UndoOutput, UndoUseCaseError> {
         let session_id = undo_input.session_id();
-        let session = self.session_repo.get(&session_id)?;
 
-        let original_image_id = session.image_id();
-        let original_image = self.image_repo.get(original_image_id)?;
-
-        let mut editing_session = self.editing_session_repo.get(&session_id)?;
-
-        editing_session.undo()?;
-        let points = editing_session.points();
-
-        if points.is_empty() {
-            self.editing_session_repo.save(&session_id, editing_session);
-            return Ok(UndoOutput::new(*original_image_id));
-        }
-
-        let static_context = editing_session.static_context();
-        let inference_context = editing_session.inference_context();
-
-        let (_, segmented_image) = self.segmenter.segment(
-            &original_image,
-            static_context,
-            inference_context,
-            points,
-        )?;
-
-        let (segmented_image_data, size) = segmented_image.into_image_and_size();
-        let segmented_image_id = ImageId::new();
-        let segmented_image = Image::new(segmented_image_data, segmented_image_id, size);
-
-        self.editing_session_repo.save(&session_id, editing_session);
-        let preview = self.preview_generator.generate(&segmented_image);
-        self.preview_storage.save(preview);
+        let segmented_image = self.segment_service.undo(session_id)?;
+        self.preview_service.generate_and_save(&segmented_image);
+        let segmented_image_id = *segmented_image.image_id();
 
         let output = UndoOutput::new(segmented_image_id);
         Ok(output)
