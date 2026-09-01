@@ -42,6 +42,7 @@ where
     }
 }
 
+#[derive(Clone)]
 pub struct SharedPreviewService<PG, PS> 
 where
     PG: PreviewImageGenerator,

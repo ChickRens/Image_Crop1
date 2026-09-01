@@ -128,6 +128,7 @@ where
     }
 }
 
+#[derive(Clone)]
 pub struct SharedSegmentService<SR, IS, IR, ESR, SS> 
 where
     SR: SessionRepository,

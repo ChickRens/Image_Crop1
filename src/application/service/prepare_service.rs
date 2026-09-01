@@ -67,6 +67,7 @@ where
     }
 }
 
+#[derive(Clone)]
 pub struct SharedPrepareSegmentService<IS, IR, ESR, SG, SS> 
 where
     IS: ImageSegmenter,
