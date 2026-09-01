@@ -22,6 +22,7 @@ where
     SR: SessionRepository,
     IR: OriginalImageRepository,
     LD: ImageLoader,
+    PS: PreviewService,
 {
     session_repo: SR,
     image_repo: IR,
