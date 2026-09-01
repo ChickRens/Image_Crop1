@@ -1,24 +1,22 @@
 use crate::application::{
-    interface::{preview_image_generator::PreviewImageGenerator, preview_storage::storage::PreviewStorage}, service::preview_service::PreviewService, usecase::get_image_usecase::{
+    service::preview_service::PreviewService, usecase::get_image_usecase::{
         error::GetImageUseCaseError, get_image_input::GetImageInput,
         get_image_output::GetImageOutput,
     },
 };
 
-pub struct GetImageUseCase<PG, PS>
+pub struct GetImageUseCase<PS>
 where
-    PG: PreviewImageGenerator,
-    PS: PreviewStorage,
+    PS: PreviewService
 {
-    preview_service: PreviewService<PG, PS>
+    preview_service: PS
 }
 
-impl<PG, PS> GetImageUseCase<PG, PS>
+impl<PS> GetImageUseCase<PS>
 where
-    PG: PreviewImageGenerator,
-    PS: PreviewStorage,
+    PS: PreviewService
 {
-    pub fn new(preview_service: PreviewService<PG, PS>) -> Self {
+    pub fn new(preview_service: PS) -> Self {
         Self { preview_service }
     }
 

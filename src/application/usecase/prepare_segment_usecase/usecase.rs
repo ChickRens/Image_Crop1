@@ -1,32 +1,18 @@
-use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, segmenter_input_image_generator::SegmenterInputImageGenerator, segmenter_input_image_storage::storage::SegmenterInputImageStorage}, service::prepare_service::PrepareSegmentService, usecase::{prepare_segment_usecase::{error::PrepareSegmentUseCaseError, prepare_segment_input::PrepareSegmentInput}}}, domain::repository::original_image_repository::repository::OriginalImageRepository};
+use crate::application::{service::prepare_service::PrepareSegmentService, usecase::{prepare_segment_usecase::{error::PrepareSegmentUseCaseError, prepare_segment_input::PrepareSegmentInput}}};
 
-pub struct PrepareSegmentUseCase<IR, IS, ESR, SS, SG>
+pub struct PrepareSegmentUseCase<PS>
 where
-    IR: OriginalImageRepository,
-    IS: ImageSegmenter,
-    ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
-        >,
-    SS: SegmenterInputImageStorage,
-    SG: SegmenterInputImageGenerator,
+    PS: PrepareSegmentService
 {
-    prepare_service: PrepareSegmentService<IS, IR, ESR, SG, SS>
+    prepare_service: PS,
 }
 
-impl<IR, IS, ESR, SS, SG> PrepareSegmentUseCase<IR, IS, ESR, SS, SG>
+impl<PS> PrepareSegmentUseCase<PS>
 where
-    IR: OriginalImageRepository,
-    IS: ImageSegmenter,
-    ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
-        >,
-    SS: SegmenterInputImageStorage,
-    SG: SegmenterInputImageGenerator,
+    PS: PrepareSegmentService
 {
     pub fn new(
-        prepare_service: PrepareSegmentService<IS, IR, ESR, SG, SS>
+        prepare_service: PS,
     ) -> Self {
         Self {
             prepare_service

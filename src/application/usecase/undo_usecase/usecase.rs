@@ -1,57 +1,30 @@
 use crate::{
     application::{
-        interface::{
-            editing_session_repository::repository::EditingSessionRepository,
-            image_segmenter::segmenter::ImageSegmenter,
-            preview_image_generator::PreviewImageGenerator,
-            preview_storage::storage::PreviewStorage,
-            segmenter_input_image_storage::storage::SegmenterInputImageStorage,
-        }, service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::undo_usecase::{
+        service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::undo_usecase::{
             error::UndoUseCaseError,
             undo_input::UndoInput,
             undo_output::UndoOutput,
         },
-    }, domain::{
-        repository::{
-            original_image_repository::repository::OriginalImageRepository,
-            session_repository::repository::SessionRepository,
-        },
-    },
+    }
 };
 
-pub struct UndoUseCase<SR, IR, IS, ESR, PS, PG, SS>
+pub struct UndoUseCase<SS, PS>
 where
-    SR: SessionRepository,
-    IS: ImageSegmenter,
-    IR: OriginalImageRepository,
-    ESR: EditingSessionRepository<
-            StaticContext = <IS as ImageSegmenter>::StaticContext,
-            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
-        >,
-    PS: PreviewStorage,
-    PG: PreviewImageGenerator,
-    SS: SegmenterInputImageStorage,
+    SS: SegmentService,
+    PS: PreviewService,
 {
-    segment_service: SegmentService<SR, IS, IR, ESR, SS>,
-    preview_service: PreviewService<PG, PS>,
+    segment_service: SS,
+    preview_service: PS,
 }
 
-impl<SR, IR, IS, ESR, PS, PG, SS> UndoUseCase<SR, IR, IS, ESR, PS, PG, SS>
+impl<SS, PS> UndoUseCase<SS, PS>
 where
-    SR: SessionRepository,
-    IR: OriginalImageRepository,
-    IS: ImageSegmenter,
-    ESR: EditingSessionRepository<
-            StaticContext = <IS as ImageSegmenter>::StaticContext,
-            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
-        >,
-    PS: PreviewStorage,
-    PG: PreviewImageGenerator,
-    SS: SegmenterInputImageStorage,
+    SS: SegmentService,
+    PS: PreviewService,
 {
     pub fn new(
-        segment_service: SegmentService<SR, IS, IR, ESR, SS>,
-        preview_service: PreviewService<PG, PS>,
+        segment_service: SS ,
+        preview_service: PS ,
     ) -> Self {
         Self {
             segment_service,

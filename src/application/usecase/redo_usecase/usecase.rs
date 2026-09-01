@@ -1,59 +1,30 @@
 use crate::{
     application::{
-        interface::{
-            editing_session_repository::repository::EditingSessionRepository,
-            image_segmenter::segmenter::ImageSegmenter,
-            preview_image_generator::PreviewImageGenerator,
-            preview_storage::storage::PreviewStorage,
-            segmenter_input_image_storage::storage::SegmenterInputImageStorage,
-        }, service::{preview_service::PreviewService, segment_service::SegmentService}, types::editing_session::session::EditingSession, usecase::redo_usecase::{
+        service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::redo_usecase::{
             error::RedoUseCaseError,
             redo_input::RedoInput,
             redo_output::RedoOutput,
         },
-    }, domain::{
-        entity::image::Image,
-        repository::{
-            original_image_repository::repository::OriginalImageRepository,
-            session_repository::repository::SessionRepository,
-        },
-        value_object::image_id::image_id::ImageId,
-    },
+    }
 };
 
-pub struct RedoUseCase<SR, IR, IS, ESR, PS, PG, SS>
+pub struct RedoUseCase<PS, SS>
 where
-    SR: SessionRepository,
-    IS: ImageSegmenter,
-    IR: OriginalImageRepository,
-    ESR: EditingSessionRepository<
-            StaticContext = <IS as ImageSegmenter>::StaticContext,
-            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
-        >,
-    PS: PreviewStorage,
-    PG: PreviewImageGenerator,
-    SS: SegmenterInputImageStorage,
+    PS: PreviewService,
+    SS: SegmentService,
 {
-    preview_service: PreviewService<PG, PS>,
-    segment_service: SegmentService<SR, IS, IR, ESR, SS>,
+    preview_service: PS,
+    segment_service: SS,
 }
 
-impl<SR, IR, IS, ESR, PS, PG, SS> RedoUseCase<SR, IR, IS, ESR, PS, PG, SS>
+impl<PS, SS> RedoUseCase<PS, SS>
 where
-    SR: SessionRepository,
-    IR: OriginalImageRepository,
-    IS: ImageSegmenter,
-    ESR: EditingSessionRepository<
-            StaticContext = <IS as ImageSegmenter>::StaticContext,
-            InferenceContext = <IS as ImageSegmenter>::InferenceContext,
-        >,
-    PS: PreviewStorage,
-    PG: PreviewImageGenerator,
-    SS: SegmenterInputImageStorage,
+    PS: PreviewService,
+    SS: SegmentService,
 {
     pub fn new(
-        segment_service: SegmentService<SR, IS, IR, ESR, SS>,
-        preview_service: PreviewService<PG, PS>,
+        segment_service: SS,
+        preview_service: PS,
     ) -> Self {
         Self {
             segment_service,

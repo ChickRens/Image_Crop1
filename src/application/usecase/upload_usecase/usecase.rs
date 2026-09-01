@@ -2,17 +2,12 @@ use crate::{
     application::{
         interface::{
             image_loader::loader::ImageLoader,
-            preview_image_generator::PreviewImageGenerator,
-            preview_storage::storage::PreviewStorage,
-        },
-        service::preview_service::PreviewService,
-        usecase::upload_usecase::{
+        }, service::preview_service::PreviewService, usecase::upload_usecase::{
             error::UploadUseCaseError,
             upload_input::UploadInput,
             upload_output::UploadOutput,
         },
-    },
-    domain::{
+    }, domain::{
         entity::{original_image::OriginalImage, session::Session},
         repository::{
             original_image_repository::repository::OriginalImageRepository,
@@ -22,33 +17,30 @@ use crate::{
     },
 };
 
-pub struct UploadUseCase<SR, IR, LD, PG, PS>
+pub struct UploadUseCase<SR, IR, LD, PS>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
     LD: ImageLoader,
-    PG: PreviewImageGenerator,
-    PS: PreviewStorage,
 {
     session_repo: SR,
     image_repo: IR,
     loader: LD,
-    preview_service: PreviewService<PG, PS>,
+    preview_service: PS,
 }
 
-impl<SR, IR, LD, PG, PS> UploadUseCase<SR, IR, LD, PG, PS>
+impl<SR, IR, LD, PS> UploadUseCase<SR, IR, LD, PS>
 where
     SR: SessionRepository,
     IR: OriginalImageRepository,
     LD: ImageLoader,
-    PG: PreviewImageGenerator,
-    PS: PreviewStorage,
+    PS: PreviewService,
 {
     pub fn new(
         session_repository: SR,
         image_repository: IR,
         image_loader: LD,
-        preview_service: PreviewService<PG, PS>,
+        preview_service: PS,
     ) -> Self {
         Self {
             session_repo: session_repository,
