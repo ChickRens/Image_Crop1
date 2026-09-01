@@ -34,8 +34,8 @@ where
     PG: PreviewImageGenerator,
     SS: SegmenterInputImageStorage,
 {
-    segment_service: SegmentService<SR, IS, IR, ESR, SS>,
     preview_service: PreviewService<PG, PS>,
+    segment_service: SegmentService<SR, IS, IR, ESR, SS>,
 }
 
 impl<SR, IR, IS, ESR, PS, PG, SS> RedoUseCase<SR, IR, IS, ESR, PS, PG, SS>
@@ -52,12 +52,12 @@ where
     SS: SegmenterInputImageStorage,
 {
     pub fn new(
+        segment_service: SegmentService<SR, IS, IR, ESR, SS>,
         preview_service: PreviewService<PG, PS>,
-        segment_service: SegmentService<SR, IS, IR, ESR, SS>
     ) -> Self {
         Self {
+            segment_service,
             preview_service,
-            segment_service
         }
     }
 
