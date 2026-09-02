@@ -4,7 +4,7 @@ use crate::{
             get_image_usecase::{
                 get_image_input::GetImageInput, get_image_output::GetImageOutput,
                 usecase::GetImageUseCase,
-            }, prepare_segment_usecase::usecase::PrepareSegmentUseCase, redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase}, segment_usecase::{
+            }, prepare_segment_usecase::{prepare_segment_input::PrepareSegmentInput, usecase::PrepareSegmentUseCase}, redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase}, segment_usecase::{
                 segment_input::SegmentInput, segment_output::SegmentOutput, usecase::SegmentUseCase,
             }, undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase}, upload_usecase::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
@@ -120,7 +120,13 @@ impl App {
     }
 
     pub fn upload(&self, input: UploadInput) -> Result<UploadOutput, ApplicationError> {
-        Ok(self.upload_usecase.execute(input)?)
+        let output = self.upload_usecase.execute(input)?;
+        let preview_to_original_point_scale = output.scale();
+        let (session_id, image_id) = output.session_id_and_image_id();
+
+        let input = PrepareSegmentInput::new(image_id, session_id, preview_to_original_point_scale);
+        self.prepare_segment_usecase.execute(input)?;
+        Ok(output)
     }
 
     pub fn segment(&self, input: SegmentInput) -> Result<SegmentOutput, ApplicationError> {
