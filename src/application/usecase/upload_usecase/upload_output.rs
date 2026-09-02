@@ -16,7 +16,7 @@ impl UploadOutput {
         }
     }
 
-    pub fn into_session_id_and_image_id(self) -> (SessionId, ImageId) {
+    pub fn session_id_and_image_id(&self) -> (SessionId, ImageId) {
         (self.session_id, self.image_id)
     }
 
