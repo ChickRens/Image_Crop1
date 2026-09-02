@@ -26,7 +26,7 @@ pub async fn upload(
                 let input = UploadInput::new(bytes.to_vec());
                 let output = app.upload(input)?;
                 
-                let (session_id, image_id) = output.into_session_id_and_image_id();
+                let (session_id, image_id) = output.session_id_and_image_id();
                 let response = UploadResponse::new(*session_id.value(), *image_id.value());
 
                 return Ok(Json(response))
