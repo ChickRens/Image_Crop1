@@ -41,7 +41,7 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
             &rgba_image,
             width as u32,
             height as u32,
-            FilterType::Triangle,
+            FilterType::Nearest,
         );
 
         let mut webp = Vec::with_capacity(resized.as_raw().len() / 2);
