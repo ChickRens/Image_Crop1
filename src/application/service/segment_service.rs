@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use crate::{application::{interface::{editing_session_repository::repository::EditingSessionRepository, image_segmenter::segmenter::ImageSegmenter, segmenter_input_image_storage::storage::SegmenterInputImageStorage}, service::error::SegmentServiceError, types::editing_session::session::EditingSession}, domain::{entity::image::Image, repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}, value_object::{image_id::image_id::ImageId, point::Point, session_id::session_id::SessionId}}};
 
@@ -34,11 +34,13 @@ where
     SS: SegmenterInputImageStorage,
 {
     fn segment(&self, session_id: SessionId, point: Point) -> Result<Image, SegmentServiceError> {
+        let service_start = Instant::now();
+
+        println!("Input Point: {:?}", point);
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
         
-        let original_image = self.image_repo.get(&image_id)?.into_image();
-        let original_size = original_image.image_size();
+        let original_image = self.image_repo.get(&image_id)?;
         
         let input_image = self.input_storage.get(image_id)?;
 
@@ -47,12 +49,21 @@ where
         let inference_context = session.inference_context();
 
         let input_points = session.points_with(point.clone());
-        let (new_context, segmented_image) = self.segmenter.segment(&input_image, original_size, static_context, inference_context, &input_points)?;
+        println!("Scaled Points: {:?}", input_points);
+
+        let start = Instant::now();
+        let (new_context, segmented_image) = self.segmenter.segment(&input_image, &original_image, static_context, inference_context, &input_points)?;
+        let end = start.elapsed();
+        println!("Segment: {:?}", end);
+
         session.apply_edit(point, new_context);
 
         self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
+
+        let end = service_start.elapsed();
+        println!("Segment Service: {:?}", end);
 
         Ok(Image::new(segmented_image_data, segmented_image_id, size))
     }
@@ -61,8 +72,7 @@ where
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
         
-        let original_image = self.image_repo.get(&image_id)?.into_image();
-        let original_size = original_image.image_size();
+        let original_image = self.image_repo.get(&image_id)?;
         
         let input_image = self.input_storage.get(image_id)?;
 
@@ -72,13 +82,13 @@ where
 
         if input_points.is_empty() {
             self.editing_session_repo.save(&session_id, session);
-            return Ok(original_image);
+            return Ok(original_image.into_image());
         }
         
         let static_context = session.static_context();
         let inference_context = session.inference_context();
 
-        let (_, segmented_image) = self.segmenter.segment(&input_image, original_size, static_context, inference_context, &input_points)?;
+        let (_, segmented_image) = self.segmenter.segment(&input_image, &original_image, static_context, inference_context, &input_points)?;
 
         self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
@@ -91,8 +101,7 @@ where
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
         
-        let original_image = self.image_repo.get(&image_id)?.into_image();
-        let original_size = original_image.image_size();
+        let original_image = self.image_repo.get(&image_id)?;
         
         let input_image = self.input_storage.get(image_id)?;
 
@@ -103,7 +112,7 @@ where
         let static_context = session.static_context();
         let inference_context = session.inference_context();
 
-        let (_, segmented_image) = self.segmenter.segment(&input_image, original_size, static_context, inference_context, &input_points)?;
+        let (_, segmented_image) = self.segmenter.segment(&input_image, &original_image, static_context, inference_context, &input_points)?;
 
         self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
