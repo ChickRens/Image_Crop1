@@ -11,7 +11,7 @@ use crate::{
     application::{
         interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
     }, domain::{
-        entity::image::Image, value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
+        entity::{image::Image, original_image::OriginalImage}, value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
     }, infrastructure::segmenter::{
         mask_applier::SAM2MaskApplier,
         mask_resizer::SAM2MaskResizer,
@@ -312,7 +312,9 @@ impl Sam2Segmenter {
         if let Some(mask) = mask {
             mask_value = Some(mask.view())
         }
+        println!("before coords: {:?}", coords);
 
+        println!("{:?}", original_size);
         let scaled_coords = Self::_scale_prompt(
             coords,
             original_size.height(),
@@ -320,6 +322,8 @@ impl Sam2Segmenter {
             sam2_required_height,
             sam2_required_width,
         );
+
+        println!("after coords: {:?}", scaled_coords);
 
         let (sparse_emb, dense_emb) = self
             ._encode_prompt(scaled_coords, labels, mask_value)
@@ -336,19 +340,19 @@ impl Sam2Segmenter {
 
     fn _generate_image(
         mask: &Mask,
-        original_image: &Image,
+        original_image: &OriginalImage,
     ) -> Result<SegmentedImage, SegmenterRuntimeError> {
         let resized_mask = SAM2MaskResizer::resize_mask(
-            &mask.view().to_owned(),
-            original_image.image_size().height() as usize,
-            original_image.image_size().width() as usize,
+            &mask.view(),
+            original_image.image().image_size().height() as usize,
+            original_image.image().image_size().width() as usize,
         );
 
-        let applied_image = SAM2MaskApplier::apply(&original_image, resized_mask.view().to_owned());
+        let applied_image = SAM2MaskApplier::apply(&original_image.image(), resized_mask.view());
 
         Ok(SegmentedImage::new(
             ImageData::new(applied_image),
-            original_image.image_size().clone(),
+            original_image.image().image_size().clone(),
         ))
     }
 }
@@ -360,20 +364,19 @@ impl ImageSegmenter for Sam2Segmenter {
     fn segment(
         &self,
         input_image: &SegmenterInputImage,
-        original_size: &ImageSize,
+        original_image: &OriginalImage,
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_scaled_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
-        let image = input_image.image();
         let mask = self._inference(
-            original_size,
+            original_image.image().image_size(),
             static_context,
             inference_context,
             input_scaled_points,
         )?;
 
-        let segmented = Self::_generate_image(&mask, image)?;
+        let segmented = Self::_generate_image(&mask, original_image)?;
 
         let inference_context = SAM2InferenceContext::new(Some(mask));
 
