@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use crate::{application::{interface::{preview_image_generator::PreviewImageGenerator, preview_storage::{error::PreviewStorageError, storage::PreviewStorage}}, types::preview_image::PreviewImage}, domain::{entity::image::Image, value_object::image_id::image_id::ImageId}};
 
@@ -22,7 +22,11 @@ where
     PS: PreviewStorage,
 {
     fn generate_and_save(&self, image: &Image) -> f64 {
+        let start = Instant::now();
         let (preview, scale) = self.generator.generate(image);
+        let end = start.elapsed();
+        println!("Preview Generate: {:?}", end);
+
         self.storage.save(preview);
         scale
     }

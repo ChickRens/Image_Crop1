@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::application::interface::image_loader::error::LoadingError;
 use crate::application::interface::image_loader::loader::ImageLoader;
 use crate::application::types::loaded_image::LoadedImage;
@@ -12,6 +14,7 @@ pub struct FileImageLoader;
 
 impl ImageLoader for FileImageLoader {
     fn load(&self, data: Vec<u8>) -> Result<LoadedImage, LoadingError> {
+        let start = Instant::now();
         let img: DynamicImage = image::load_from_memory(&data).map_err(|err| match err {
             ImageError::Unsupported(e) => LoadingError::UnsupportedFormat(e.to_string()),
             ImageError::Decoding(e) => LoadingError::CorruptedImage(e.to_string()),
@@ -29,6 +32,8 @@ impl ImageLoader for FileImageLoader {
         let image_data = ImageData::new(raw_pixels);
         let image_id = ImageId::new();
         let image = Image::new(image_data, image_id, image_size);
+        let end = start.elapsed();
+        println!("Loading: {:?}", end);
 
         Ok(LoadedImage::new(image))
     }
