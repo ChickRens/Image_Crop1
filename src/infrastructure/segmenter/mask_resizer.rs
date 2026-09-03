@@ -1,9 +1,9 @@
-use ndarray::{Array4, Axis};
+use ndarray::{Array4, ArrayView4, Axis};
 
 pub struct SAM2MaskResizer;
 
 impl SAM2MaskResizer {
-    pub fn resize_mask(mask: &Array4<f32>, target_h: usize, target_w: usize) -> Array4<f32> {
+    pub fn resize_mask(mask: &ArrayView4<f32>, target_h: usize, target_w: usize) -> Array4<f32> {
         let (batch, channel, src_h, src_w) = mask.dim();
         let mask = mask.index_axis(Axis(0), 0);
         let mask = mask.index_axis(Axis(0), 0);

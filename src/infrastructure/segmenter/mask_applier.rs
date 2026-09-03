@@ -1,12 +1,12 @@
 use ndarray::prelude::{ArrayBase, Dim};
-use ndarray::{Array4, ViewRepr, s};
+use ndarray::{ArrayView4, ViewRepr, s};
 
 use crate::domain::entity::image::Image;
 
 pub struct SAM2MaskApplier;
 
 impl SAM2MaskApplier {
-    pub fn apply(original: &Image, mask: Array4<f32>) -> Vec<u8> {
+    pub fn apply(original: &Image, mask: ArrayView4<f32>) -> Vec<u8> {
         let mask_4d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 4]>, f32> = mask.view();
         let mask_2d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 2]>, f32> =
             mask_4d.slice(s![0, 0, .., ..]);
