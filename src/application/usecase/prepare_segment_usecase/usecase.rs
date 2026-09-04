@@ -22,9 +22,9 @@ where
     pub fn execute(&self, input: PrepareSegmentInput) -> Result<(), PrepareSegmentUseCaseError> {
         let image_id = input.image_id();
         let session_id = input.session_id();
-        let preview_to_original_scale = input.point_scale();
+        let original_to_preview_scale = input.point_scale();
 
-        self.prepare_service.prepare(session_id, image_id, preview_to_original_scale)?;
+        self.prepare_service.prepare(session_id, image_id, original_to_preview_scale)?;
         Ok(())
     }
 }
