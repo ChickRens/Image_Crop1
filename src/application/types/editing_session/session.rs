@@ -71,12 +71,12 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
 
     fn points_with(&self, point: Point) -> Vec<Point> {
         let mut points = self.points().to_vec();
-        points.push(point * self.point_scale);
+        points.push(point / self.point_scale);
         points
     }
 
     fn apply_edit(&mut self, point: Point, inference_context: Self::InferenceContext) {
-        self.point_history.add(point * self.point_scale);
+        self.point_history.add(point / self.point_scale);
         self.inference_context_history.add(inference_context);
     }
 
