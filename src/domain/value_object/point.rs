@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Div, Mul};
 
 use crate::domain::value_object::coordinate::Coordinate;
 
@@ -33,5 +33,13 @@ impl Mul<f64> for Point {
 
     fn mul(self, scale: f64) -> Self {
         Self { coordinate: self.coordinate * scale, label: self.label }
+    }
+}
+
+impl Div<f64> for Point {
+    type Output = Self;
+
+    fn div(self, scale: f64) -> Self {
+        Self { coordinate: self.coordinate / scale, label: self.label }
     }
 }

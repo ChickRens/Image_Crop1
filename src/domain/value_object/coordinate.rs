@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Div, Mul};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Coordinate {
@@ -25,5 +25,13 @@ impl Mul<f64> for Coordinate {
 
     fn mul(self, scale: f64) -> Self {
         Self { x: (self.x as f64 * scale) as u16, y: (self.y as f64 * scale) as u16 }
+    }
+}
+
+impl Div<f64> for Coordinate {
+    type Output = Self;
+
+    fn div(self, scale: f64) -> Self {
+        Self { x: (self.x as f64 / scale) as u16, y: (self.y as f64 / scale) as u16 }
     }
 }
