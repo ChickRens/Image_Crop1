@@ -1,8 +1,8 @@
 use std::time::Instant;
 
+use fast_image_resize as fr;
 use image::{
     RgbaImage,
-    imageops::{self, FilterType},
 };
 use webp::{Encoder, WebPConfig};
 
@@ -38,21 +38,24 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         .expect("image data is not valid RGBA data");
 
         let start = Instant::now();
-        let resized = imageops::resize(
-            &rgba_image,
-            width as u32,
-            height as u32,
-            FilterType::Nearest,
-        );
+
+        let mut dst_image = fr::images::Image::new(width as u32, height as u32, fr::PixelType::U8x4);
+        let options = fr::ResizeOptions::new().resize_alg(fr::ResizeAlg::Nearest);
+
+        let mut resizer = fr::Resizer::new();
+        resizer.resize(&rgba_image, &mut dst_image, &options).expect("Resize Failed in PreviewGenerator");
+
         let end = start.elapsed();
         println!("Resize in PreviewGenerator: {:?}", end);
 
         let start = Instant::now();
+        let dst_vec = dst_image.into_vec();
         let encoder = Encoder::from_rgba(
-            resized.as_raw(),
-            resized.width(),
-            resized.height(),
+            &dst_vec,
+            width as u32,
+            height as u32,
         );
+
         let mut config = WebPConfig::new().unwrap();
         config.quality = 75.0;
         config.method = 0;
