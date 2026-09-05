@@ -1,10 +1,8 @@
-use std::io::Cursor;
-
 use image::{
-    ExtendedColorType, RgbaImage,
-    codecs::webp::WebPEncoder,
+    RgbaImage,
     imageops::{self, FilterType},
 };
+use webp::Encoder;
 
 use crate::{
     application::{
@@ -31,7 +29,7 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         let preview_size = ImageSize::new(height, width).expect("preview size is invalid");
 
         let rgba_image = RgbaImage::from_raw(
-            source_size.width() as u32,
+            source_size.width() as u32, 
             source_size.height() as u32,
             image.image_data().image().clone(),
         )
@@ -44,16 +42,12 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
             FilterType::Nearest,
         );
 
-        let mut webp = Vec::with_capacity(resized.as_raw().len() / 2);
-        let mut cursor = Cursor::new(&mut webp);
-        WebPEncoder::new_lossless(&mut cursor)
-            .encode(
-                resized.as_raw(),
-                resized.width(),
-                resized.height(),
-                ExtendedColorType::Rgba8,
-            )
-            .expect("failed to encode preview as WebP");
+        let encoder = Encoder::from_rgba(
+            resized.as_raw(),
+            resized.width(),
+            resized.height(),
+        );
+        let webp = encoder.encode(80.0).to_vec();
 
         (PreviewImage::new(Image::new(
             ImageData::new(webp),
