@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::{sync::Mutex, time::Instant};
 
 use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel};
 use ndarray::{Array2, Array3, Array4, ArrayView3, ArrayView4, Ix3, Ix4};
@@ -342,13 +342,19 @@ impl Sam2Segmenter {
         mask: &Mask,
         original_image: &OriginalImage,
     ) -> Result<SegmentedImage, SegmenterRuntimeError> {
+        let start = Instant::now();
         let resized_mask = SAM2MaskResizer::resize_mask(
             &mask.view(),
             original_image.image().image_size().height() as usize,
             original_image.image().image_size().width() as usize,
         );
+        let end = start.elapsed();
+        println!("resize image in generate image: {:?}", end);
 
+        let start = Instant::now();
         let applied_image = SAM2MaskApplier::apply(&original_image.image(), resized_mask.view());
+        let end = start.elapsed();
+        println!("apply image in generate image: {:?}", end);
 
         Ok(SegmentedImage::new(
             ImageData::new(applied_image),
@@ -369,14 +375,20 @@ impl ImageSegmenter for Sam2Segmenter {
         inference_context: &Self::InferenceContext,
         input_scaled_points: &[Point],
     ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
+        let start = Instant::now();
         let mask = self._inference(
             original_image.image().image_size(),
             static_context,
             inference_context,
             input_scaled_points,
         )?;
+        let end = start.elapsed();
+        println!("SAM2 inference: {:?}", end);
 
+        let start = Instant::now();
         let segmented = Self::_generate_image(&mask, original_image)?;
+        let end = start.elapsed();
+        println!("SAM2 generate image: {:?}", end);
 
         let inference_context = SAM2InferenceContext::new(Some(mask));
 
