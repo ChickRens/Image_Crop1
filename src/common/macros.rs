@@ -137,7 +137,7 @@ macro_rules! leaf_detail_error {
                 }
             }
         }
-        
+
         impl $crate::common::traits::ErrorTypeProvider for $name {
             fn error_type(&self) -> $crate::common::traits::ErrorType {
                 match self {

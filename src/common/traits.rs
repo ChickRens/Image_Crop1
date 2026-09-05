@@ -16,4 +16,3 @@ pub enum ErrorType {
 pub trait ErrorTypeProvider {
     fn error_type(&self) -> ErrorType;
 }
-

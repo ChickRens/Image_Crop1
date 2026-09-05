@@ -2,7 +2,7 @@ use crate::domain::{entity::image::Image, value_object::image_id::image_id::Imag
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OriginalImage {
-    image: Image
+    image: Image,
 }
 
 impl OriginalImage {

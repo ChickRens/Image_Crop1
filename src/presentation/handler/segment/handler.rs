@@ -2,19 +2,31 @@ use std::sync::Arc;
 
 use axum::{Json, extract::State};
 
-use crate::{application::usecase::segment_usecase::segment_input::SegmentInput, composition::wiring::App, domain::value_object::{coordinate::Coordinate, point::{Point, PointLabel}, session_id::session_id::SessionId}, presentation::{errors::{app_error::AppError, presentation_error::PresentationError}, handler::segment::{request::SegmentRequest, response::SegmentResponse}}};
+use crate::{
+    application::usecase::segment_usecase::segment_input::SegmentInput,
+    composition::wiring::App,
+    domain::value_object::{
+        coordinate::Coordinate,
+        point::{Point, PointLabel},
+        session_id::session_id::SessionId,
+    },
+    presentation::{
+        errors::{app_error::AppError, presentation_error::PresentationError},
+        handler::segment::{request::SegmentRequest, response::SegmentResponse},
+    },
+};
 
 #[axum::debug_handler]
 pub async fn segment(
     State(app): State<Arc<App>>,
     Json(request): Json<SegmentRequest>,
-) -> Result<Json<SegmentResponse>, AppError>{
+) -> Result<Json<SegmentResponse>, AppError> {
     let session_id = request.session_id;
     let x = request.x;
     let y = request.y;
     let is_foreground = request.is_foreground;
-    let session_id = SessionId::from_str(&session_id)
-        .map_err(|err| PresentationError::from(err))?;
+    let session_id =
+        SessionId::from_str(&session_id).map_err(|err| PresentationError::from(err))?;
 
     let label = match is_foreground {
         true => PointLabel::FOREGROUND,

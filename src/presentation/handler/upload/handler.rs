@@ -1,14 +1,24 @@
 use std::sync::Arc;
 
-use axum::{Json, extract::{Multipart, State}};
+use axum::{
+    Json,
+    extract::{Multipart, State},
+};
 
-use crate::{application::usecase::upload_usecase::upload_input::UploadInput, composition::wiring::App, presentation::{errors::{app_error::AppError, presentation_error::PresentationError}, handler::upload::response::UploadResponse}};
+use crate::{
+    application::usecase::upload_usecase::upload_input::UploadInput,
+    composition::wiring::App,
+    presentation::{
+        errors::{app_error::AppError, presentation_error::PresentationError},
+        handler::upload::response::UploadResponse,
+    },
+};
 
 #[axum::debug_handler]
 pub async fn upload(
     State(app): State<Arc<App>>,
     mut multipart: Multipart,
-) -> Result<Json<UploadResponse>, AppError>{
+) -> Result<Json<UploadResponse>, AppError> {
     while let Some(field) = multipart
         .next_field()
         .await
@@ -25,17 +35,15 @@ pub async fn upload(
 
                 let input = UploadInput::new(bytes.to_vec());
                 let output = app.upload(input)?;
-                
+
                 let (session_id, image_id) = output.session_id_and_image_id();
                 let response = UploadResponse::new(*session_id.value(), *image_id.value());
 
-                return Ok(Json(response))
+                return Ok(Json(response));
             }
 
             Some(unknown) => {
-                return Err(PresentationError::UnknownName(
-                    unknown.to_string(),
-                ).into());
+                return Err(PresentationError::UnknownName(unknown.to_string()).into());
             }
 
             None => {

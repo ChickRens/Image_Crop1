@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Mutex};
 
 use crate::domain::{
-    entity::original_image::OriginalImage, repository::original_image_repository::{
+    entity::original_image::OriginalImage,
+    repository::original_image_repository::{
         error::OriginalImageRepositoryError, repository::OriginalImageRepository,
-    }, value_object::image_id::image_id::ImageId,
+    },
+    value_object::image_id::image_id::ImageId,
 };
 
 pub struct OriginalImageRepositoryInMemory {

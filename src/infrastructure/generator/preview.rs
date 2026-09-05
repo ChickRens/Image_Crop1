@@ -1,9 +1,7 @@
 use std::time::Instant;
 
 use fast_image_resize as fr;
-use image::{
-    RgbaImage,
-};
+use image::RgbaImage;
 use webp::{Encoder, WebPConfig};
 
 use crate::{
@@ -19,7 +17,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct WebPPreviewImageGenerator {
-    long_side: f64
+    long_side: f64,
 }
 
 impl PreviewImageGenerator for WebPPreviewImageGenerator {
@@ -31,7 +29,7 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         let preview_size = ImageSize::new(height, width).expect("preview size is invalid");
 
         let rgba_image = RgbaImage::from_raw(
-            source_size.width() as u32, 
+            source_size.width() as u32,
             source_size.height() as u32,
             image.image_data().image().clone(),
         )
@@ -39,22 +37,21 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
 
         let start = Instant::now();
 
-        let mut dst_image = fr::images::Image::new(width as u32, height as u32, fr::PixelType::U8x4);
+        let mut dst_image =
+            fr::images::Image::new(width as u32, height as u32, fr::PixelType::U8x4);
         let options = fr::ResizeOptions::new().resize_alg(fr::ResizeAlg::Nearest);
 
         let mut resizer = fr::Resizer::new();
-        resizer.resize(&rgba_image, &mut dst_image, &options).expect("Resize Failed in PreviewGenerator");
+        resizer
+            .resize(&rgba_image, &mut dst_image, &options)
+            .expect("Resize Failed in PreviewGenerator");
 
         let end = start.elapsed();
         println!("Resize in PreviewGenerator: {:?}", end);
 
         let start = Instant::now();
         let dst_vec = dst_image.into_vec();
-        let encoder = Encoder::from_rgba(
-            &dst_vec,
-            width as u32,
-            height as u32,
-        );
+        let encoder = Encoder::from_rgba(&dst_vec, width as u32, height as u32);
 
         let mut config = WebPConfig::new().unwrap();
         config.quality = 75.0;
@@ -67,20 +64,28 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         config.segments = 1;
         config.sns_strength = 0;
 
-        let webp = encoder.encode_advanced(&config).expect("Encode Failed").to_vec();
+        let webp = encoder
+            .encode_advanced(&config)
+            .expect("Encode Failed")
+            .to_vec();
         let end = start.elapsed();
         println!("Encode in PreviewGenerator: {:?}", end);
 
-        (PreviewImage::new(Image::new(
-            ImageData::new(webp),
-            *image.image_id(),
-            preview_size,
-        )), scale)
+        (
+            PreviewImage::new(Image::new(
+                ImageData::new(webp),
+                *image.image_id(),
+                preview_size,
+            )),
+            scale,
+        )
     }
 }
 
 impl WebPPreviewImageGenerator {
     pub fn new(preview_image_long_side: u16) -> Self {
-        Self { long_side: preview_image_long_side as f64 }
+        Self {
+            long_side: preview_image_long_side as f64,
+        }
     }
 }

@@ -10,10 +10,7 @@ use crate::{
     },
     domain::{
         entity::{image::Image, original_image::OriginalImage},
-        value_object::{
-            image_data::ImageData,
-            image_size::image_size::ImageSize,
-        },
+        value_object::{image_data::ImageData, image_size::image_size::ImageSize},
     },
 };
 

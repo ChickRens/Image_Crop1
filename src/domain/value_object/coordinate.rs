@@ -24,7 +24,10 @@ impl Mul<f64> for Coordinate {
     type Output = Self;
 
     fn mul(self, scale: f64) -> Self {
-        Self { x: (self.x as f64 * scale) as u16, y: (self.y as f64 * scale) as u16 }
+        Self {
+            x: (self.x as f64 * scale) as u16,
+            y: (self.y as f64 * scale) as u16,
+        }
     }
 }
 
@@ -32,6 +35,9 @@ impl Div<f64> for Coordinate {
     type Output = Self;
 
     fn div(self, scale: f64) -> Self {
-        Self { x: (self.x as f64 / scale) as u16, y: (self.y as f64 / scale) as u16 }
+        Self {
+            x: (self.x as f64 / scale) as u16,
+            y: (self.y as f64 / scale) as u16,
+        }
     }
 }

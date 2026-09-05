@@ -7,8 +7,16 @@ pub struct PrepareSegmentInput {
 }
 
 impl PrepareSegmentInput {
-    pub fn new(image_id: ImageId, session_id: SessionId, preview_to_original_point_scale: f64) -> Self {
-        Self { image_id, session_id, point_scale: preview_to_original_point_scale }
+    pub fn new(
+        image_id: ImageId,
+        session_id: SessionId,
+        preview_to_original_point_scale: f64,
+    ) -> Self {
+        Self {
+            image_id,
+            session_id,
+            point_scale: preview_to_original_point_scale,
+        }
     }
 
     pub fn image_id(&self) -> ImageId {

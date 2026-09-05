@@ -32,7 +32,10 @@ impl Mul<f64> for Point {
     type Output = Self;
 
     fn mul(self, scale: f64) -> Self {
-        Self { coordinate: self.coordinate * scale, label: self.label }
+        Self {
+            coordinate: self.coordinate * scale,
+            label: self.label,
+        }
     }
 }
 
@@ -40,6 +43,9 @@ impl Div<f64> for Point {
     type Output = Self;
 
     fn div(self, scale: f64) -> Self {
-        Self { coordinate: self.coordinate / scale, label: self.label }
+        Self {
+            coordinate: self.coordinate / scale,
+            label: self.label,
+        }
     }
 }

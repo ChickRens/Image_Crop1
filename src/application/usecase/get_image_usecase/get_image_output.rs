@@ -7,7 +7,7 @@ pub struct GetImageOutput {
 
 impl GetImageOutput {
     pub fn new(data: Vec<u8>, size: ImageSize) -> Self {
-        Self { data: data , size}
+        Self { data: data, size }
     }
 
     pub fn image_data(self) -> (Vec<u8>, ImageSize) {

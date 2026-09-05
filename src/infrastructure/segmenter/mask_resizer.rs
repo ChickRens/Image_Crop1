@@ -1,5 +1,8 @@
 use ndarray::{Array4, ArrayView4, Axis};
-use rayon::{iter::{IndexedParallelIterator, ParallelIterator}, slice::ParallelSliceMut};
+use rayon::{
+    iter::{IndexedParallelIterator, ParallelIterator},
+    slice::ParallelSliceMut,
+};
 
 pub struct SAM2MaskResizer;
 
@@ -28,8 +31,7 @@ impl SAM2MaskResizer {
         output_slice
             .par_chunks_exact_mut(target_w)
             .enumerate()
-            .for_each(|(y, row)|
-            {
+            .for_each(|(y, row)| {
                 let src_y = (y as f32 + 0.5) * src_h as f32 / target_h as f32 - 0.5;
                 let src_y = src_y.clamp(0.0, (src_h - 1) as f32);
 
@@ -61,6 +63,6 @@ impl SAM2MaskResizer {
                 }
             });
 
-            output
+        output
     }
 }

@@ -2,10 +2,13 @@ use std::sync::Arc;
 
 use crate::{
     domain::{
-        entity::original_image::OriginalImage, repository::original_image_repository::{
+        entity::original_image::OriginalImage,
+        repository::original_image_repository::{
             error::OriginalImageRepositoryError, repository::OriginalImageRepository,
-        }, value_object::image_id::image_id::ImageId,
-    }, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
+        },
+        value_object::image_id::image_id::ImageId,
+    },
+    infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
 };
 
 #[derive(Clone)]

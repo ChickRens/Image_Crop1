@@ -95,7 +95,7 @@ impl<S, I> CommonEditingSession<S, I> {
         static_context: S,
         mut inference_context_history: InferenceContextHistory<I>,
         initial_inference_context: I,
-        point_scaler: f64
+        point_scaler: f64,
     ) -> Self {
         inference_context_history.add(initial_inference_context);
 

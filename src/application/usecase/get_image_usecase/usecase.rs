@@ -1,5 +1,6 @@
 use crate::application::{
-    service::preview_service::PreviewService, usecase::get_image_usecase::{
+    service::preview_service::PreviewService,
+    usecase::get_image_usecase::{
         error::GetImageUseCaseError, get_image_input::GetImageInput,
         get_image_output::GetImageOutput,
     },
@@ -7,14 +8,14 @@ use crate::application::{
 
 pub struct GetImageUseCase<PS>
 where
-    PS: PreviewService
+    PS: PreviewService,
 {
-    preview_service: PS
+    preview_service: PS,
 }
 
 impl<PS> GetImageUseCase<PS>
 where
-    PS: PreviewService
+    PS: PreviewService,
 {
     pub fn new(preview_service: PS) -> Self {
         Self { preview_service }

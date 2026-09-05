@@ -1,5 +1,9 @@
 use crate::{
-    application::{interface::image_segmenter::error::{SegmenterLoadingError, SegmenterRuntimeError}, types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage}}, domain::{entity::original_image::OriginalImage, value_object::{image_size::image_size::ImageSize, point::Point}},
+    application::{
+        interface::image_segmenter::error::{SegmenterLoadingError, SegmenterRuntimeError},
+        types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
+    },
+    domain::{entity::original_image::OriginalImage, value_object::point::Point},
 };
 
 pub trait ImageSegmenter {
@@ -10,7 +14,10 @@ pub trait ImageSegmenter {
         &self,
         image: &SegmenterInputImage,
     ) -> Result<Self::InferenceContext, SegmenterLoadingError>;
-    fn prepare_static_context(&self, image: &SegmenterInputImage) -> Result<Self::StaticContext, SegmenterLoadingError>;
+    fn prepare_static_context(
+        &self,
+        image: &SegmenterInputImage,
+    ) -> Result<Self::StaticContext, SegmenterLoadingError>;
     fn segment(
         &self,
         input_image: &SegmenterInputImage,

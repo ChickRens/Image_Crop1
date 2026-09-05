@@ -9,10 +9,17 @@ use ort::{
 
 use crate::{
     application::{
-        interface::image_segmenter::{error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError}, segmenter::ImageSegmenter}, types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
-    }, domain::{
-        entity::{image::Image, original_image::OriginalImage}, value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
-    }, infrastructure::segmenter::{
+        interface::image_segmenter::{
+            error::{SegmenterLoadingError, SegmenterModelError, SegmenterRuntimeError},
+            segmenter::ImageSegmenter,
+        },
+        types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
+    },
+    domain::{
+        entity::original_image::OriginalImage,
+        value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
+    },
+    infrastructure::segmenter::{
         mask_applier::SAM2MaskApplier,
         mask_resizer::SAM2MaskResizer,
         sam2_data::{
@@ -333,7 +340,9 @@ impl Sam2Segmenter {
 
         let mask = self
             ._decode_mask(&image_emb, &sparse_emb, &dense_emb, s0, s1)
-            .map_err(|e| SegmenterRuntimeError::InferenceError(format!("Mask decoding failed: {}", e)))?;
+            .map_err(|e| {
+                SegmenterRuntimeError::InferenceError(format!("Mask decoding failed: {}", e))
+            })?;
 
         Ok(mask)
     }
@@ -400,7 +409,10 @@ impl ImageSegmenter for Sam2Segmenter {
         Ok((inference_context, segmented))
     }
 
-    fn prepare_static_context(&self, image: &SegmenterInputImage) -> Result<Self::StaticContext, SegmenterLoadingError> {
+    fn prepare_static_context(
+        &self,
+        image: &SegmenterInputImage,
+    ) -> Result<Self::StaticContext, SegmenterLoadingError> {
         let image = image.image();
         let img_data = image.image_data().image();
         let rgba_image = ImageBuffer::from_raw(
@@ -414,9 +426,9 @@ impl ImageSegmenter for Sam2Segmenter {
 
         let img = DynamicImage::ImageRgba8(rgba_image);
 
-        let (embedding, s0, s1) = self
-            ._encode_image(&img)
-            .map_err(|e| SegmenterLoadingError::PreProcessError(format!("Image encoding failed: {}", e)))?;
+        let (embedding, s0, s1) = self._encode_image(&img).map_err(|e| {
+            SegmenterLoadingError::PreProcessError(format!("Image encoding failed: {}", e))
+        })?;
 
         let static_context = SAM2StaticContext::new(embedding, s0, s1);
         Ok(static_context)

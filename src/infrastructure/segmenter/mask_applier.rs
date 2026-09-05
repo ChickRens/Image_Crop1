@@ -14,16 +14,16 @@ impl SAM2MaskApplier {
 
         debug_assert!(mask_2d.as_slice().is_some());
 
-        let mask_slice = mask_2d.as_slice()
-                    .expect("Applier requires contiguous ArrayView4");
+        let mask_slice = mask_2d
+            .as_slice()
+            .expect("Applier requires contiguous ArrayView4");
 
         output
             .par_chunks_exact_mut(4)
             .zip(mask_slice.par_iter())
-            .for_each(|(pixel, pixel_alpha)|
-        {
-            pixel[3] = (pixel_alpha * 255.0).clamp(0.0, 255.0) as u8;
-        });
+            .for_each(|(pixel, pixel_alpha)| {
+                pixel[3] = (pixel_alpha * 255.0).clamp(0.0, 255.0) as u8;
+            });
 
         output
     }

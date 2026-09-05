@@ -1,4 +1,4 @@
 #[derive(serde::Deserialize)]
 pub struct GetImageRequest {
-    pub image_id: String
+    pub image_id: String,
 }

@@ -1,5 +1,6 @@
 use crate::{
-    common::traits::{Cause, Code, ErrorType, ErrorTypeProvider}, domain::value_object::image_size::error::ImageSizeError,
+    common::traits::{Cause, Code, ErrorType, ErrorTypeProvider},
+    domain::value_object::image_size::error::ImageSizeError,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

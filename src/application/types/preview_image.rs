@@ -1,8 +1,13 @@
-use crate::domain::{entity::image::Image, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}};
+use crate::domain::{
+    entity::image::Image,
+    value_object::{
+        image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize,
+    },
+};
 
-#[derive(Debug, Clone ,PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PreviewImage {
-    image: Image
+    image: Image,
 }
 
 impl PreviewImage {

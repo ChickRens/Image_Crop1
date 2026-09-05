@@ -2,7 +2,7 @@ use uuid::Uuid;
 
 #[derive(serde::Serialize)]
 pub struct RedoResponse {
-    image_id: Uuid
+    image_id: Uuid,
 }
 
 impl RedoResponse {

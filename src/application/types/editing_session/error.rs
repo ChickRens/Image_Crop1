@@ -1,4 +1,7 @@
-use crate::{common::traits::ErrorType::{Internal, InvalidInput}, leaf_error};
+use crate::{
+    common::traits::ErrorType::{Internal, InvalidInput},
+    leaf_error,
+};
 
 leaf_error!(
     pub enum EditingSessionError {

@@ -1,6 +1,15 @@
-use axum::{Json, http::StatusCode, response::{IntoResponse, Response}};
+use axum::{
+    Json,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+};
 
-use crate::{application::error::ApplicationError, common::traits::{Code, ErrorType, ErrorTypeProvider}, parent_error, presentation::errors::presentation_error::PresentationError};
+use crate::{
+    application::error::ApplicationError,
+    common::traits::{Code, ErrorType, ErrorTypeProvider},
+    parent_error,
+    presentation::errors::presentation_error::PresentationError,
+};
 
 parent_error!(
     pub enum AppError {
@@ -11,7 +20,7 @@ parent_error!(
 
 #[derive(serde::Serialize)]
 struct ErrorBody {
-    code: String
+    code: String,
 }
 
 impl IntoResponse for AppError {
@@ -25,7 +34,9 @@ impl IntoResponse for AppError {
 
         let code = self.code();
 
-        let json = Json(ErrorBody {code: code.to_string()});
+        let json = Json(ErrorBody {
+            code: code.to_string(),
+        });
 
         (status, json).into_response()
     }

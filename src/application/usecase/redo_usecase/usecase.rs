@@ -1,11 +1,8 @@
-use crate::{
-    application::{
-        service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::redo_usecase::{
-            error::RedoUseCaseError,
-            redo_input::RedoInput,
-            redo_output::RedoOutput,
-        },
-    }
+use crate::application::{
+    service::{preview_service::PreviewService, segment_service::SegmentService},
+    usecase::redo_usecase::{
+        error::RedoUseCaseError, redo_input::RedoInput, redo_output::RedoOutput,
+    },
 };
 
 pub struct RedoUseCase<PS, SS>
@@ -22,10 +19,7 @@ where
     PS: PreviewService,
     SS: SegmentService,
 {
-    pub fn new(
-        segment_service: SS,
-        preview_service: PS,
-    ) -> Self {
+    pub fn new(segment_service: SS, preview_service: PS) -> Self {
         Self {
             segment_service,
             preview_service,

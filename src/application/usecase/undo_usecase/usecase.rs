@@ -1,11 +1,8 @@
-use crate::{
-    application::{
-        service::{preview_service::PreviewService, segment_service::SegmentService}, usecase::undo_usecase::{
-            error::UndoUseCaseError,
-            undo_input::UndoInput,
-            undo_output::UndoOutput,
-        },
-    }
+use crate::application::{
+    service::{preview_service::PreviewService, segment_service::SegmentService},
+    usecase::undo_usecase::{
+        error::UndoUseCaseError, undo_input::UndoInput, undo_output::UndoOutput,
+    },
 };
 
 pub struct UndoUseCase<SS, PS>
@@ -22,10 +19,7 @@ where
     SS: SegmentService,
     PS: PreviewService,
 {
-    pub fn new(
-        segment_service: SS ,
-        preview_service: PS ,
-    ) -> Self {
+    pub fn new(segment_service: SS, preview_service: PS) -> Self {
         Self {
             segment_service,
             preview_service,

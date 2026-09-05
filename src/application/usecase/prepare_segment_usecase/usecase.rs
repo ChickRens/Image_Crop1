@@ -1,22 +1,23 @@
-use crate::application::{service::prepare_service::PrepareSegmentService, usecase::{prepare_segment_usecase::{error::PrepareSegmentUseCaseError, prepare_segment_input::PrepareSegmentInput}}};
+use crate::application::{
+    service::prepare_service::PrepareSegmentService,
+    usecase::prepare_segment_usecase::{
+        error::PrepareSegmentUseCaseError, prepare_segment_input::PrepareSegmentInput,
+    },
+};
 
 pub struct PrepareSegmentUseCase<PS>
 where
-    PS: PrepareSegmentService
+    PS: PrepareSegmentService,
 {
     prepare_service: PS,
 }
 
 impl<PS> PrepareSegmentUseCase<PS>
 where
-    PS: PrepareSegmentService
+    PS: PrepareSegmentService,
 {
-    pub fn new(
-        prepare_service: PS,
-    ) -> Self {
-        Self {
-            prepare_service
-        }
+    pub fn new(prepare_service: PS) -> Self {
+        Self { prepare_service }
     }
 
     pub fn execute(&self, input: PrepareSegmentInput) -> Result<(), PrepareSegmentUseCaseError> {
@@ -24,7 +25,8 @@ where
         let session_id = input.session_id();
         let original_to_preview_scale = input.point_scale();
 
-        self.prepare_service.prepare(session_id, image_id, original_to_preview_scale)?;
+        self.prepare_service
+            .prepare(session_id, image_id, original_to_preview_scale)?;
         Ok(())
     }
 }

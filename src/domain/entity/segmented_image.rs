@@ -1,7 +1,7 @@
 use crate::domain::entity::image::Image;
 
 pub struct SegmentedImage {
-    image: Image
+    image: Image,
 }
 
 impl SegmentedImage {

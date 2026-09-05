@@ -2,7 +2,7 @@ use crate::domain::{entity::image::Image, value_object::image_id::image_id::Imag
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct SegmenterInputImage {
-    image: Image
+    image: Image,
 }
 
 impl SegmenterInputImage {
