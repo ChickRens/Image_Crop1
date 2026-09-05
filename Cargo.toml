@@ -17,6 +17,7 @@ tower-http = { version = "0.7.0", features = ["fs"] }
 fs = "0.0.5"
 serde = { version = "1.0.229", features = ["derive"] }
 rayon = "1"
+fast_image_resize = { version = "6.0", features = ["rayon"]}
 
 [lib]
 crate-type = ["cdylib"]
