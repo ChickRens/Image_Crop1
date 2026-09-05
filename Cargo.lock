@@ -12,6 +12,7 @@ dependencies = [
  "image",
  "ndarray",
  "ort",
+ "rayon",
  "reqwest",
  "serde",
  "tokio",
