@@ -1,8 +1,10 @@
+use std::time::Instant;
+
 use image::{
     RgbaImage,
     imageops::{self, FilterType},
 };
-use webp::Encoder;
+use webp::{Encoder, WebPConfig};
 
 use crate::{
     application::{
@@ -35,19 +37,36 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         )
         .expect("image data is not valid RGBA data");
 
+        let start = Instant::now();
         let resized = imageops::resize(
             &rgba_image,
             width as u32,
             height as u32,
             FilterType::Nearest,
         );
+        let end = start.elapsed();
+        println!("Resize in PreviewGenerator: {:?}", end);
 
+        let start = Instant::now();
         let encoder = Encoder::from_rgba(
             resized.as_raw(),
             resized.width(),
             resized.height(),
         );
-        let webp = encoder.encode(80.0).to_vec();
+        let mut config = WebPConfig::new().unwrap();
+        config.quality = 75.0;
+        config.method = 0;
+        config.thread_level = 1;
+        config.alpha_quality = 50;
+        config.alpha_filtering = 0;
+        config.alpha_compression = 1; // まずは圧縮ありのままで様子見
+        config.filter_strength = 0;
+        config.segments = 1;
+        config.sns_strength = 0;
+
+        let webp = encoder.encode_advanced(&config).expect("Encode Failed").to_vec();
+        let end = start.elapsed();
+        println!("Encode in PreviewGenerator: {:?}", end);
 
         (PreviewImage::new(Image::new(
             ImageData::new(webp),
