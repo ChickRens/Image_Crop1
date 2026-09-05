@@ -1,5 +1,5 @@
-use ndarray::prelude::{ArrayBase, Dim};
-use ndarray::{ArrayView4, ViewRepr, s};
+use ndarray::{ArrayView4, s};
+use rayon::prelude::*;
 
 use crate::domain::entity::image::Image;
 
@@ -7,29 +7,23 @@ pub struct SAM2MaskApplier;
 
 impl SAM2MaskApplier {
     pub fn apply(original: &Image, mask: ArrayView4<f32>) -> Vec<u8> {
-        let mask_4d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 4]>, f32> = mask.view();
-        let mask_2d: ArrayBase<ViewRepr<&f32>, Dim<[usize; 2]>, f32> =
-            mask_4d.slice(s![0, 0, .., ..]);
-
+        let mask_2d = mask.slice(s![0, 0, .., ..]);
         let original_data = original.image_data().image();
-        let height = original.image_size().height() as usize;
-        let width = original.image_size().width() as usize;
 
-        let mut output: Vec<u8> = vec![0u8; width * height * 4];
+        let mut output = original_data.to_vec();
 
-        for y in 0..height {
-            for x in 0..width {
-                let rgba_index = (y * width + x) * 4;
-                let rgb_index = (y * width + x) * 4;
+        debug_assert!(mask_2d.as_slice().is_some());
 
-                let mask_value = &mask_2d[[y, x]];
+        let mask_slice = mask_2d.as_slice()
+                    .expect("Applier requires contiguous ArrayView4");
 
-                output[rgba_index] = original_data[rgb_index];
-                output[rgba_index + 1] = original_data[rgb_index + 1];
-                output[rgba_index + 2] = original_data[rgb_index + 2];
-                output[rgba_index + 3] = (*mask_value * 255.0).clamp(0.0, 255.0) as u8;
-            }
-        }
+        output
+            .par_chunks_exact_mut(4)
+            .zip(mask_slice.par_iter())
+            .for_each(|(pixel, pixel_alpha)|
+        {
+            pixel[3] = (pixel_alpha * 255.0).clamp(0.0, 255.0) as u8;
+        });
 
         output
     }
