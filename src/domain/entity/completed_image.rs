@@ -1,10 +1,10 @@
 use crate::domain::entity::image::Image;
 
-pub struct SegmentedImage {
+pub struct CompletedImage {
     image: Image,
 }
 
-impl SegmentedImage {
+impl CompletedImage {
     pub fn new(image: Image) -> Self {
         Self { image }
     }
