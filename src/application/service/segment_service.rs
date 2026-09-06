@@ -24,6 +24,7 @@ use crate::{
 
 pub trait SegmentService {
     fn segment(&self, session_id: SessionId, point: Point) -> Result<Image, SegmentServiceError>;
+    fn resegment(&self, session_id: SessionId) -> Result<Image, SegmentServiceError>;
     fn undo(&self, session_id: SessionId) -> Result<Image, SegmentServiceError>;
     fn redo(&self, session_id: SessionId) -> Result<Image, SegmentServiceError>;
 }
@@ -130,6 +131,30 @@ where
         Ok(Image::new(segmented_image_data, segmented_image_id, size))
     }
 
+    fn resegment(&self, session_id: SessionId) -> Result<Image, SegmentServiceError> {
+        let session = self.session_repo.get(&session_id)?;
+        let image_id = *session.image_id();
+        let original_image = self.image_repo.get(&image_id)?;
+        let input_image = self.input_storage.get(image_id)?;
+        let session = self.editing_session_repo.get(&session_id)?;
+        let input_points = session.points();
+
+        if input_points.is_empty() {
+            return Ok(original_image.into_image());
+        }
+
+        let (_, segmented_image) = self.segmenter.segment(
+            &input_image,
+            &original_image,
+            session.static_context(),
+            session.inference_context(),
+            &input_points,
+        )?;
+
+        let (segmented_image_data, size) = segmented_image.into_image_and_size();
+        Ok(Image::new(segmented_image_data, ImageId::new(), size))
+    }
+
     fn redo(&self, session_id: SessionId) -> Result<Image, SegmentServiceError> {
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
@@ -217,6 +242,10 @@ where
 {
     fn segment(&self, session_id: SessionId, point: Point) -> Result<Image, SegmentServiceError> {
         self.service.segment(session_id, point)
+    }
+
+    fn resegment(&self, session_id: SessionId) -> Result<Image, SegmentServiceError> {
+        self.service.resegment(session_id)
     }
 
     fn undo(&self, session_id: SessionId) -> Result<Image, SegmentServiceError> {
