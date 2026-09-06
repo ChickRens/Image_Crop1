@@ -4,9 +4,9 @@ mod get_image_usecase_test {
     use std::path::Path;
 
     use crate::application::interface::image_loader::loader::ImageLoader;
-    use crate::application::usecase::get_image_usecase::error::GetImageUseCaseError;
-    use crate::application::usecase::get_image_usecase::get_image_input::GetImageInput;
-    use crate::application::usecase::get_image_usecase::usecase::GetImageUseCase;
+    use crate::application::usecase::get_preview_usecase::error::GetPreviewUseCaseError;
+    use crate::application::usecase::get_preview_usecase::get_preview_input::GetPreviewInput;
+    use crate::application::usecase::get_preview_usecase::usecase::GetPreviewUseCase;
     use crate::application::usecase::upload_usecase::upload_input::UploadInput;
     use crate::application::usecase::upload_usecase::usecase::UploadUseCase;
     use crate::domain::value_object::image_id::image_id::ImageId;
@@ -50,9 +50,9 @@ mod get_image_usecase_test {
         .expect("image load failed");
 
         let (image_cache, id) = _set_up(image_jpg.clone());
-        let usecase = GetImageUseCase::new(image_cache);
+        let usecase = GetPreviewUseCase::new(image_cache);
 
-        let input = GetImageInput::new(id);
+        let input = GetPreviewInput::new(id);
         let output = usecase.execute(input).unwrap();
 
         let loader = FileImageLoader::new();
@@ -70,13 +70,13 @@ mod get_image_usecase_test {
         .expect("image load failed");
 
         let (image_cache, id) = _set_up(image_jpg.clone());
-        let usecase = GetImageUseCase::new(image_cache);
+        let usecase = GetPreviewUseCase::new(image_cache);
 
         let unknown_id = ImageId::new();
-        let input = GetImageInput::new(unknown_id);
+        let input = GetPreviewInput::new(unknown_id);
 
         let result = usecase.execute(input);
 
-        assert!(matches!(result, Err(GetImageUseCaseError::ImageCache(_))))
+        assert!(matches!(result, Err(GetPreviewUseCaseError::ImageCache(_))))
     }
 }

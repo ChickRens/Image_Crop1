@@ -1,10 +1,10 @@
 use crate::domain::value_object::image_id::image_id::ImageId;
 
-pub struct GetImageInput {
+pub struct GetPreviewInput {
     image_id: ImageId,
 }
 
-impl GetImageInput {
+impl GetPreviewInput {
     pub fn new(image_id: ImageId) -> Self {
         Self { image_id }
     }

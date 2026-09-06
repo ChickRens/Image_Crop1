@@ -6,9 +6,9 @@ use crate::{
             segment_service::SharedSegmentService,
         },
         usecase::{
-            get_image_usecase::{
-                get_image_input::GetImageInput, get_image_output::GetImageOutput,
-                usecase::GetImageUseCase,
+            get_preview_usecase::{
+                get_preview_input::GetPreviewInput, get_preview_output::GetPreviewOutput,
+                usecase::GetPreviewUseCase,
             },
             prepare_segment_usecase::{
                 prepare_segment_input::PrepareSegmentInput, usecase::PrepareSegmentUseCase,
@@ -89,7 +89,7 @@ pub struct App {
         >,
     >,
     get_image_usecase:
-        GetImageUseCase<SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>>,
+        GetPreviewUseCase<SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>>,
 }
 
 impl App {
@@ -132,7 +132,7 @@ impl App {
         let segment_uc = SegmentUseCase::new(segment_service.clone(), preview_service.clone());
         let undo_uc = UndoUseCase::new(segment_service.clone(), preview_service.clone());
         let redo_uc = RedoUseCase::new(segment_service.clone(), preview_service.clone());
-        let get_image_uc = GetImageUseCase::new(preview_service.clone());
+        let get_image_uc = GetPreviewUseCase::new(preview_service.clone());
 
         Ok(App {
             upload_usecase: upload_uc,
@@ -166,7 +166,7 @@ impl App {
         Ok(self.redo_usecase.execute(input)?)
     }
 
-    pub fn get_image(&self, input: GetImageInput) -> Result<GetImageOutput, ApplicationError> {
+    pub fn get_image(&self, input: GetPreviewInput) -> Result<GetPreviewOutput, ApplicationError> {
         Ok(self.get_image_usecase.execute(input)?)
     }
 }

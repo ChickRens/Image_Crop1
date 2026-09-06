@@ -1,11 +1,11 @@
 use crate::domain::value_object::image_size::image_size::ImageSize;
 
-pub struct GetImageOutput {
+pub struct GetPreviewOutput {
     data: Vec<u8>,
     size: ImageSize,
 }
 
-impl GetImageOutput {
+impl GetPreviewOutput {
     pub fn new(data: Vec<u8>, size: ImageSize) -> Self {
         Self { data: data, size }
     }
