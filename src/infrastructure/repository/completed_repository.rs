@@ -19,6 +19,12 @@ impl CompletedImageRepository for CompletedRepositoryInMemory {
     }
 }
 
+impl CompletedRepositoryInMemory {
+    pub fn new() -> Self {
+        Self { image: RwLock::new(HashMap::new()) }
+    }
+}
+
 pub struct SharedCompletedImageRepository {
     repository: Arc<CompletedRepositoryInMemory>
 }
@@ -30,5 +36,11 @@ impl CompletedImageRepository for SharedCompletedImageRepository {
 
     fn save(&self, completed_image: CompletedImage) {
         self.repository.save(completed_image);
+    }
+}
+
+impl SharedCompletedImageRepository {
+    pub fn new() -> Self {
+        Self { repository: Arc::new(CompletedRepositoryInMemory::new()) }
     }
 }
