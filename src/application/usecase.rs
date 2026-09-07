@@ -6,3 +6,4 @@ pub mod segment_usecase;
 pub mod undo_usecase;
 pub mod upload_usecase;
 pub mod save_usecase;
+pub mod get_completed_usecase;
