@@ -59,7 +59,7 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
         config.thread_level = 1;
         config.alpha_quality = 50;
         config.alpha_filtering = 0;
-        config.alpha_compression = 1; // まずは圧縮ありのままで様子見
+        config.alpha_compression = 1;
         config.filter_strength = 0;
         config.segments = 1;
         config.sns_strength = 0;

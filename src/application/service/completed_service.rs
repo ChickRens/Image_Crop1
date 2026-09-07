@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{application::{interface::{completed_image_generator::CompletedImageGenerator, completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}}, types::completed_image::CompletedImage}, domain::{entity::image::Image, value_object::image_id::image_id::ImageId}};
 
 pub trait CompletedService {
-    fn generate_and_save(&self, image: Image);
+    fn generate_and_save(&self, image: &Image);
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError>;
 }
 
@@ -21,7 +21,7 @@ where
     CG: CompletedImageGenerator,
     CR: CompletedImageRepository,
 {
-    fn generate_and_save(&self, image: Image) {
+    fn generate_and_save(&self, image: &Image) {
         let completed_image = self.generator.generate(image);
         self.repository.save(completed_image);
     }
@@ -44,7 +44,7 @@ where
     CG: CompletedImageGenerator,
     CR: CompletedImageRepository,
 {
-    fn generate_and_save(&self, image: Image) {
+    fn generate_and_save(&self, image: &Image) {
         self.service.generate_and_save(image);
     }
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::{Arc, RwLock}};
 
-use crate::domain::{entity::completed_image::CompletedImage, repository::completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}, value_object::image_id::image_id::ImageId};
+use crate::{application::{interface::completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}, types::completed_image::CompletedImage}, domain::value_object::image_id::image_id::ImageId};
 
 pub struct CompletedRepositoryInMemory {
     image: RwLock<HashMap<ImageId, CompletedImage>>
