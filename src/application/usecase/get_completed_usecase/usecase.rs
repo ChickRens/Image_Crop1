@@ -4,21 +4,21 @@ pub struct GetCompletedUseCase<CS>
 where
     CS: CompletedService,
 {
-    completed_repo: CS,
+    completed_service: CS,
 }
 
 impl<CS> GetCompletedUseCase<CS>
 where
     CS: CompletedService,
 {
-    pub fn new(completed_image_repository: CS) -> Self {
-        Self { completed_repo: completed_image_repository }
+    pub fn new(completed_service: CS) -> Self {
+        Self { completed_service }
     }
 
     pub fn execute(&self, input: GetCompletedInput) -> Result<GetCompletedOutput, GetCompletedUseCaseError> {
         let image_id = input.image_id();
 
-        let completed = self.completed_repo.get(image_id)?;
+        let completed = self.completed_service.get(image_id)?;
 
         let image = completed.into_image();
         let (data, _, size) = image.into_data();

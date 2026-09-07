@@ -6,7 +6,7 @@ where
     CS: CompletedService,
 {
     segment_service: SS,
-    completed_image_repository: CS,
+    completed_service: CS,
 }
 
 impl<SS, CS> SaveUseCase<SS, CS>
@@ -14,10 +14,10 @@ where
     SS: SegmentService,
     CS: CompletedService,
 {
-    pub fn new(segment_service: SS, completed_image_repository: CS) -> Self {
+    pub fn new(segment_service: SS, completed_service: CS) -> Self {
         Self {
             segment_service,
-            completed_image_repository,
+            completed_service,
         }
     }
 
@@ -27,9 +27,8 @@ where
         let segmented_image = self.segment_service.resegment(session_id)?;
         let segmented_image_id = *segmented_image.image_id();
 
-        let completed_image = self.completed_image_repository.generate_and_save(segmented_image);
-        self.completed_image_repository.save(completed_image);
-        
+        self.completed_service.generate_and_save(&segmented_image);
+                
         let output = SaveOutput::new(segmented_image_id);
         Ok(output)
     }
