@@ -4,20 +4,20 @@ use axum::{Router, routing::post};
 use tower_http::services::ServeDir;
 
 use crate::{
-    composition::wiring::App,
-    presentation::handler::{
-        get_preview::handler::get_image, redo::handler::redo, segment::handler::segment,
-        undo::handler::undo, upload::handler::upload,
+    composition::wiring::App, presentation::handler::{
+        get_completed::handler::get_completed_image, get_preview::handler::get_preview, redo::handler::redo, save::handler::save, segment::handler::segment, undo::handler::undo, upload::handler::upload,
     },
 };
 
 pub fn route(app: Arc<App>) -> Router {
     Router::new()
         .route("/upload", post(upload))
-        .route("/get-image", post(get_image))
+        .route("/get-preview", post(get_preview))
         .route("/segment", post(segment))
         .route("/undo", post(undo))
         .route("/redo", post(redo))
+        .route("/get-completed", post(get_completed_image))
+        .route("/save", post(save))
         .fallback_service(ServeDir::new("frontend").append_index_html_on_directories(true))
         .with_state(app)
 }
