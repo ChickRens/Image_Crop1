@@ -7,6 +7,7 @@ pub trait CompletedService {
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError>;
 }
 
+#[derive(Debug)]
 pub struct CompletedServiceImpl<CG, CR>
 where 
     CG: CompletedImageGenerator,
@@ -41,6 +42,7 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SharedCompletedService<CG, CR>
 where 
     CG: CompletedImageGenerator,

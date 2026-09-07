@@ -30,6 +30,7 @@ impl WebPCompletedImageGenerator {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct SharedWebPCompletedImageGenerator {
     generator: Arc<WebPCompletedImageGenerator>
 }
