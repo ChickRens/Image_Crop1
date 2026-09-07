@@ -13,7 +13,7 @@ use crate::{
 };
 
 #[axum::debug_handler]
-pub async fn get_image(
+pub async fn get_preview(
     State(app): State<Arc<App>>,
     Json(request): Json<GetImageRequest>,
 ) -> Result<Response, AppError> {
