@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::RwLock};
+use std::{collections::HashMap, sync::{Arc, RwLock}};
 
 use crate::domain::{entity::completed_image::CompletedImage, repository::completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}, value_object::image_id::image_id::ImageId};
 
@@ -16,5 +16,19 @@ impl CompletedImageRepository for CompletedRepositoryInMemory {
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
         let image = self.image.read().expect("CompletedImageRepository is Poisoned");
         image.get(&image_id).cloned().ok_or(CompletedImageRepositoryError::ImageNotFound)
+    }
+}
+
+pub struct SharedCompletedImageRepository {
+    repository: Arc<CompletedRepositoryInMemory>
+}
+
+impl CompletedImageRepository for SharedCompletedImageRepository {
+    fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
+        self.repository.get(image_id)
+    }
+
+    fn save(&self, completed_image: CompletedImage) {
+        self.repository.save(completed_image);
     }
 }
