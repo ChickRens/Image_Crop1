@@ -1,17 +1,17 @@
-use crate::{application::usecase::get_completed_usecase::{error::GetCompletedUseCaseError, input::GetCompletedInput, output::GetCompletedOutput}, domain::repository::completed_image_repository::repository::CompletedImageRepository};
+use crate::application::{service::completed_service::CompletedService, usecase::get_completed_usecase::{error::GetCompletedUseCaseError, input::GetCompletedInput, output::GetCompletedOutput}};
 
-pub struct GetCompletedUseCase<CR>
+pub struct GetCompletedUseCase<CS>
 where
-    CR: CompletedImageRepository,
+    CS: CompletedService,
 {
-    completed_repo: CR,
+    completed_repo: CS,
 }
 
-impl<CR> GetCompletedUseCase<CR>
+impl<CS> GetCompletedUseCase<CS>
 where
-    CR: CompletedImageRepository,
+    CS: CompletedService,
 {
-    pub fn new(completed_image_repository: CR) -> Self {
+    pub fn new(completed_image_repository: CS) -> Self {
         Self { completed_repo: completed_image_repository }
     }
 
