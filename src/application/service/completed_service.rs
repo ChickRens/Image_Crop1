@@ -31,6 +31,16 @@ where
     }
 }
 
+impl<CG, CR> CompletedServiceImpl<CG, CR>
+where
+    CG: CompletedImageGenerator,
+    CR: CompletedImageRepository,
+{
+    pub fn new(completed_image_generator: CG, completed_image_repository: CR) -> Self {
+        Self { generator: completed_image_generator, repository: completed_image_repository }
+    }
+}
+
 pub struct SharedCompletedService<CG, CR>
 where 
     CG: CompletedImageGenerator,
@@ -50,5 +60,15 @@ where
 
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
         self.service.get(image_id)
+    }
+}
+
+impl<CG, CR> SharedCompletedService<CG, CR>
+where
+    CG: CompletedImageGenerator,
+    CR: CompletedImageRepository,
+{
+    pub fn new(completed_image_generator: CG, completed_image_repository: CR) -> Self {
+        Self { service: Arc::new(CompletedServiceImpl::new(completed_image_generator, completed_image_repository)) }
     }
 }
