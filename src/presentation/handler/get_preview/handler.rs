@@ -8,7 +8,7 @@ use crate::{
     domain::value_object::image_id::image_id::ImageId,
     presentation::{
         errors::{app_error::AppError, presentation_error::PresentationError},
-        handler::get_image::request::GetImageRequest,
+        handler::get_preview::request::GetImageRequest,
     },
 };
 
@@ -23,7 +23,7 @@ pub async fn get_image(
 
     let input = GetPreviewInput::new(image_id);
 
-    let output = app.get_image(input)?;
+    let output = app.get_preview(input)?;
 
     let (image, _) = output.image_data();
 

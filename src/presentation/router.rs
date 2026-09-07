@@ -6,7 +6,7 @@ use tower_http::services::ServeDir;
 use crate::{
     composition::wiring::App,
     presentation::handler::{
-        get_image::handler::get_image, redo::handler::redo, segment::handler::segment,
+        get_preview::handler::get_image, redo::handler::redo, segment::handler::segment,
         undo::handler::undo, upload::handler::upload,
     },
 };
