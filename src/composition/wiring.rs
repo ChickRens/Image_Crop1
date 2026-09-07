@@ -1,41 +1,25 @@
 use crate::{
     application::{
-        error::ApplicationError,
-        service::{
-            prepare_service::SharedPrepareSegmentService, preview_service::SharedPreviewService,
-            segment_service::SharedSegmentService,
-        },
-        usecase::{
-            get_preview_usecase::{
+        error::ApplicationError, service::{
+            completed_service::SharedCompletedService, prepare_service::SharedPrepareSegmentService, preview_service::SharedPreviewService, segment_service::SharedSegmentService,
+        }, usecase::{
+            get_completed_usecase::{input::GetCompletedInput, output::GetCompletedOutput, usecase::GetCompletedUseCase}, get_preview_usecase::{
                 get_preview_input::GetPreviewInput, get_preview_output::GetPreviewOutput,
                 usecase::GetPreviewUseCase,
-            },
-            prepare_segment_usecase::{
+            }, prepare_segment_usecase::{
                 prepare_segment_input::PrepareSegmentInput, usecase::PrepareSegmentUseCase,
-            },
-            redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase},
-            segment_usecase::{
+            }, redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase}, save_usecase::{input::SaveInput, output::SaveOutput, usecase::SaveUseCase}, segment_usecase::{
                 segment_input::SegmentInput, segment_output::SegmentOutput, usecase::SegmentUseCase,
-            },
-            undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase},
-            upload_usecase::{
+            }, undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase}, upload_usecase::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
             },
         },
-    },
-    infrastructure::{
+    }, infrastructure::{
         generator::{
-            shared_preview::SharedPreviewGenerator,
-            shared_segmenter_input::SharedSAM2InputGenerator,
-        },
-        image_loader::FileImageLoader,
-        repository::{
-            shared_editing_session_repository::SharedEditingSessionRepository,
-            shared_image_repository::SharedOriginalImageRepository,
-            shared_session_repository::SharedSessionRepository,
-        },
-        segmenter::shared_sam2::SharedSAM2Segmenter,
-        storage::{
+            completed_image::SharedWebPCompletedImageGenerator, shared_preview::SharedPreviewGenerator, shared_segmenter_input::SharedSAM2InputGenerator,
+        }, image_loader::FileImageLoader, repository::{
+            completed_repository::SharedCompletedImageRepository, shared_editing_session_repository::SharedEditingSessionRepository, shared_image_repository::SharedOriginalImageRepository, shared_session_repository::SharedSessionRepository,
+        }, segmenter::shared_sam2::SharedSAM2Segmenter, storage::{
             shared_preview_storage::SharedPreviewStorage,
             shared_segmenter_input_storage::SharedSegmenterInputStorage,
         },
@@ -88,7 +72,26 @@ pub struct App {
             SharedSegmenterInputStorage,
         >,
     >,
-    get_image_usecase:
+    save_usecase: SaveUseCase<
+        SharedSegmentService<
+            SharedSessionRepository,
+            SharedSAM2Segmenter,
+            SharedOriginalImageRepository,
+            SharedEditingSessionRepository,
+            SharedSegmenterInputStorage,
+        >,
+        SharedCompletedService<
+            SharedWebPCompletedImageGenerator,
+            SharedCompletedImageRepository,
+        >
+    >,
+    get_completed_usecase: GetCompletedUseCase<
+        SharedCompletedService<
+            SharedWebPCompletedImageGenerator,
+            SharedCompletedImageRepository,
+        >
+    >,
+    get_preview_usecase:
         GetPreviewUseCase<SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>>,
 }
 
@@ -104,6 +107,8 @@ impl App {
         let preview_generator = SharedPreviewGenerator::new(600);
         let input_storage = SharedSegmenterInputStorage::new();
         let input_generator = SharedSAM2InputGenerator::new(1024, 1024);
+        let completed_image_generator = SharedWebPCompletedImageGenerator::new();
+        let completed_image_repository = SharedCompletedImageRepository::new();
 
         let preview_service = SharedPreviewService::new(preview_generator, preview_storage);
         let prepare_service = SharedPrepareSegmentService::new(
@@ -121,6 +126,7 @@ impl App {
             editing_session_repo.clone(),
             input_storage.clone(),
         );
+        let completed_service = SharedCompletedService::new(completed_image_generator, completed_image_repository);
 
         let upload_uc = UploadUseCase::new(
             session_repo.clone(),
@@ -132,6 +138,8 @@ impl App {
         let segment_uc = SegmentUseCase::new(segment_service.clone(), preview_service.clone());
         let undo_uc = UndoUseCase::new(segment_service.clone(), preview_service.clone());
         let redo_uc = RedoUseCase::new(segment_service.clone(), preview_service.clone());
+        let save_uc = SaveUseCase::new(segment_service.clone(), completed_service.clone());
+        let get_completed_uc = GetCompletedUseCase::new(completed_service.clone());
         let get_image_uc = GetPreviewUseCase::new(preview_service.clone());
 
         Ok(App {
@@ -140,7 +148,9 @@ impl App {
             segment_usecase: segment_uc,
             undo_usecase: undo_uc,
             redo_usecase: redo_uc,
-            get_image_usecase: get_image_uc,
+            get_completed_usecase: get_completed_uc,
+            save_usecase: save_uc,
+            get_preview_usecase: get_image_uc,
         })
     }
 
@@ -166,7 +176,15 @@ impl App {
         Ok(self.redo_usecase.execute(input)?)
     }
 
-    pub fn get_image(&self, input: GetPreviewInput) -> Result<GetPreviewOutput, ApplicationError> {
-        Ok(self.get_image_usecase.execute(input)?)
+    pub fn save(&self, input: SaveInput) -> Result<SaveOutput, ApplicationError> {
+        Ok(self.save_usecase.execute(input)?)
+    }
+
+    pub fn get_completed_image(&self, input: GetCompletedInput) -> Result<GetCompletedOutput, ApplicationError> {
+        Ok(self.get_completed_usecase.execute(input)?)
+    }
+
+    pub fn get_preview(&self, input: GetPreviewInput) -> Result<GetPreviewOutput, ApplicationError> {
+        Ok(self.get_preview_usecase.execute(input)?)
     }
 }
