@@ -6,3 +6,4 @@ pub mod preview_image;
 pub mod rendered_image;
 pub mod segmented_image;
 pub mod segmenter_input_image;
+pub mod completed_image;
