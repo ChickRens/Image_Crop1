@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::{Router, routing::post};
+use axum::{Router, extract::DefaultBodyLimit, routing::post};
 use tower_http::services::ServeDir;
 
 use crate::{
@@ -18,6 +18,7 @@ pub fn route(app: Arc<App>) -> Router {
         .route("/redo", post(redo))
         .route("/get-completed", post(get_completed_image))
         .route("/save", post(save))
+        .layer(DefaultBodyLimit::max(10 * 1024 * 1024))
         .fallback_service(ServeDir::new("frontend").append_index_html_on_directories(true))
         .with_state(app)
 }
