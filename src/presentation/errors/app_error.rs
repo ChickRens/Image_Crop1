@@ -34,6 +34,8 @@ impl IntoResponse for AppError {
 
         let code = self.code();
 
+        eprintln!("AppError: {self:?}");
+
         let json = Json(ErrorBody {
             code: code.to_string(),
         });
