@@ -8,7 +8,7 @@ pub struct ImageSize {
 
 impl ImageSize {
     const MIN_DIMENSION: u16 = 2;
-    const MAX_DIMENSION: u16 = 3000;
+    const MAX_DIMENSION: u16 = 8000;
 
     pub fn new(height: u16, width: u16) -> Result<Self, ImageSizeError> {
         match (height, width) {
