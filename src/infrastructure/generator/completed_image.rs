@@ -2,7 +2,13 @@ use std::sync::Arc;
 
 use webp::Encoder;
 
-use crate::{application::{interface::completed_image_generator::CompletedImageGenerator, types::completed_image::CompletedImage}, domain::{entity::image::Image, value_object::image_data::ImageData}};
+use crate::{
+    application::{
+        interface::completed_image_generator::CompletedImageGenerator,
+        types::completed_image::CompletedImage,
+    },
+    domain::{entity::image::Image, value_object::image_data::ImageData},
+};
 
 #[derive(Debug)]
 pub struct WebPCompletedImageGenerator;
@@ -18,9 +24,11 @@ impl CompletedImageGenerator for WebPCompletedImageGenerator {
         );
 
         let webp = encoder.encode_lossless().to_vec();
-        CompletedImage::new(
-            Image::new(ImageData::new(webp), *image.image_id(), image.image_size().clone())
-        )
+        CompletedImage::new(Image::new(
+            ImageData::new(webp),
+            *image.image_id(),
+            image.image_size().clone(),
+        ))
     }
 }
 
@@ -32,7 +40,7 @@ impl WebPCompletedImageGenerator {
 
 #[derive(Debug, Clone)]
 pub struct SharedWebPCompletedImageGenerator {
-    generator: Arc<WebPCompletedImageGenerator>
+    generator: Arc<WebPCompletedImageGenerator>,
 }
 
 impl CompletedImageGenerator for SharedWebPCompletedImageGenerator {
@@ -43,6 +51,8 @@ impl CompletedImageGenerator for SharedWebPCompletedImageGenerator {
 
 impl SharedWebPCompletedImageGenerator {
     pub fn new() -> Self {
-        Self { generator: Arc::new(WebPCompletedImageGenerator::new()) }
+        Self {
+            generator: Arc::new(WebPCompletedImageGenerator::new()),
+        }
     }
 }

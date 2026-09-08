@@ -20,16 +20,11 @@ impl ImageLoader for FileImageLoader {
             .with_guessed_format()
             .map_err(|err| LoadingError::CorruptedImage(err.to_string()))?;
 
-        let mut decoder = reader.into_decoder()
-            .map_err(|err| match err {
-                ImageError::Unsupported(e) => {
-                    LoadingError::UnsupportedFormat(e.to_string())
-                }
-                ImageError::Decoding(e) => {
-                    LoadingError::CorruptedImage(e.to_string())
-                }
-                error => LoadingError::CorruptedImage(error.to_string()),
-            })?;
+        let mut decoder = reader.into_decoder().map_err(|err| match err {
+            ImageError::Unsupported(e) => LoadingError::UnsupportedFormat(e.to_string()),
+            ImageError::Decoding(e) => LoadingError::CorruptedImage(e.to_string()),
+            error => LoadingError::CorruptedImage(error.to_string()),
+        })?;
 
         // EXIF Orientationを取得
         let orientation = decoder
@@ -37,16 +32,11 @@ impl ImageLoader for FileImageLoader {
             .map_err(|err| LoadingError::CorruptedImage(err.to_string()))?;
 
         // 画像をデコード
-        let mut img = DynamicImage::from_decoder(decoder)
-            .map_err(|err| match err {
-                ImageError::Unsupported(e) => {
-                    LoadingError::UnsupportedFormat(e.to_string())
-                }
-                ImageError::Decoding(e) => {
-                    LoadingError::CorruptedImage(e.to_string())
-                }
-                error => LoadingError::CorruptedImage(error.to_string()),
-            })?;
+        let mut img = DynamicImage::from_decoder(decoder).map_err(|err| match err {
+            ImageError::Unsupported(e) => LoadingError::UnsupportedFormat(e.to_string()),
+            ImageError::Decoding(e) => LoadingError::CorruptedImage(e.to_string()),
+            error => LoadingError::CorruptedImage(error.to_string()),
+        })?;
 
         // EXIF Orientationを実際のピクセルに反映
         img.apply_orientation(orientation);
@@ -55,10 +45,7 @@ impl ImageLoader for FileImageLoader {
         let width = img.width();
         let height = img.height();
 
-        let image_size = ImageSize::new(
-            height as u16,
-            width as u16,
-        )?;
+        let image_size = ImageSize::new(height as u16, width as u16)?;
 
         let rgba_image = img.to_rgba8();
         let raw_pixels = rgba_image.into_raw();

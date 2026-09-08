@@ -1,6 +1,17 @@
 use std::sync::Arc;
 
-use crate::{application::{interface::{completed_image_generator::CompletedImageGenerator, completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}}, types::completed_image::CompletedImage}, domain::{entity::image::Image, value_object::image_id::image_id::ImageId}};
+use crate::{
+    application::{
+        interface::{
+            completed_image_generator::CompletedImageGenerator,
+            completed_image_repository::{
+                error::CompletedImageRepositoryError, repository::CompletedImageRepository,
+            },
+        },
+        types::completed_image::CompletedImage,
+    },
+    domain::{entity::image::Image, value_object::image_id::image_id::ImageId},
+};
 
 pub trait CompletedService {
     fn generate_and_save(&self, image: &Image);
@@ -9,7 +20,7 @@ pub trait CompletedService {
 
 #[derive(Debug)]
 pub struct CompletedServiceImpl<CG, CR>
-where 
+where
     CG: CompletedImageGenerator,
     CR: CompletedImageRepository,
 {
@@ -38,21 +49,24 @@ where
     CR: CompletedImageRepository,
 {
     pub fn new(completed_image_generator: CG, completed_image_repository: CR) -> Self {
-        Self { generator: completed_image_generator, repository: completed_image_repository }
+        Self {
+            generator: completed_image_generator,
+            repository: completed_image_repository,
+        }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct SharedCompletedService<CG, CR>
-where 
+where
     CG: CompletedImageGenerator,
     CR: CompletedImageRepository,
 {
-    service: Arc<CompletedServiceImpl<CG, CR>>
+    service: Arc<CompletedServiceImpl<CG, CR>>,
 }
 
 impl<CG, CR> CompletedService for SharedCompletedService<CG, CR>
-where 
+where
     CG: CompletedImageGenerator,
     CR: CompletedImageRepository,
 {
@@ -71,6 +85,11 @@ where
     CR: CompletedImageRepository,
 {
     pub fn new(completed_image_generator: CG, completed_image_repository: CR) -> Self {
-        Self { service: Arc::new(CompletedServiceImpl::new(completed_image_generator, completed_image_repository)) }
+        Self {
+            service: Arc::new(CompletedServiceImpl::new(
+                completed_image_generator,
+                completed_image_repository,
+            )),
+        }
     }
 }

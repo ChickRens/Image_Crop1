@@ -5,7 +5,10 @@ use axum::{
 };
 
 use crate::{
-    application::error::ApplicationError, common::traits::{Cause, Code, ErrorType, ErrorTypeProvider}, parent_error, presentation::errors::presentation_error::PresentationError,
+    application::error::ApplicationError,
+    common::traits::{Cause, Code, ErrorType, ErrorTypeProvider},
+    parent_error,
+    presentation::errors::presentation_error::PresentationError,
 };
 
 parent_error!(

@@ -1,4 +1,9 @@
-use crate::application::{service::completed_service::CompletedService, usecase::get_completed_usecase::{error::GetCompletedUseCaseError, input::GetCompletedInput, output::GetCompletedOutput}};
+use crate::application::{
+    service::completed_service::CompletedService,
+    usecase::get_completed_usecase::{
+        error::GetCompletedUseCaseError, input::GetCompletedInput, output::GetCompletedOutput,
+    },
+};
 
 pub struct GetCompletedUseCase<CS>
 where
@@ -15,7 +20,10 @@ where
         Self { completed_service }
     }
 
-    pub fn execute(&self, input: GetCompletedInput) -> Result<GetCompletedOutput, GetCompletedUseCaseError> {
+    pub fn execute(
+        &self,
+        input: GetCompletedInput,
+    ) -> Result<GetCompletedOutput, GetCompletedUseCaseError> {
         let image_id = input.image_id();
 
         let completed = self.completed_service.get(image_id)?;

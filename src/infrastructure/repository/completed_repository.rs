@@ -1,34 +1,56 @@
-use std::{collections::HashMap, sync::{Arc, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
-use crate::{application::{interface::completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}, types::completed_image::CompletedImage}, domain::value_object::image_id::image_id::ImageId};
+use crate::{
+    application::{
+        interface::completed_image_repository::{
+            error::CompletedImageRepositoryError, repository::CompletedImageRepository,
+        },
+        types::completed_image::CompletedImage,
+    },
+    domain::value_object::image_id::image_id::ImageId,
+};
 
 #[derive(Debug)]
 pub struct CompletedRepositoryInMemory {
-    image: RwLock<HashMap<ImageId, CompletedImage>>
+    image: RwLock<HashMap<ImageId, CompletedImage>>,
 }
 
 impl CompletedImageRepository for CompletedRepositoryInMemory {
     fn save(&self, completed_image: CompletedImage) {
-        let mut image = self.image.write().expect("CompletedImageRepository is Poisoned");
+        let mut image = self
+            .image
+            .write()
+            .expect("CompletedImageRepository is Poisoned");
         let image_id = completed_image.image_id();
         image.insert(image_id, completed_image);
     }
 
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
-        let image = self.image.read().expect("CompletedImageRepository is Poisoned");
-        image.get(&image_id).cloned().ok_or(CompletedImageRepositoryError::ImageNotFound)
+        let image = self
+            .image
+            .read()
+            .expect("CompletedImageRepository is Poisoned");
+        image
+            .get(&image_id)
+            .cloned()
+            .ok_or(CompletedImageRepositoryError::ImageNotFound)
     }
 }
 
 impl CompletedRepositoryInMemory {
     pub fn new() -> Self {
-        Self { image: RwLock::new(HashMap::new()) }
+        Self {
+            image: RwLock::new(HashMap::new()),
+        }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct SharedCompletedImageRepository {
-    repository: Arc<CompletedRepositoryInMemory>
+    repository: Arc<CompletedRepositoryInMemory>,
 }
 
 impl CompletedImageRepository for SharedCompletedImageRepository {
@@ -43,6 +65,8 @@ impl CompletedImageRepository for SharedCompletedImageRepository {
 
 impl SharedCompletedImageRepository {
     pub fn new() -> Self {
-        Self { repository: Arc::new(CompletedRepositoryInMemory::new()) }
+        Self {
+            repository: Arc::new(CompletedRepositoryInMemory::new()),
+        }
     }
 }

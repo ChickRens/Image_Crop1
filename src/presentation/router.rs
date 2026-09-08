@@ -4,8 +4,11 @@ use axum::{Router, extract::DefaultBodyLimit, routing::post};
 use tower_http::services::ServeDir;
 
 use crate::{
-    composition::wiring::App, presentation::handler::{
-        get_completed::handler::get_completed_image, get_preview::handler::get_preview, redo::handler::redo, save::handler::save, segment::handler::segment, undo::handler::undo, upload::handler::upload,
+    composition::wiring::App,
+    presentation::handler::{
+        get_completed::handler::get_completed_image, get_preview::handler::get_preview,
+        redo::handler::redo, save::handler::save, segment::handler::segment, undo::handler::undo,
+        upload::handler::upload,
     },
 };
 

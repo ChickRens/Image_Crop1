@@ -1,7 +1,7 @@
 use crate::domain::value_object::session_id::session_id::SessionId;
 
 pub struct SaveInput {
-    session_id: SessionId
+    session_id: SessionId,
 }
 
 impl SaveInput {

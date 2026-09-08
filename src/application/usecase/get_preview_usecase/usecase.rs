@@ -21,7 +21,10 @@ where
         Self { preview_service }
     }
 
-    pub fn execute(&self, input: GetPreviewInput) -> Result<GetPreviewOutput, GetPreviewUseCaseError> {
+    pub fn execute(
+        &self,
+        input: GetPreviewInput,
+    ) -> Result<GetPreviewOutput, GetPreviewUseCaseError> {
         let image_id = input.image_id();
 
         let preview = self.preview_service.get(image_id)?;

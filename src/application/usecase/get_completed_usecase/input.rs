@@ -1,7 +1,7 @@
 use crate::domain::value_object::image_id::image_id::ImageId;
 
 pub struct GetCompletedInput {
-    image_id: ImageId
+    image_id: ImageId,
 }
 
 impl GetCompletedInput {
