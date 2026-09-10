@@ -151,6 +151,8 @@ where
             &input_points,
         )?;
 
+        self.editing_session_repo.save(&session_id, session);
+
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         Ok(Image::new(segmented_image_data, ImageId::new(), size))
     }
