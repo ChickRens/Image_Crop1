@@ -14,15 +14,11 @@ use crate::{
             segmenter::ImageSegmenter,
         },
         types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
-    },
-    domain::{
+    }, domain::{
         entity::original_image::OriginalImage,
         value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
-    },
-    infrastructure::segmenter::{
-        mask_applier::SAM2MaskApplier,
-        mask_resizer::SAM2MaskResizer,
-        sam2_data::{
+    }, infrastructure::segmenter::{
+        mask_applier::SAM2MaskApplier, mask_resizer::SAM2MaskResizer, mask_smoother::SAM2MaskSmoother, sam2_data::{
             DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask,
             SAM2InferenceContext, SAM2StaticContext, SparseEmbeddings,
         },
@@ -347,7 +343,7 @@ impl Sam2Segmenter {
         Ok(mask)
     }
 
-    fn _generate_image(
+    fn _generate_image_fast(
         mask: &Mask,
         original_image: &OriginalImage,
     ) -> Result<SegmentedImage, SegmenterRuntimeError> {
@@ -370,13 +366,42 @@ impl Sam2Segmenter {
             original_image.image().image_size().clone(),
         ))
     }
+
+    fn _generate_image_high_quality(
+        mask: &Mask,
+        original_image: &OriginalImage,
+    ) -> Result<SegmentedImage, SegmenterRuntimeError> {
+        let start = Instant::now();
+        let resized_mask = SAM2MaskResizer::resize_mask(
+            &mask.view(),
+            original_image.image().image_size().height() as usize,
+            original_image.image().image_size().width() as usize,
+        );
+        let end = start.elapsed();
+        println!("resize image in generate image: {:?}", end);
+
+        let start = Instant::now();
+        let smoothed_mask = SAM2MaskSmoother::smoothing(resized_mask.view(), original_image.image());
+        let end = start.elapsed();
+        println!("smooth image in generate image: {:?}", end);
+        
+        let start = Instant::now();
+        let applied_image = SAM2MaskApplier::apply(&original_image.image(), smoothed_mask.view());
+        let end = start.elapsed();
+        println!("apply image in generate image: {:?}", end);
+
+        Ok(SegmentedImage::new(
+            ImageData::new(applied_image),
+            original_image.image().image_size().clone(),
+        ))
+    }
 }
 
 impl ImageSegmenter for Sam2Segmenter {
     type InferenceContext = SAM2InferenceContext;
     type StaticContext = SAM2StaticContext;
 
-    fn segment(
+    fn segment_fast(
         &self,
         input_image: &SegmenterInputImage,
         original_image: &OriginalImage,
@@ -395,7 +420,41 @@ impl ImageSegmenter for Sam2Segmenter {
         println!("SAM2 inference: {:?}", end);
 
         let start = Instant::now();
-        let segmented = Self::_generate_image(&mask, original_image)?;
+        let segmented = Self::_generate_image_fast(&mask, original_image)?;
+        let end = start.elapsed();
+        println!("SAM2 generate image: {:?}", end);
+
+        let inference_context = SAM2InferenceContext::new(Some(mask));
+
+        // Ok(SegmentedImage::new(
+        //     ImageData::new(applied_image),
+        //     original_image.image_size().clone(),
+        // ))
+
+        Ok((inference_context, segmented))
+    }
+
+    fn segment_high_quality(
+        &self,
+        input_image: &SegmenterInputImage,
+        original_image: &OriginalImage,
+        static_context: &Self::StaticContext,
+        inference_context: &Self::InferenceContext,
+        input_scaled_points: &[Point],
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError>
+    {
+        let start = Instant::now();
+        let mask = self._inference(
+            original_image.image().image_size(),
+            static_context,
+            inference_context,
+            input_scaled_points,
+        )?;
+        let end = start.elapsed();
+        println!("SAM2 inference: {:?}", end);
+
+        let start = Instant::now();
+        let segmented = Self::_generate_image_high_quality(&mask, original_image)?;
         let end = start.elapsed();
         println!("SAM2 generate image: {:?}", end);
 

@@ -18,7 +18,15 @@ pub trait ImageSegmenter {
         &self,
         image: &SegmenterInputImage,
     ) -> Result<Self::StaticContext, SegmenterLoadingError>;
-    fn segment(
+    fn segment_fast(
+        &self,
+        input_image: &SegmenterInputImage,
+        original_image: &OriginalImage,
+        static_context: &Self::StaticContext,
+        inference_context: &Self::InferenceContext,
+        input_points: &[Point],
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError>;
+    fn segment_high_quality(
         &self,
         input_image: &SegmenterInputImage,
         original_image: &OriginalImage,
