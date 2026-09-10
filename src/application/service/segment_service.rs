@@ -74,7 +74,7 @@ where
         println!("Scaled Points: {:?}", input_points);
 
         let start = Instant::now();
-        let (new_context, segmented_image) = self.segmenter.segment(
+        let (new_context, segmented_image) = self.segmenter.segment_fast(
             &input_image,
             &original_image,
             static_context,
@@ -116,7 +116,7 @@ where
         let static_context = session.static_context();
         let inference_context = session.inference_context();
 
-        let (_, segmented_image) = self.segmenter.segment(
+        let (_, segmented_image) = self.segmenter.segment_fast(
             &input_image,
             &original_image,
             static_context,
@@ -143,7 +143,7 @@ where
             return Ok(original_image.into_image());
         }
 
-        let (_, segmented_image) = self.segmenter.segment(
+        let (_, segmented_image) = self.segmenter.segment_high_quality(
             &input_image,
             &original_image,
             session.static_context(),
@@ -170,7 +170,7 @@ where
         let static_context = session.static_context();
         let inference_context = session.inference_context();
 
-        let (_, segmented_image) = self.segmenter.segment(
+        let (_, segmented_image) = self.segmenter.segment_fast(
             &input_image,
             &original_image,
             static_context,
