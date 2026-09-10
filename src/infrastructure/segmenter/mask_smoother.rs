@@ -74,7 +74,12 @@ impl SAM2MaskSmoother {
                     let b = mean_p - a * mean_i;
                     let guide_index = y * width + x;
 
-                    row[x] = a * guide[guide_index] + b;
+                    let filtered = (a * guide[guide_index] + b).clamp(0.0, 1.0);
+
+                    let original_p = mask_values[guide_index];
+                    let confidence = ((original_p - 0.5).abs() * 2.0).powf(4.0);
+
+                    row[x] = filtered * (1.0 - confidence) + original_p * confidence;
                 }
             });
         
