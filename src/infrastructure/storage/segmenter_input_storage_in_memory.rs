@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, sync::RwLock};
 
 use crate::{
     application::{
@@ -12,14 +12,14 @@ use crate::{
 
 #[derive(Debug)]
 pub struct SegmenterInputStorageInMemory {
-    images: Mutex<HashMap<ImageId, SegmenterInputImage>>,
+    images: RwLock<HashMap<ImageId, SegmenterInputImage>>,
 }
 
 impl SegmenterInputImageStorage for SegmenterInputStorageInMemory {
     fn save(&self, image: SegmenterInputImage) {
         let mut images = self
             .images
-            .lock()
+            .write()
             .expect("SegmenterInputStorage is Poisoned");
         let id = image.image_id();
         images.insert(*id, image);
@@ -31,7 +31,7 @@ impl SegmenterInputImageStorage for SegmenterInputStorageInMemory {
     ) -> Result<SegmenterInputImage, SegmenterInputImageStorageError> {
         let images = self
             .images
-            .lock()
+            .read()
             .expect("SegmenterInputStorage is Poisoned");
         images
             .get(&image_id)
@@ -43,7 +43,7 @@ impl SegmenterInputImageStorage for SegmenterInputStorageInMemory {
 impl SegmenterInputStorageInMemory {
     pub fn new() -> Self {
         Self {
-            images: Mutex::new(HashMap::new()),
+            images: RwLock::new(HashMap::new()),
         }
     }
 }

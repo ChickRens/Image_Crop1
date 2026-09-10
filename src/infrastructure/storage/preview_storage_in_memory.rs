@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, sync::RwLock};
 
 use crate::{
     application::{
@@ -10,18 +10,18 @@ use crate::{
 
 #[derive(Debug)]
 pub struct PreviewStorageInMemory {
-    images: Mutex<HashMap<ImageId, PreviewImage>>,
+    images: RwLock<HashMap<ImageId, PreviewImage>>,
 }
 
 impl PreviewStorage for PreviewStorageInMemory {
     fn save(&self, image: PreviewImage) {
-        let mut images = self.images.lock().expect("PreviewStorage is Poisoned");
+        let mut images = self.images.write().expect("PreviewStorage is Poisoned");
         let image_id = image.image_id();
         images.insert(image_id, image);
     }
 
     fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
-        let images = self.images.lock().expect("PreviewStorage is Poisoned");
+        let images = self.images.read().expect("PreviewStorage is Poisoned");
         images
             .get(&image_id)
             .cloned()
@@ -32,7 +32,7 @@ impl PreviewStorage for PreviewStorageInMemory {
 impl PreviewStorageInMemory {
     pub fn new() -> Self {
         Self {
-            images: Mutex::new(HashMap::new()),
+            images: RwLock::new(HashMap::new()),
         }
     }
 }

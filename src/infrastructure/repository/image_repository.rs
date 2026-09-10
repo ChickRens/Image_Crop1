@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, sync::RwLock};
 
 use crate::domain::{
     entity::original_image::OriginalImage,
@@ -9,7 +9,7 @@ use crate::domain::{
 };
 
 pub struct OriginalImageRepositoryInMemory {
-    images: Mutex<HashMap<ImageId, OriginalImage>>,
+    images: RwLock<HashMap<ImageId, OriginalImage>>,
 }
 
 impl OriginalImageRepository for OriginalImageRepositoryInMemory {
@@ -17,7 +17,7 @@ impl OriginalImageRepository for OriginalImageRepositoryInMemory {
         let key = image.image_id();
         let mut images = self
             .images
-            .lock()
+            .write()
             .expect("ImageRepositoryInMemory is Poisoned");
         images.insert(key, image);
     }
@@ -25,7 +25,7 @@ impl OriginalImageRepository for OriginalImageRepositoryInMemory {
     fn get(&self, image_id: &ImageId) -> Result<OriginalImage, OriginalImageRepositoryError> {
         let images = self
             .images
-            .lock()
+            .read()
             .expect("ImageRepositoryInMemory is Poisoned");
         images
             .get(&image_id.clone())
@@ -37,7 +37,7 @@ impl OriginalImageRepository for OriginalImageRepositoryInMemory {
 impl OriginalImageRepositoryInMemory {
     pub fn new() -> Self {
         Self {
-            images: Mutex::new(HashMap::new()),
+            images: RwLock::new(HashMap::new()),
         }
     }
 }
