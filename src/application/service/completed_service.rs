@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use crate::{
     application::{
@@ -34,7 +34,10 @@ where
     CR: CompletedImageRepository,
 {
     fn generate_and_save(&self, image: &Image) {
+        let start = Instant::now();
         let completed_image = self.generator.generate(image);
+        let end = start.elapsed();
+        println!("CompletedImage generate: {:?}", end);
         self.repository.save(completed_image);
     }
 
