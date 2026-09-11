@@ -8,7 +8,7 @@ pub struct SAM2MaskSmoother;
 
 impl SAM2MaskSmoother {
     pub fn smoothing(mask: ArrayView4<f32>, original_image: &Image) -> Array4<f32> {
-        let radius = 10usize;
+        let radius = 16usize;
 
         assert_eq!(mask.shape()[0], 1);
         assert_eq!(mask.shape()[1], 1);
@@ -44,7 +44,7 @@ impl SAM2MaskSmoother {
             width,
         );
 
-        let eps = 5e-2f32;
+        let eps = 1e-1f32;
         let mut output = Array4::<f32>::zeros((1, 1, height, width));
         let output_slice = output.as_slice_mut().unwrap();
 
@@ -77,7 +77,7 @@ impl SAM2MaskSmoother {
                     let filtered = (a * guide[guide_index] + b).clamp(0.0, 1.0);
 
                     let original_p = mask_values[guide_index];
-                    let confidence = ((original_p - 0.5).abs() * 2.0).powf(4.0);
+                    let confidence = ((original_p - 0.5).abs() * 0.5).powi(20);
 
                     row[x] = filtered * (1.0 - confidence) + original_p * confidence;
                 }
@@ -128,7 +128,7 @@ impl SAM2MaskSmoother {
         integral
     }
 
-    fn rect_sum(
+    const fn rect_sum(
         integral: &[f32],
         width: usize,
         x0: usize,
