@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use crate::{
     application::{
         interface::editing_session_repository::error::EditingSessionRepositoryError,
@@ -9,17 +11,20 @@ use crate::{
 pub trait EditingSessionRepository {
     type StaticContext;
     type InferenceContext;
+    type Guard<'a>: DerefMut<Target = CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
+    where 
+        Self: 'a;
 
     fn save(
         &self,
         session_id: &SessionId,
         editing_session: CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
     );
-    fn get(
-        &self,
+    fn get<'a>(
+        &'a self,
         session_id: &SessionId,
     ) -> Result<
-        CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+        Self::Guard<'a>,
         EditingSessionRepositoryError,
     >;
 }
