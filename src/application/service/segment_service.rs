@@ -6,11 +6,8 @@ use crate::{
             editing_session_repository::repository::EditingSessionRepository,
             image_segmenter::segmenter::ImageSegmenter,
             segmenter_input_image_storage::storage::SegmenterInputImageStorage,
-        },
-        service::error::SegmentServiceError,
-        types::editing_session::session::EditingSession,
-    },
-    domain::{
+        }, service::error::SegmentServiceError, types::editing_session::session::EditingSession,
+    }, domain::{
         entity::image::Image,
         repository::{
             original_image_repository::repository::OriginalImageRepository,
@@ -44,14 +41,17 @@ where
     input_storage: SS,
 }
 
-impl<SR, IS, IR, ESR, SS> SegmentService for SegmentServiceImpl<SR, IS, IR, ESR, SS>
+impl<SR, IS, IR, ESR, SS, SC, IC> SegmentService for SegmentServiceImpl<SR, IS, IR, ESR, SS>
 where
     SR: SessionRepository,
-    IS: ImageSegmenter,
+    IS: ImageSegmenter<
+            StaticContext = SC,
+            InferenceContext = IC,
+        >,
     IR: OriginalImageRepository,
     ESR: EditingSessionRepository<
-            StaticContext = IS::StaticContext,
-            InferenceContext = IS::InferenceContext,
+            StaticContext = SC,
+            InferenceContext = IC,
         >,
     SS: SegmenterInputImageStorage,
 {
@@ -86,7 +86,6 @@ where
 
         session.apply_edit(point, new_context);
 
-        self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
 
@@ -109,7 +108,6 @@ where
         let input_points = session.points();
 
         if input_points.is_empty() {
-            self.editing_session_repo.save(&session_id, session);
             return Ok(original_image.into_image());
         }
 
@@ -124,7 +122,6 @@ where
             &input_points,
         )?;
 
-        self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
 
@@ -150,8 +147,6 @@ where
             session.inference_context(),
             &input_points,
         )?;
-
-        self.editing_session_repo.save(&session_id, session);
 
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         Ok(Image::new(segmented_image_data, ImageId::new(), size))
@@ -180,7 +175,6 @@ where
             &input_points,
         )?;
 
-        self.editing_session_repo.save(&session_id, session);
         let (segmented_image_data, size) = segmented_image.into_image_and_size();
         let segmented_image_id = ImageId::new();
 
