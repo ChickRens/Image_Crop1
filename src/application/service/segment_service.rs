@@ -6,8 +6,11 @@ use crate::{
             editing_session_repository::repository::EditingSessionRepository,
             image_segmenter::segmenter::ImageSegmenter,
             segmenter_input_image_storage::storage::SegmenterInputImageStorage,
-        }, service::error::SegmentServiceError, types::editing_session::session::EditingSession,
-    }, domain::{
+        },
+        service::error::SegmentServiceError,
+        types::editing_session::session::EditingSession,
+    },
+    domain::{
         entity::image::Image,
         repository::{
             original_image_repository::repository::OriginalImageRepository,
@@ -44,15 +47,9 @@ where
 impl<SR, IS, IR, ESR, SS, SC, IC> SegmentService for SegmentServiceImpl<SR, IS, IR, ESR, SS>
 where
     SR: SessionRepository,
-    IS: ImageSegmenter<
-            StaticContext = SC,
-            InferenceContext = IC,
-        >,
+    IS: ImageSegmenter<StaticContext = SC, InferenceContext = IC>,
     IR: OriginalImageRepository,
-    ESR: EditingSessionRepository<
-            StaticContext = SC,
-            InferenceContext = IC,
-        >,
+    ESR: EditingSessionRepository<StaticContext = SC, InferenceContext = IC>,
     SS: SegmenterInputImageStorage,
 {
     fn segment(&self, session_id: SessionId, point: Point) -> Result<Image, SegmentServiceError> {

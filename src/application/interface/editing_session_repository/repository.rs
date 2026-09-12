@@ -11,8 +11,10 @@ use crate::{
 pub trait EditingSessionRepository {
     type StaticContext;
     type InferenceContext;
-    type Guard<'a>: DerefMut<Target = CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
-    where 
+    type Guard<'a>: DerefMut<
+        Target = CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+    >
+    where
         Self: 'a;
 
     fn save(
@@ -23,8 +25,5 @@ pub trait EditingSessionRepository {
     fn get<'a>(
         &'a self,
         session_id: &SessionId,
-    ) -> Result<
-        Self::Guard<'a>,
-        EditingSessionRepositoryError,
-    >;
+    ) -> Result<Self::Guard<'a>, EditingSessionRepositoryError>;
 }

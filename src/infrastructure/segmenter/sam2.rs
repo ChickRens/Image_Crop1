@@ -14,11 +14,16 @@ use crate::{
             segmenter::ImageSegmenter,
         },
         types::{segmented_image::SegmentedImage, segmenter_input_image::SegmenterInputImage},
-    }, domain::{
+    },
+    domain::{
         entity::original_image::OriginalImage,
         value_object::{image_data::ImageData, image_size::image_size::ImageSize, point::Point},
-    }, infrastructure::segmenter::{
-        mask_applier::SAM2MaskApplier, mask_resizer::SAM2MaskResizer, mask_smoother::SAM2MaskSmoother, sam2_data::{
+    },
+    infrastructure::segmenter::{
+        mask_applier::SAM2MaskApplier,
+        mask_resizer::SAM2MaskResizer,
+        mask_smoother::SAM2MaskSmoother,
+        sam2_data::{
             DenseEmbeddings, HighResFeatureS0, HighResFeatureS1, ImageEmbeddings, Mask,
             SAM2InferenceContext, SAM2StaticContext, SparseEmbeddings,
         },
@@ -381,10 +386,11 @@ impl Sam2Segmenter {
         println!("resize image in generate image: {:?}", end);
 
         let start = Instant::now();
-        let smoothed_mask = SAM2MaskSmoother::smoothing(resized_mask.view(), original_image.image());
+        let smoothed_mask =
+            SAM2MaskSmoother::smoothing(resized_mask.view(), original_image.image());
         let end = start.elapsed();
         println!("smooth image in generate image: {:?}", end);
-        
+
         let start = Instant::now();
         let applied_image = SAM2MaskApplier::apply(&original_image.image(), smoothed_mask.view());
         let end = start.elapsed();
@@ -441,8 +447,7 @@ impl ImageSegmenter for Sam2Segmenter {
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_scaled_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError>
-    {
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
         let start = Instant::now();
         let mask = self._inference(
             original_image.image().image_size(),

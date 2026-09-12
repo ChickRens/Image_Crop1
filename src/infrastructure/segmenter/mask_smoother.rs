@@ -1,6 +1,9 @@
 use image::RgbaImage;
 use ndarray::{Array4, ArrayView4};
-use rayon::{iter::{IndexedParallelIterator, ParallelIterator}, slice::ParallelSliceMut};
+use rayon::{
+    iter::{IndexedParallelIterator, ParallelIterator},
+    slice::ParallelSliceMut,
+};
 
 use crate::domain::entity::image::Image;
 
@@ -20,9 +23,7 @@ impl SAM2MaskSmoother {
         assert_eq!(width as u16, original_image.image_size().width());
 
         let mask_2d = mask.slice(ndarray::s![0, 0, .., ..]);
-        let mask_slice = mask_2d
-            .as_slice()
-            .expect("Mask must be contiguous");
+        let mask_slice = mask_2d.as_slice().expect("Mask must be contiguous");
 
         let guide = Self::build_guidance_image(original_image);
         let mask_values = mask_slice.to_vec();
@@ -51,7 +52,7 @@ impl SAM2MaskSmoother {
         output_slice
             .par_chunks_exact_mut(width)
             .enumerate()
-            .for_each(|(y, row)|{
+            .for_each(|(y, row)| {
                 let y0 = y.saturating_sub(radius);
                 let y1 = (y + radius).min(height - 1);
 
@@ -82,7 +83,7 @@ impl SAM2MaskSmoother {
                     row[x] = filtered * (1.0 - confidence) + original_p * confidence;
                 }
             });
-        
+
         output
     }
 
@@ -118,10 +119,9 @@ impl SAM2MaskSmoother {
                 let index = (y + 1) * stride + (x + 1);
                 let value = values[y * width + x];
 
-                integral[index] = value
-                    + integral[(y + 1) * stride + x]
-                    + integral[y * stride + (x + 1)]
-                    - integral[y * stride + x];
+                integral[index] =
+                    value + integral[(y + 1) * stride + x] + integral[y * stride + (x + 1)]
+                        - integral[y * stride + x];
             }
         }
 

@@ -25,17 +25,15 @@ impl SharedEditingSessionRepository {
 impl EditingSessionRepository for SharedEditingSessionRepository {
     type InferenceContext = SAM2InferenceContext;
     type StaticContext = SAM2StaticContext;
-    type Guard<'a> = RefMut<'a, SessionId, CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
-        where 
-            Self: 'a;
+    type Guard<'a>
+        = RefMut<'a, SessionId, CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
+    where
+        Self: 'a;
 
     fn get<'a>(
         &'a self,
         session_id: &SessionId,
-    ) -> Result<
-        Self::Guard<'a>,
-        EditingSessionRepositoryError,
-    > {
+    ) -> Result<Self::Guard<'a>, EditingSessionRepositoryError> {
         self.sessions.get(session_id)
     }
 

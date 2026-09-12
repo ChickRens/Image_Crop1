@@ -48,9 +48,14 @@ impl ImageSegmenter for SharedSAM2Segmenter {
         static_context: &Self::StaticContext,
         inference_context: &Self::InferenceContext,
         input_points: &[Point],
-    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError>
-    {
-        self.segmenter.segment_high_quality(input_image, original_image, static_context, inference_context, input_points)
+    ) -> Result<(Self::InferenceContext, SegmentedImage), SegmenterRuntimeError> {
+        self.segmenter.segment_high_quality(
+            input_image,
+            original_image,
+            static_context,
+            inference_context,
+            input_points,
+        )
     }
 
     fn prepare_inference_context(
