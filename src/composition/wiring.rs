@@ -198,14 +198,14 @@ impl App {
         Ok(self.save_usecase.execute(input)?)
     }
 
-    pub fn get_completed_image(
+    pub async fn get_completed_image(
         &self,
         input: GetCompletedInput,
     ) -> Result<GetCompletedOutput, ApplicationError> {
         Ok(self.get_completed_usecase.execute(input)?)
     }
 
-    pub fn get_preview(
+    pub async fn get_preview(
         &self,
         input: GetPreviewInput,
     ) -> Result<GetPreviewOutput, ApplicationError> {
