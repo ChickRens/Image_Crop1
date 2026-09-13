@@ -23,7 +23,7 @@ pub async fn get_completed_image(
 
     let input = GetCompletedInput::new(image_id);
 
-    let output = app.get_completed_image(input)?;
+    let output = app.get_completed_image(input).await?;
 
     let (image, _) = output.image_data();
 

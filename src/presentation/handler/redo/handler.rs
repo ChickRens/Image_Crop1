@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{Json, extract::State};
+use tokio::task::spawn_blocking;
 
 use crate::{
     application::usecase::redo_usecase::redo_input::RedoInput,
@@ -23,7 +24,9 @@ pub async fn redo(
 
     let input = RedoInput::new(session_id);
 
-    let output = app.redo(input)?;
+    let output = spawn_blocking(move || {
+        app.redo(input)
+    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = RedoResponse::new(*output.image_id().value());
     Ok(Json(response))

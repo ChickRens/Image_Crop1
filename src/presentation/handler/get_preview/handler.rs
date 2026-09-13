@@ -3,10 +3,7 @@ use std::sync::Arc;
 use axum::{Json, body::Body, extract::State, response::Response};
 
 use crate::{
-    application::usecase::get_preview_usecase::get_preview_input::GetPreviewInput,
-    composition::wiring::App,
-    domain::value_object::image_id::image_id::ImageId,
-    presentation::{
+    application::usecase::get_preview_usecase::get_preview_input::GetPreviewInput, composition::wiring::App, domain::value_object::image_id::image_id::ImageId, presentation::{
         errors::{app_error::AppError, presentation_error::PresentationError},
         handler::get_preview::request::GetImageRequest,
     },
@@ -23,7 +20,7 @@ pub async fn get_preview(
 
     let input = GetPreviewInput::new(image_id);
 
-    let output = app.get_preview(input)?;
+    let output = app.get_preview(input).await?;
 
     let (image, _) = output.image_data();
 

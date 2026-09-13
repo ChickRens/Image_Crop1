@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{Json, extract::State};
+use tokio::task::spawn_blocking;
 
 use crate::{
     application::usecase::undo_usecase::undo_input::UndoInput,
@@ -23,7 +24,9 @@ pub async fn undo(
 
     let input = UndoInput::new(session_id);
 
-    let output = app.undo(input)?;
+    let output = spawn_blocking(move || {
+        app.undo(input)
+    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = UndoResponse::new(*output.image_id().value());
     Ok(Json(response))

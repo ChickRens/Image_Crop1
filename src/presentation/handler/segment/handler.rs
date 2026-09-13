@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{Json, extract::State};
+use tokio::task::spawn_blocking;
 
 use crate::{
     application::usecase::segment_usecase::segment_input::SegmentInput,
@@ -36,7 +37,9 @@ pub async fn segment(
     let point = Point::new(Coordinate::new(x, y), label);
     let input = SegmentInput::new(session_id, point);
 
-    let output = app.segment(input)?;
+    let output = spawn_blocking(move || {
+        app.segment(input)
+    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = SegmentResponse::new(*output.image_id().value());
     Ok(Json(response))
