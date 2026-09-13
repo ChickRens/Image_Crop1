@@ -13,6 +13,7 @@ pub enum PresentationError {
     UnknownName(String),
     SessionId(SessionIdError),
     ImageId(ImageIdError),
+    BlockingTask(String),
     NoName,
 }
 
@@ -23,6 +24,7 @@ impl Code for PresentationError {
             Self::UnknownName(_) => "UNKNOWN_TAG_NAME",
             Self::ImageId(err) => err.code(),
             Self::SessionId(err) => err.code(),
+            Self::BlockingTask(_) => "BLOCKING_TASK_FAILED",
             Self::NoName => "NO_TAG_NAME_ERROR",
         }
     }
@@ -35,6 +37,7 @@ impl Cause for PresentationError {
             Self::UnknownName(cause) => Some(cause),
             Self::ImageId(err) => err.cause(),
             Self::SessionId(err) => err.cause(),
+            Self::BlockingTask(cause) => Some(cause),
             Self::NoName => None,
         }
     }
@@ -59,6 +62,7 @@ impl ErrorTypeProvider for PresentationError {
             Self::UnknownName(_) => InvalidInput,
             Self::ImageId(err) => err.error_type(),
             Self::SessionId(err) => err.error_type(),
+            Self::BlockingTask(_) => Internal,
             Self::NoName => InvalidInput,
         }
     }
