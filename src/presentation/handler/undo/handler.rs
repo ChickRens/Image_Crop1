@@ -24,9 +24,9 @@ pub async fn undo(
 
     let input = UndoInput::new(session_id);
 
-    let output = spawn_blocking(move || {
-        app.undo(input)
-    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
+    let output = spawn_blocking(move || app.undo(input))
+        .await
+        .map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = UndoResponse::new(*output.image_id().value());
     Ok(Json(response))

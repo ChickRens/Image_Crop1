@@ -36,10 +36,9 @@ pub async fn upload(
 
                 let input = UploadInput::new(bytes.to_vec());
 
-                let output = spawn_blocking(move || {
-                    app.upload(input)
-                }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))
-                ??;
+                let output = spawn_blocking(move || app.upload(input))
+                    .await
+                    .map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
                 let (session_id, image_id) = output.session_id_and_image_id();
                 let response = UploadResponse::new(*session_id.value(), *image_id.value());

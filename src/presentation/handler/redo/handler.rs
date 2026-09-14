@@ -24,9 +24,9 @@ pub async fn redo(
 
     let input = RedoInput::new(session_id);
 
-    let output = spawn_blocking(move || {
-        app.redo(input)
-    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
+    let output = spawn_blocking(move || app.redo(input))
+        .await
+        .map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = RedoResponse::new(*output.image_id().value());
     Ok(Json(response))

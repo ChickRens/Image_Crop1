@@ -37,9 +37,9 @@ pub async fn segment(
     let point = Point::new(Coordinate::new(x, y), label);
     let input = SegmentInput::new(session_id, point);
 
-    let output = spawn_blocking(move || {
-        app.segment(input)
-    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
+    let output = spawn_blocking(move || app.segment(input))
+        .await
+        .map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = SegmentResponse::new(*output.image_id().value());
     Ok(Json(response))

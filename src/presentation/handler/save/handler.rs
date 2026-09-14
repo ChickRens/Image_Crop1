@@ -24,9 +24,9 @@ pub async fn save(
 
     let input = SaveInput::new(session_id);
 
-    let output = spawn_blocking(move || {
-        app.save(input)
-    }).await.map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
+    let output = spawn_blocking(move || app.save(input))
+        .await
+        .map_err(|err| PresentationError::BlockingTask(err.to_string()))??;
 
     let response = SaveResponse::new(*output.image_id().value());
     Ok(Json(response))

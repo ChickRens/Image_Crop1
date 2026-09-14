@@ -114,25 +114,24 @@ impl Sam2Segmenter {
 
         let rgb = original_image.to_rgb8();
         let raw = rgb.as_raw();
-        
+
         let mut input: Array4<f32> = Array4::zeros((1, 3, self.image_height, self.image_width));
         let slice = input.as_slice_mut().unwrap();
         let (rs, left) = slice.split_at_mut(self.image_height * self.image_width);
         let (gs, bs) = left.split_at_mut(self.image_height * self.image_width);
 
-        rs
-            .par_iter_mut()
+        rs.par_iter_mut()
             .zip(gs)
             .zip(bs)
             .enumerate()
-            .for_each(|(i, ((r,g),b))|{
+            .for_each(|(i, ((r, g), b))| {
                 let base = i * 3;
 
-                *r = raw[base] as f32 / 255.0 ;
-                *g = raw[base + 1] as f32 / 255.0 ;
-                *b = raw[base + 2] as f32 / 255.0 ;
+                *r = raw[base] as f32 / 255.0;
+                *g = raw[base + 1] as f32 / 255.0;
+                *b = raw[base + 2] as f32 / 255.0;
             });
-                
+
         let mut session = self
             .image_encoder_session
             .lock()
