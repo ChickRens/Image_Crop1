@@ -23,7 +23,7 @@ impl CompletedImageGenerator for WebPCompletedImageGenerator {
             size.height() as u32,
         );
 
-        let webp = encoder.encode_lossless().to_vec();
+        let webp = encoder.encode(95.0).to_vec();
         CompletedImage::new(Image::new(
             ImageData::new(webp),
             *image.image_id(),
