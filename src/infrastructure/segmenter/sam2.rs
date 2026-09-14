@@ -1,11 +1,12 @@
 use std::{sync::Mutex, time::Instant};
 
-use image::{DynamicImage, GenericImageView, ImageBuffer, Pixel};
+use image::{DynamicImage, ImageBuffer};
 use ndarray::{Array2, Array3, Array4, ArrayView3, ArrayView4, Ix3, Ix4};
 use ort::{
     session::{Session, SessionOutputs, builder::GraphOptimizationLevel},
     value::{PrimitiveTensorElementType, TensorRef, TensorValueType, Value},
 };
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 use crate::{
     application::{
@@ -36,6 +37,8 @@ pub struct Sam2Segmenter {
     prompt_encoder_session: Mutex<Session>,
     mask_decoder_session: Mutex<Session>,
     image_pe: Array4<f32>,
+    image_height: usize,
+    image_width: usize,
 }
 
 impl Sam2Segmenter {
@@ -60,6 +63,8 @@ impl Sam2Segmenter {
                 Array4::from_shape_vec((1, 256, 64, 64), data.to_vec())
                     .map_err(|e| SegmenterModelError::ModelLoadError(e.to_string()))?
             },
+            image_height: 1024,
+            image_width: 1024,
         })
     }
 
@@ -104,24 +109,34 @@ impl Sam2Segmenter {
         &self,
         original_image: &DynamicImage,
     ) -> ort::Result<(ImageEmbeddings, HighResFeatureS0, HighResFeatureS1)> {
+        assert_eq!(original_image.height(), self.image_height as u32);
+        assert_eq!(original_image.width(), self.image_width as u32);
+
+        let rgb = original_image.to_rgb8();
+        let raw = rgb.as_raw();
+        
+        let mut input: Array4<f32> = Array4::zeros((1, 3, self.image_height, self.image_width));
+        let slice = input.as_slice_mut().unwrap();
+        let (rs, left) = slice.split_at_mut(self.image_height * self.image_width);
+        let (gs, bs) = left.split_at_mut(self.image_height * self.image_width);
+
+        rs
+            .par_iter_mut()
+            .zip(gs)
+            .zip(bs)
+            .enumerate()
+            .for_each(|(i, ((r,g),b))|{
+                let base = i * 3;
+
+                *r = raw[base] as f32 / 255.0 ;
+                *g = raw[base + 1] as f32 / 255.0 ;
+                *b = raw[base + 2] as f32 / 255.0 ;
+            });
+                
         let mut session = self
             .image_encoder_session
             .lock()
             .expect("ImageEncoderSession Mutex is Poisoned");
-
-        let mut input: Array4<f32> = Array4::zeros((1, 3, 1024, 1024));
-        for pixel in original_image.pixels() {
-            let x = pixel.0 as usize;
-            let y = pixel.1 as usize;
-            let channels = pixel.2.channels();
-            let r: u8 = channels[0];
-            let g: u8 = channels[1];
-            let b: u8 = channels[2];
-
-            input[[0, 0, y, x]] = (r as f32) / 255.0;
-            input[[0, 1, y, x]] = (g as f32) / 255.0;
-            input[[0, 2, y, x]] = (b as f32) / 255.0;
-        }
 
         let input_value: Value<TensorValueType<f32>> = Value::from_array(input)?;
         let outputs = session.run(ort::inputs!["image" => input_value])?;
@@ -299,9 +314,6 @@ impl Sam2Segmenter {
         inference_context: &SAM2InferenceContext,
         input_scaled_points: &[Point],
     ) -> Result<Mask, SegmenterRuntimeError> {
-        let sam2_required_height = 1024;
-        let sam2_required_width = 1024;
-
         let (image_emb, s0, s1) = static_context.get_all_context_refs();
         let mask = inference_context.get_all_context_refs();
 
@@ -327,8 +339,8 @@ impl Sam2Segmenter {
             coords,
             original_size.height(),
             original_size.width(),
-            sam2_required_height,
-            sam2_required_width,
+            self.image_height as u16,
+            self.image_width as u16,
         );
 
         println!("after coords: {:?}", scaled_coords);
