@@ -1,43 +1,66 @@
-use std::{collections::HashMap, sync::RwLock};
+use std::time::{Duration, Instant};
 
-use crate::domain::{
+use dashmap::{DashMap, mapref::one::RefMut};
+
+use crate::{application::{interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository}, types::entry::{Entry, EntryGuard}}, domain::{
     entity::original_image::OriginalImage,
     repository::original_image_repository::{
         error::OriginalImageRepositoryError, repository::OriginalImageRepository,
     },
     value_object::image_id::image_id::ImageId,
-};
+}};
 
-pub struct OriginalImageRepositoryInMemory {
-    images: RwLock<HashMap<ImageId, OriginalImage>>,
+pub struct OriginalImageRepositoryInMemory<Clock>
+where
+    Clock: AppClock
+{
+    images: DashMap<ImageId, Entry<OriginalImage>>,
+    clock: Clock
 }
 
-impl OriginalImageRepository for OriginalImageRepositoryInMemory {
+impl<Clock> OriginalImageRepository for OriginalImageRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<OriginalImage>>, OriginalImage>
+        where 
+            Self: 'a;
+
     fn save(&self, image: OriginalImage) {
         let key = image.image_id();
-        let mut images = self
-            .images
-            .write()
-            .expect("ImageRepositoryInMemory is Poisoned");
-        images.insert(key, image);
+        let entry = Entry::new(image, self.clock.now());
+        self.images.insert(key, entry);
     }
 
-    fn get(&self, image_id: &ImageId) -> Result<OriginalImage, OriginalImageRepositoryError> {
-        let images = self
-            .images
-            .read()
-            .expect("ImageRepositoryInMemory is Poisoned");
-        images
-            .get(&image_id.clone())
-            .cloned()
+    fn get<'a>(&'a self, image_id: &ImageId) -> Result<Self::Guard<'a>, OriginalImageRepositoryError> {
+        self.images
+            .get_mut(&image_id)
+            .map(|entry|{
+                EntryGuard::new(entry, self.clock.now())
+            })
             .ok_or(OriginalImageRepositoryError::ImageNotFound)
     }
 }
 
-impl OriginalImageRepositoryInMemory {
-    pub fn new() -> Self {
+impl<Clock> DeleteExpiredRepository for OriginalImageRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.images.retain(|_, entry|{
+            !entry.is_expired(now, ttl)
+        });
+    }
+}
+
+impl<Clock> OriginalImageRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    pub fn new(clock: Clock) -> Self {
         Self {
-            images: RwLock::new(HashMap::new()),
+            images: DashMap::new(),
+            clock,
         }
     }
 }
