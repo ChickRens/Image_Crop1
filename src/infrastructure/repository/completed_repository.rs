@@ -1,69 +1,91 @@
 use std::{
-    collections::HashMap, ops::Deref, sync::{Arc, RwLock}, time::{Duration, Instant},
+    sync::Arc, time::{Duration, Instant},
 };
+
+use dashmap::{DashMap, mapref::one::RefMut};
 
 use crate::{
     application::{
-        interface::{completed_image_repository::{
+        interface::{clock::AppClock, completed_image_repository::{
             error::CompletedImageRepositoryError, repository::CompletedImageRepository,
-        }, delete_expired_repository::DeleteExpiredRepository}, types::{completed_image::CompletedImage, entry::Entry},
+        }, delete_expired_repository::DeleteExpiredRepository}, types::{completed_image::CompletedImage, entry::{Entry, EntryGuard}},
     }, domain::value_object::image_id::image_id::ImageId,
 };
 
 #[derive(Debug)]
-pub struct CompletedRepositoryInMemory {
-    image: RwLock<HashMap<ImageId, Entry<CompletedImage>>>,
+pub struct CompletedRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    image: DashMap<ImageId, Entry<CompletedImage>>,
+    clock: Clock,
 }
 
-impl CompletedImageRepository for CompletedRepositoryInMemory {
+impl<Clock> CompletedImageRepository for CompletedRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<CompletedImage>>, CompletedImage>
+        where
+            Self: 'a;
+
     fn save(&self, completed_image: CompletedImage) {
-        let mut image = self
-            .image
-            .write()
-            .expect("CompletedImageRepository is Poisoned");
         let image_id = completed_image.image_id();
 
-        let entry = Entry::new(completed_image);
-        image.insert(image_id, entry);
+        let entry = Entry::new(completed_image, self.clock.now());
+        self.image.insert(image_id, entry);
     }
 
-    fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
-        let image = self
-            .image
-            .read()
-            .expect("CompletedImageRepository is Poisoned");
-        image
-            .get(&image_id)
-            .map(|entry| entry.deref())
-            .cloned()
+    fn get<'a>(&'a self, image_id: ImageId) -> Result<Self::Guard<'a>, CompletedImageRepositoryError> {
+        self.image
+            .get_mut(&image_id)
+            .map(|entry|{
+                EntryGuard::new(entry, self.clock.now())
+            })
             .ok_or(CompletedImageRepositoryError::ImageNotFound)
     }
 }
 
-impl DeleteExpiredRepository for CompletedRepositoryInMemory {
+impl<Clock> DeleteExpiredRepository for CompletedRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
     fn delete_expired(&self, now: Instant, ttl: Duration) {
-        let mut image = self.image.write().expect("CompletedImageRepository is Poisoned");
-        image.retain(|_ ,image| {
+        self.image.retain(|_ ,image| {
             !image.is_expired(now, ttl)
         });
     }
 }
 
-impl CompletedRepositoryInMemory {
-    pub fn new() -> Self {
+impl<Clock> CompletedRepositoryInMemory<Clock>
+where
+    Clock: AppClock
+{
+    pub fn new(clock: Clock) -> Self {
         Self {
-            image: RwLock::new(HashMap::new()),
+            image: DashMap::new(),
+            clock
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct SharedCompletedImageRepository {
-    repository: Arc<CompletedRepositoryInMemory>,
+pub struct SharedCompletedImageRepository<Clock>
+where
+    Clock: AppClock,
+{
+    repository: Arc<CompletedRepositoryInMemory<Clock>>,
 }
 
-impl CompletedImageRepository for SharedCompletedImageRepository {
-    fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
+impl<Clock> CompletedImageRepository for SharedCompletedImageRepository<Clock>
+where
+    Clock: AppClock,
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<CompletedImage>>, CompletedImage>
+        where
+            Self: 'a;
+
+    fn get<'a>(&'a self, image_id: ImageId) -> Result<Self::Guard<'a>, CompletedImageRepositoryError> {
         self.repository.get(image_id)
     }
 
@@ -72,10 +94,13 @@ impl CompletedImageRepository for SharedCompletedImageRepository {
     }
 }
 
-impl SharedCompletedImageRepository {
-    pub fn new() -> Self {
+impl<Clock> SharedCompletedImageRepository<Clock>
+where
+    Clock: AppClock,
+{
+    pub fn new(clock: Clock) -> Self {
         Self {
-            repository: Arc::new(CompletedRepositoryInMemory::new()),
+            repository: Arc::new(CompletedRepositoryInMemory::new(clock))
         }
     }
 }
