@@ -1,9 +1,9 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::{Duration, Instant}};
 
 use dashmap::mapref::one::RefMut;
 
 use crate::{
-    application::{interface::clock::AppClock, types::entry::{Entry, EntryGuard}}, domain::{
+    application::{interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository}, types::entry::{Entry, EntryGuard}}, domain::{
         entity::original_image::OriginalImage,
         repository::original_image_repository::{
             error::OriginalImageRepositoryError, repository::OriginalImageRepository,
@@ -45,5 +45,14 @@ where
 
     fn save(&self, image: OriginalImage) {
         self.images.save(image);
+    }
+}
+
+impl<Clock> DeleteExpiredRepository for SharedOriginalImageRepository<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.images.delete_expired(now, ttl);
     }
 }
