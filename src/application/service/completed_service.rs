@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::{ops::Deref, sync::Arc, time::Instant};
 
 use crate::{
     application::{
@@ -42,7 +42,8 @@ where
     }
 
     fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError> {
-        self.repository.get(image_id)
+        let guard = self.repository.get(image_id)?;
+        Ok(guard.deref().clone())
     }
 }
 
