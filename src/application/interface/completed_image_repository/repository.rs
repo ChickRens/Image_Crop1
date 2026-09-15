@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use crate::{
     application::{
         interface::completed_image_repository::error::CompletedImageRepositoryError,
@@ -7,6 +9,12 @@ use crate::{
 };
 
 pub trait CompletedImageRepository {
+    type Guard<'a>: DerefMut<
+        Target = CompletedImage
+    >
+    where
+        Self: 'a;
+
     fn save(&self, completed_image: CompletedImage);
-    fn get(&self, image_id: ImageId) -> Result<CompletedImage, CompletedImageRepositoryError>;
+    fn get<'a>(&'a self, image_id: ImageId) -> Result<Self::Guard<'a>, CompletedImageRepositoryError>;
 }
