@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::{ops::Deref, sync::Arc, time::Instant};
 
 use crate::{
     application::{
@@ -96,7 +96,8 @@ where
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
 
-        let original_image = self.image_repo.get(&image_id)?;
+        let guard = self.image_repo.get(&image_id)?;
+        let original_image = guard.deref().clone();
 
         let input_image = self.input_storage.get(image_id)?;
 
@@ -128,7 +129,9 @@ where
     fn resegment(&self, session_id: SessionId) -> Result<Image, SegmentServiceError> {
         let session = self.session_repo.get(&session_id)?;
         let image_id = *session.image_id();
-        let original_image = self.image_repo.get(&image_id)?;
+        let guard = self.image_repo.get(&image_id)?;
+        let original_image = guard.deref().clone();
+
         let input_image = self.input_storage.get(image_id)?;
         let session = self.editing_session_repo.get(&session_id)?;
         let input_points = session.points();
