@@ -7,3 +7,4 @@ pub mod preview_image_generator;
 pub mod preview_storage;
 pub mod segmenter_input_image_generator;
 pub mod segmenter_input_image_storage;
+pub mod delete_expired_repository;
