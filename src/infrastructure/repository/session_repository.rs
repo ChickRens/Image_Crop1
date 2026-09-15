@@ -1,40 +1,64 @@
-use std::collections::HashMap;
-use std::sync::RwLock;
+use std::time::{Duration, Instant};
 
+use dashmap::{DashMap, mapref::one::RefMut};
+
+use crate::application::{
+    interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository}, types::entry::{Entry, EntryGuard},
+};
 use crate::domain::entity::session::Session;
 use crate::domain::repository::session_repository::error::SessionRepositoryError;
 use crate::domain::repository::session_repository::repository::SessionRepository;
 use crate::domain::value_object::session_id::session_id::SessionId;
 
-pub struct SessionRepositoryInMemory {
-    sessions: RwLock<HashMap<SessionId, Session>>,
+pub struct SessionRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    sessions: DashMap<SessionId, Entry<Session>>,
+    clock: Clock,
 }
 
-impl SessionRepository for SessionRepositoryInMemory {
+impl<Clock> SessionRepository for SessionRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, SessionId, Entry<Session>>, Session>
+    where
+        Self: 'a;
+
     fn save(&self, session: Session) {
-        let mut sessions = self
-            .sessions
-            .write()
-            .expect("SessionRepositoryInMemory is Poisoned");
-        sessions.insert(session.session_id().clone(), session);
+        let session_id = session.session_id().clone();
+        let entry = Entry::new(session, self.clock.now());
+        self.sessions.insert(session_id, entry);
     }
 
-    fn get(&self, session_id: &SessionId) -> Result<Session, SessionRepositoryError> {
-        let sessions = self
-            .sessions
-            .read()
-            .expect("SessionRepositoryInMemory is Poisoned");
-        sessions
-            .get(session_id)
-            .cloned()
+    fn get<'a>(&'a self, session_id: &SessionId) -> Result<Self::Guard<'a>, SessionRepositoryError> {
+        self.sessions
+            .get_mut(session_id)
+            .map(|entry|{
+                EntryGuard::new(entry, self.clock.now())
+            })
             .ok_or(SessionRepositoryError::SessionNotFound)
     }
 }
 
-impl SessionRepositoryInMemory {
-    pub fn new() -> Self {
+impl<Clock> DeleteExpiredRepository for SessionRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.sessions.retain(|_, entry| !entry.is_expired(now, ttl));
+    }
+}
+
+impl<Clock> SessionRepositoryInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    pub fn new(clock: Clock) -> Self {
         Self {
-            sessions: RwLock::new(HashMap::new()),
+            sessions: DashMap::new(),
+            clock,
         }
     }
 }
