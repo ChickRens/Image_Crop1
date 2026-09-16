@@ -40,7 +40,7 @@ where
             (None ,None) => Err(PreviewStorageError::ImageNotFound),
             (Some(guard), None) => Ok(guard),
             (None, Some(guard)) => Ok(guard),
-            (Some(_), Some(guard_segmented)) => Ok(guard_segmented),
+            (Some(_), Some(_)) => Err(PreviewStorageError::AmbiguousId),
         }
     }
 }
