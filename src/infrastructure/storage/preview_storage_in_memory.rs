@@ -67,7 +67,7 @@ where
     }
 }
 
-enum PreviewGuard<'a> {
+pub enum PreviewGuard<'a> {
     Original(EntryGuard<RefMut<'a, ImageId, Entry<PreviewImage>>, PreviewImage>),
     Segmented(EntryGuard<OwnedGuard<Entry<PreviewImage>>, PreviewImage>)
 }
@@ -111,7 +111,7 @@ where
         self.image.insert(image_id, entry);
     }
 
-    fn get(&self, image_id: ImageId) -> Option<PreviewGuard> {
+    fn get(&self, image_id: ImageId) -> Option<PreviewGuard<'_>> {
         self.image
             .get_mut(&image_id)
             .map(|entry| {
@@ -180,7 +180,7 @@ where
     }
 }
 
-struct OwnedGuard<T>{
+pub struct OwnedGuard<T>{
     value: T
 }
 
