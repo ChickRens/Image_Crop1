@@ -1,49 +1,35 @@
 use crate::{
     application::{
-        error::ApplicationError,
-        service::{
+        error::ApplicationError, service::{
             completed_service::SharedCompletedService,
             prepare_service::SharedPrepareSegmentService, preview_service::SharedPreviewService,
             segment_service::SharedSegmentService,
-        },
-        usecase::{
-            get_completed_usecase::{
+        }, usecase::{
+            delete_expired_entries_usecase::DeleteExpiredEntriesUseCase, get_completed_usecase::{
                 input::GetCompletedInput, output::GetCompletedOutput, usecase::GetCompletedUseCase,
-            },
-            get_preview_usecase::{
+            }, get_preview_usecase::{
                 get_preview_input::GetPreviewInput, get_preview_output::GetPreviewOutput,
                 usecase::GetPreviewUseCase,
-            },
-            prepare_segment_usecase::{
+            }, prepare_segment_usecase::{
                 prepare_segment_input::PrepareSegmentInput, usecase::PrepareSegmentUseCase,
-            },
-            redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase},
-            save_usecase::{input::SaveInput, output::SaveOutput, usecase::SaveUseCase},
-            segment_usecase::{
+            }, redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase}, save_usecase::{input::SaveInput, output::SaveOutput, usecase::SaveUseCase}, segment_usecase::{
                 segment_input::SegmentInput, segment_output::SegmentOutput, usecase::SegmentUseCase,
-            },
-            undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase},
-            upload_usecase::{
+            }, undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase}, upload_usecase::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
             },
         },
-    },
-    infrastructure::{
-        generator::{
+    }, infrastructure::{
+        clock::RealClock, generator::{
             completed_image::SharedWebPCompletedImageGenerator,
             shared_preview::SharedPreviewGenerator,
             shared_segmenter_input::SharedSAM2InputGenerator,
-        },
-        image_loader::FileImageLoader,
-        repository::{
+        }, image_loader::FileImageLoader, repository::{
             completed_repository::SharedCompletedImageRepository,
             shared_editing_session_repository::SharedEditingSessionRepository,
             shared_image_repository::SharedOriginalImageRepository,
             shared_session_repository::SharedSessionRepository,
-        },
-        segmenter::shared_sam2::SharedSAM2Segmenter,
-        storage::{
-            shared_preview_storage::SharedPreviewStorage,
+        }, segmenter::shared_sam2::SharedSAM2Segmenter, storage::{
+            preview_storage_in_memory::SharedPreviewStorage,
             shared_segmenter_input_storage::SharedSegmenterInputStorage,
         },
     },
@@ -51,83 +37,93 @@ use crate::{
 
 pub struct App {
     upload_usecase: UploadUseCase<
-        SharedSessionRepository,
-        SharedOriginalImageRepository,
+        SharedSessionRepository<RealClock>,
+        SharedOriginalImageRepository<RealClock>,
         FileImageLoader,
-        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>,
+        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage<RealClock>>,
     >,
     prepare_segment_usecase: PrepareSegmentUseCase<
         SharedPrepareSegmentService<
             SharedSAM2Segmenter,
-            SharedOriginalImageRepository,
-            SharedEditingSessionRepository,
+            SharedOriginalImageRepository<RealClock>,
+            SharedEditingSessionRepository<RealClock>,
             SharedSAM2InputGenerator,
-            SharedSegmenterInputStorage,
+            SharedSegmenterInputStorage<RealClock>,
         >,
     >,
     segment_usecase: SegmentUseCase<
         SharedSegmentService<
-            SharedSessionRepository,
+            SharedSessionRepository<RealClock>,
             SharedSAM2Segmenter,
-            SharedOriginalImageRepository,
-            SharedEditingSessionRepository,
-            SharedSegmenterInputStorage,
+            SharedOriginalImageRepository<RealClock>,
+            SharedEditingSessionRepository<RealClock>,
+            SharedSegmenterInputStorage<RealClock>,
         >,
-        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>,
+        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage<RealClock>>,
     >,
     undo_usecase: UndoUseCase<
         SharedSegmentService<
-            SharedSessionRepository,
+            SharedSessionRepository<RealClock>,
             SharedSAM2Segmenter,
-            SharedOriginalImageRepository,
-            SharedEditingSessionRepository,
-            SharedSegmenterInputStorage,
+            SharedOriginalImageRepository<RealClock>,
+            SharedEditingSessionRepository<RealClock>,
+            SharedSegmenterInputStorage<RealClock>,
         >,
-        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>,
+        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage<RealClock>>,
     >,
     redo_usecase: RedoUseCase<
-        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>,
+        SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage<RealClock>>,
         SharedSegmentService<
-            SharedSessionRepository,
+            SharedSessionRepository<RealClock>,
             SharedSAM2Segmenter,
-            SharedOriginalImageRepository,
-            SharedEditingSessionRepository,
-            SharedSegmenterInputStorage,
+            SharedOriginalImageRepository<RealClock>,
+            SharedEditingSessionRepository<RealClock>,
+            SharedSegmenterInputStorage<RealClock>,
         >,
     >,
     save_usecase: SaveUseCase<
         SharedSegmentService<
-            SharedSessionRepository,
+            SharedSessionRepository<RealClock>,
             SharedSAM2Segmenter,
-            SharedOriginalImageRepository,
-            SharedEditingSessionRepository,
-            SharedSegmenterInputStorage,
+            SharedOriginalImageRepository<RealClock>,
+            SharedEditingSessionRepository<RealClock>,
+            SharedSegmenterInputStorage<RealClock>,
         >,
-        SharedCompletedService<SharedWebPCompletedImageGenerator, SharedCompletedImageRepository>,
+        SharedCompletedService<SharedWebPCompletedImageGenerator, SharedCompletedImageRepository<RealClock>>,
     >,
     get_completed_usecase: GetCompletedUseCase<
-        SharedCompletedService<SharedWebPCompletedImageGenerator, SharedCompletedImageRepository>,
+        SharedCompletedService<SharedWebPCompletedImageGenerator, SharedCompletedImageRepository<RealClock>>,
     >,
     get_preview_usecase:
-        GetPreviewUseCase<SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage>>,
+        GetPreviewUseCase<SharedPreviewService<SharedPreviewGenerator, SharedPreviewStorage<RealClock>>>,
+    delete_expired_usecase:
+        DeleteExpiredEntriesUseCase<
+            SharedOriginalImageRepository<RealClock>,
+            SharedSessionRepository<RealClock>,
+            SharedCompletedImageRepository<RealClock>,
+            SharedPreviewStorage<RealClock>,
+            SharedSegmenterInputStorage<RealClock>
+        >
 }
 
 impl App {
     pub fn new() -> Result<Self, ApplicationError> {
-        let session_repo = SharedSessionRepository::new();
-        let image_repo = SharedOriginalImageRepository::new();
+        let clock = RealClock::new();
+
+        let session_repo = SharedSessionRepository::new(clock.clone());
+        let image_repo = SharedOriginalImageRepository::new(clock.clone());
         let loader = FileImageLoader::new();
         let segmenter = SharedSAM2Segmenter::new("models")
             .expect("Failed to load SAM2 model during app initialize");
-        let editing_session_repo = SharedEditingSessionRepository::new();
-        let preview_storage = SharedPreviewStorage::new();
+        let editing_session_repo = SharedEditingSessionRepository::new(clock.clone());
+        let preview_storage = SharedPreviewStorage::new(clock.clone());
         let preview_generator = SharedPreviewGenerator::new(600);
-        let input_storage = SharedSegmenterInputStorage::new();
+        let input_storage = SharedSegmenterInputStorage::new(clock.clone());
         let input_generator = SharedSAM2InputGenerator::new(1024, 1024);
         let completed_image_generator = SharedWebPCompletedImageGenerator::new();
-        let completed_image_repository = SharedCompletedImageRepository::new();
+        let completed_image_repo = SharedCompletedImageRepository::new(clock.clone());
 
-        let preview_service = SharedPreviewService::new(preview_generator, preview_storage);
+        let preview_service = SharedPreviewService::new(preview_generator, preview_storage.clone());
         let prepare_service = SharedPrepareSegmentService::new(
             segmenter.clone(),
             image_repo.clone(),
@@ -144,7 +140,7 @@ impl App {
             input_storage.clone(),
         );
         let completed_service =
-            SharedCompletedService::new(completed_image_generator, completed_image_repository);
+            SharedCompletedService::new(completed_image_generator, completed_image_repo.clone());
 
         let upload_uc = UploadUseCase::new(
             session_repo.clone(),
@@ -159,6 +155,7 @@ impl App {
         let save_uc = SaveUseCase::new(segment_service.clone(), completed_service.clone());
         let get_completed_uc = GetCompletedUseCase::new(completed_service.clone());
         let get_image_uc = GetPreviewUseCase::new(preview_service.clone());
+        let delete_expired_uc = DeleteExpiredEntriesUseCase::new(image_repo.clone(), session_repo.clone(), completed_image_repo.clone(), preview_storage.clone(), input_storage.clone());
 
         Ok(App {
             upload_usecase: upload_uc,
@@ -169,6 +166,7 @@ impl App {
             get_completed_usecase: get_completed_uc,
             save_usecase: save_uc,
             get_preview_usecase: get_image_uc,
+            delete_expired_usecase: delete_expired_uc
         })
     }
 
