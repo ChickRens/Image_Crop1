@@ -1,3 +1,5 @@
+use std::ops::DerefMut;
+
 use crate::{
     application::{
         interface::preview_storage::error::PreviewStorageError, types::preview_image::PreviewImage,
@@ -6,6 +8,11 @@ use crate::{
 };
 
 pub trait PreviewStorage {
-    fn save(&self, image: PreviewImage);
-    fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError>;
+    type Guard<'a>: DerefMut<Target = PreviewImage>
+    where
+        Self: 'a;
+
+    fn save_as_original(&self, original: PreviewImage);
+    fn save_as_segmented(&self, segmented: PreviewImage);
+    fn get<'a>(&'a self, image_id: ImageId) -> Result<Self::Guard<'a>, PreviewStorageError>;
 }
