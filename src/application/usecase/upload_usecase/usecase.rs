@@ -61,7 +61,7 @@ where
         let session = Session::new(session_id, image_id);
         self.session_repo.save(session);
 
-        let scale = self.preview_service.generate_and_save(&image);
+        let scale = self.preview_service.generate_and_save_original(&image);
 
         let original_image = OriginalImage::new(image);
         self.image_repo.save(original_image);

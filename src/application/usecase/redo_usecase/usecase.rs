@@ -30,7 +30,7 @@ where
         let session_id = redo_input.session_id();
         let segmented_image = self.segment_service.redo(session_id)?;
 
-        self.preview_service.generate_and_save(&segmented_image);
+        self.preview_service.generate_and_save_segmented(&segmented_image);
         let segmented_image_id = *segmented_image.image_id();
 
         let output = RedoOutput::new(segmented_image_id);
