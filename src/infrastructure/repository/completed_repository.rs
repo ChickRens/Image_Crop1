@@ -94,6 +94,15 @@ where
     }
 }
 
+impl<Clock> DeleteExpiredRepository for SharedCompletedImageRepository<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.repository.delete_expired(now, ttl);
+    }
+}
+
 impl<Clock> SharedCompletedImageRepository<Clock>
 where
     Clock: AppClock,
