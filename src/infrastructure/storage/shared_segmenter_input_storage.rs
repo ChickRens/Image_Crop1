@@ -4,7 +4,7 @@ use dashmap::mapref::one::RefMut;
 
 use crate::{
     application::{
-        interface::{clock::AppClock, segmenter_input_image_storage::{
+        interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository, segmenter_input_image_storage::{
             error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
         }}, types::{entry::{Entry, EntryGuard}, segmenter_input_image::SegmenterInputImage},
     }, domain::value_object::image_id::image_id::ImageId, infrastructure::storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
@@ -35,6 +35,15 @@ where
         image_id: ImageId,
     ) -> Result<Self::Guard<'a>, SegmenterInputImageStorageError> {
         self.storage.get(image_id)
+    }
+}
+
+impl<Clock> DeleteExpiredRepository for SharedSegmenterInputStorage<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: std::time::Instant, ttl: std::time::Duration) {
+        self.storage.delete_expired(now, ttl);
     }
 }
 

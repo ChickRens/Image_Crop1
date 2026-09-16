@@ -1,8 +1,10 @@
+use std::time::{Duration, Instant};
+
 use dashmap::{DashMap, mapref::one::RefMut};
 
 use crate::{
     application::{
-        interface::{clock::AppClock, segmenter_input_image_storage::{
+        interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository, segmenter_input_image_storage::{
             error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
         }}, types::{entry::{Entry, EntryGuard}, segmenter_input_image::SegmenterInputImage},
     }, domain::value_object::image_id::image_id::ImageId,
@@ -41,6 +43,17 @@ where
                 EntryGuard::new(entry, self.clock.now())
             })
             .ok_or(SegmenterInputImageStorageError::ImageNotFound)
+    }
+}
+
+impl<Clock> DeleteExpiredRepository for SegmenterInputStorageInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.images.retain(|_, entry|{
+            !entry.is_expired(now, ttl)
+        });
     }
 }
 
