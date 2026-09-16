@@ -236,6 +236,15 @@ where
     }
 }
 
+impl<Clock> DeleteExpiredRepository for SharedPreviewStorage<Clock>
+where
+    Clock: AppClock,
+{
+    fn delete_expired(&self, now: Instant, ttl: Duration) {
+        self.storage.delete_expired(now, ttl);
+    }
+}
+
 impl<Clock> SharedPreviewStorage<Clock>
 where
     Clock: AppClock + Clone,
