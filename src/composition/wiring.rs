@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use crate::{
     application::{
         error::ApplicationError, service::{
@@ -5,7 +7,7 @@ use crate::{
             prepare_service::SharedPrepareSegmentService, preview_service::SharedPreviewService,
             segment_service::SharedSegmentService,
         }, usecase::{
-            delete_expired_entries_usecase::DeleteExpiredEntriesUseCase, get_completed_usecase::{
+            config::TTL_SEC, delete_expired_entries_usecase::DeleteExpiredEntriesUseCase, get_completed_usecase::{
                 input::GetCompletedInput, output::GetCompletedOutput, usecase::GetCompletedUseCase,
             }, get_preview_usecase::{
                 get_preview_input::GetPreviewInput, get_preview_output::GetPreviewOutput,
@@ -155,7 +157,7 @@ impl App {
         let save_uc = SaveUseCase::new(segment_service.clone(), completed_service.clone());
         let get_completed_uc = GetCompletedUseCase::new(completed_service.clone());
         let get_image_uc = GetPreviewUseCase::new(preview_service.clone());
-        let delete_expired_uc = DeleteExpiredEntriesUseCase::new(image_repo.clone(), session_repo.clone(), completed_image_repo.clone(), preview_storage.clone(), input_storage.clone());
+        let delete_expired_uc = DeleteExpiredEntriesUseCase::new(image_repo.clone(), session_repo.clone(), completed_image_repo.clone(), preview_storage.clone(), input_storage.clone(), TTL_SEC);
 
         Ok(App {
             upload_usecase: upload_uc,
@@ -208,5 +210,9 @@ impl App {
         input: GetPreviewInput,
     ) -> Result<GetPreviewOutput, ApplicationError> {
         Ok(self.get_preview_usecase.execute(input)?)
+    }
+
+    pub async fn cleanup(&self, now: Instant) {
+        self.delete_expired_usecase.execute(now);
     }
 }
