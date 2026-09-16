@@ -15,6 +15,7 @@ where
     completed_repo: CIR,
     preview_storage: PS,
     segmenter_input_storage: SS,
+    ttl: Duration,
 }
 
 impl<IR, SR, CIR, PS, SS> DeleteExpiredEntriesUseCase<IR, SR, CIR, PS, SS>
@@ -25,15 +26,15 @@ where
     PS: PreviewStorage + DeleteExpiredRepository,
     SS: SegmenterInputImageStorage + DeleteExpiredRepository,
 {
-    pub fn new(image_repository: IR, session_repository: SR, completed_image_repository: CIR, preview_storage: PS, segmenter_input_storage: SS) -> Self {
-        Self { image_repo: image_repository, session_repo: session_repository, completed_repo: completed_image_repository, preview_storage, segmenter_input_storage }
+    pub fn new(image_repository: IR, session_repository: SR, completed_image_repository: CIR, preview_storage: PS, segmenter_input_storage: SS, ttl: Duration) -> Self {
+        Self { image_repo: image_repository, session_repo: session_repository, completed_repo: completed_image_repository, preview_storage, segmenter_input_storage, ttl }
     }
 
-    pub fn execute(&self, now: Instant, ttl: Duration) {
-        self.image_repo.delete_expired(now, ttl);
-        self.session_repo.delete_expired(now, ttl);
-        self.completed_repo.delete_expired(now, ttl);
-        self.preview_storage.delete_expired(now, ttl);
-        self.segmenter_input_storage.delete_expired(now, ttl);
+    pub fn execute(&self, now: Instant) {
+        self.image_repo.delete_expired(now, self.ttl);
+        self.session_repo.delete_expired(now, self.ttl);
+        self.completed_repo.delete_expired(now, self.ttl);
+        self.preview_storage.delete_expired(now, self.ttl);
+        self.segmenter_input_storage.delete_expired(now, self.ttl);
     }
 }
