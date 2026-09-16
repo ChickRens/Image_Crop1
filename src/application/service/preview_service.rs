@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Instant};
+use std::{ops::Deref, sync::Arc, time::Instant};
 
 use crate::{
     application::{
@@ -12,7 +12,8 @@ use crate::{
 };
 
 pub trait PreviewService {
-    fn generate_and_save(&self, image: &Image) -> f64;
+    fn generate_and_save_original(&self, image: &Image) -> f64;
+    fn generate_and_save_segmented(&self, image: &Image);
     fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError>;
 }
 
@@ -30,18 +31,28 @@ where
     PG: PreviewImageGenerator,
     PS: PreviewStorage,
 {
-    fn generate_and_save(&self, image: &Image) -> f64 {
+    fn generate_and_save_original(&self, image: &Image) -> f64 {
         let start = Instant::now();
         let (preview, scale) = self.generator.generate(image);
         let end = start.elapsed();
         println!("Preview Generate: {:?}", end);
 
-        self.storage.save(preview);
+        self.storage.save_as_original(preview);
         scale
     }
 
+    fn generate_and_save_segmented(&self, image: &Image) {
+        let start = Instant::now();
+        let (preview, _) = self.generator.generate(image);
+        let end = start.elapsed();
+        println!("Preview Generate: {:?}", end);
+
+        self.storage.save_as_segmented(preview);
+    }
+
     fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
-        self.storage.get(image_id)
+        let guard = self.storage.get(image_id)?;
+        Ok(guard.deref().clone())
     }
 }
 
@@ -72,8 +83,12 @@ where
     PG: PreviewImageGenerator,
     PS: PreviewStorage,
 {
-    fn generate_and_save(&self, image: &Image) -> f64 {
-        self.service.generate_and_save(image)
+    fn generate_and_save_original(&self, image: &Image) -> f64 {
+        self.service.generate_and_save_original(image)
+    }
+
+    fn generate_and_save_segmented(&self, image: &Image) {
+        self.service.generate_and_save_segmented(image);
     }
 
     fn get(&self, image_id: ImageId) -> Result<PreviewImage, PreviewStorageError> {
