@@ -212,7 +212,7 @@ impl App {
         Ok(self.get_preview_usecase.execute(input)?)
     }
 
-    pub async fn cleanup(&self, now: Instant) {
+    pub fn cleanup(&self, now: Instant) {
         self.delete_expired_usecase.execute(now);
     }
 }
