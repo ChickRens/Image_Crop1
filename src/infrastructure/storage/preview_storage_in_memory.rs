@@ -34,13 +34,13 @@ where
     }
 
     fn get<'a>(&'a self, image_id: ImageId) -> Result<Self::Guard<'a>, PreviewStorageError> {
-        let original = self.original_storage.get(image_id);
-        let segmented = self.segmented_storage.get(image_id);
-        match (original, segmented) {
-            (None ,None) => Err(PreviewStorageError::ImageNotFound),
-            (Some(guard), None) => Ok(guard),
-            (None, Some(guard)) => Ok(guard),
-            (Some(_), Some(_)) => Err(PreviewStorageError::AmbiguousId),
+        let is_original = self.original_storage.contains(image_id);
+        let is_segmented = self.segmented_storage.contains(image_id);
+        match (is_original, is_segmented) {
+            (false, false) => Err(PreviewStorageError::ImageNotFound),
+            (false, true) => self.segmented_storage.get(image_id).ok_or(PreviewStorageError::ImageNotFound),
+            (true, false) => self.original_storage.get(image_id).ok_or(PreviewStorageError::ImageNotFound),
+            (true, true) => Err(PreviewStorageError::AmbiguousId),
         }
     }
 }
@@ -64,6 +64,7 @@ where
 {
     fn delete_expired(&self, now: Instant, ttl: Duration) {
         self.original_storage.delete_expired(now, ttl);
+        self.segmented_storage.delete_expired(now, ttl);
     }
 }
 
@@ -122,6 +123,10 @@ where
             })
     }
 
+    fn contains(&self, image_id: ImageId) -> bool {
+        self.image.contains_key(&image_id)
+    }
+
     fn new(clock: Clock) -> Self {
         Self { image: DashMap::new(), clock }
     }
@@ -166,6 +171,10 @@ where
             .map(|guard|{
                 PreviewGuard::Segmented(guard)
             })
+    }
+
+    fn contains(&self, image_id: ImageId) -> bool {
+        self.image.contains_key(&image_id)
     }
 }
 
