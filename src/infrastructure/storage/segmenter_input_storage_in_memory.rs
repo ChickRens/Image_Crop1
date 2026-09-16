@@ -1,49 +1,54 @@
-use std::{collections::HashMap, sync::RwLock};
+use dashmap::{DashMap, mapref::one::RefMut};
 
 use crate::{
     application::{
-        interface::segmenter_input_image_storage::{
+        interface::{clock::AppClock, segmenter_input_image_storage::{
             error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
-        },
-        types::segmenter_input_image::SegmenterInputImage,
-    },
-    domain::value_object::image_id::image_id::ImageId,
+        }}, types::{entry::{Entry, EntryGuard}, segmenter_input_image::SegmenterInputImage},
+    }, domain::value_object::image_id::image_id::ImageId,
 };
 
 #[derive(Debug)]
-pub struct SegmenterInputStorageInMemory {
-    images: RwLock<HashMap<ImageId, SegmenterInputImage>>,
+pub struct SegmenterInputStorageInMemory<Clock>
+where
+    Clock: AppClock
+{
+    images: DashMap<ImageId, Entry<SegmenterInputImage>>,
+    clock: Clock
 }
 
-impl SegmenterInputImageStorage for SegmenterInputStorageInMemory {
+impl<Clock> SegmenterInputImageStorage for SegmenterInputStorageInMemory<Clock>
+where
+    Clock: AppClock
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<SegmenterInputImage>>, SegmenterInputImage>
+        where
+            Self: 'a;
+
     fn save(&self, image: SegmenterInputImage) {
-        let mut images = self
-            .images
-            .write()
-            .expect("SegmenterInputStorage is Poisoned");
-        let id = image.image_id();
-        images.insert(*id, image);
+        let id = image.image_id().clone();
+        let entry = Entry::new(image, self.clock.now());
+        self.images.insert(id, entry);
     }
 
-    fn get(
-        &self,
+    fn get<'a>(
+        &'a self,
         image_id: ImageId,
-    ) -> Result<SegmenterInputImage, SegmenterInputImageStorageError> {
-        let images = self
-            .images
-            .read()
-            .expect("SegmenterInputStorage is Poisoned");
-        images
-            .get(&image_id)
-            .cloned()
+    ) -> Result<Self::Guard<'a>, SegmenterInputImageStorageError> {
+        self.images
+            .get_mut(&image_id)
+            .map(|entry|{
+                EntryGuard::new(entry, self.clock.now())
+            })
             .ok_or(SegmenterInputImageStorageError::ImageNotFound)
     }
 }
 
-impl SegmenterInputStorageInMemory {
-    pub fn new() -> Self {
-        Self {
-            images: RwLock::new(HashMap::new()),
-        }
+impl<Clock> SegmenterInputStorageInMemory<Clock>
+where
+    Clock: AppClock,
+{
+    pub fn new(clock: Clock) -> Self {
+        Self { images: DashMap::new(), clock }
     }
 }

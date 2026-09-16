@@ -1,38 +1,50 @@
 use std::sync::Arc;
 
+use dashmap::mapref::one::RefMut;
+
 use crate::{
     application::{
-        interface::segmenter_input_image_storage::{
+        interface::{clock::AppClock, segmenter_input_image_storage::{
             error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
-        },
-        types::segmenter_input_image::SegmenterInputImage,
-    },
-    domain::value_object::image_id::image_id::ImageId,
-    infrastructure::storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
+        }}, types::{entry::{Entry, EntryGuard}, segmenter_input_image::SegmenterInputImage},
+    }, domain::value_object::image_id::image_id::ImageId, infrastructure::storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
 };
 
 #[derive(Debug, Clone)]
-pub struct SharedSegmenterInputStorage {
-    storage: Arc<SegmenterInputStorageInMemory>,
+pub struct SharedSegmenterInputStorage<Clock>
+where
+    Clock: AppClock,
+{
+    storage: Arc<SegmenterInputStorageInMemory<Clock>>,
 }
 
-impl SegmenterInputImageStorage for SharedSegmenterInputStorage {
+impl<Clock> SegmenterInputImageStorage for SharedSegmenterInputStorage<Clock>
+where
+    Clock: AppClock,
+{
+    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<SegmenterInputImage>>, SegmenterInputImage>
+        where
+            Self: 'a;
+
     fn save(&self, image: SegmenterInputImage) {
         self.storage.save(image);
     }
 
-    fn get(
-        &self,
+    fn get<'a>(
+        &'a self,
         image_id: ImageId,
-    ) -> Result<SegmenterInputImage, SegmenterInputImageStorageError> {
+    ) -> Result<Self::Guard<'a>, SegmenterInputImageStorageError> {
         self.storage.get(image_id)
     }
 }
 
-impl SharedSegmenterInputStorage {
-    pub fn new() -> Self {
+impl<Clock> SharedSegmenterInputStorage<Clock>
+where
+    Clock: AppClock,
+{
+    pub fn new(clock: Clock) -> Self {
         Self {
-            storage: Arc::new(SegmenterInputStorageInMemory::new()),
+            storage: Arc::new(SegmenterInputStorageInMemory::new(clock)),
         }
     }
 }
