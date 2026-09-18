@@ -1,7 +1,7 @@
 use sqlx::SqlitePool;
 use tokio::sync::mpsc::{self, Sender};
 
-use crate::{application::{interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus}}, common::traits::Code};
+use crate::application::{interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus}};
 
 pub struct SQLiteUsageRecorder {
     sender: Sender<UsageEvent>
@@ -33,7 +33,7 @@ impl SQLiteUsageRecorder {
                 };
 
                 let (status_str, failure_cause) = match event.status() {
-                    UsageStatus::Failed(err) => ("failed".to_string(), Some(err.code().to_string())),
+                    UsageStatus::Failed(err) => ("failed".to_string(), Some(err)),
                     UsageStatus::Success => ("success".to_string(), None),
                 };
 

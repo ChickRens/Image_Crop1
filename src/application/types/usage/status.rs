@@ -1,6 +1,5 @@
-use crate::application::error::ApplicationError;
-
+#[derive(Clone)]
 pub enum UsageStatus {
     Success,
-    Failed(ApplicationError),
+    Failed(String),
 }
