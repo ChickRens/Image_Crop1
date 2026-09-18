@@ -4,3 +4,4 @@ pub mod repository;
 pub mod segmenter;
 pub mod storage;
 pub mod clock;
+pub mod usage;
