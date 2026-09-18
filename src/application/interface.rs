@@ -9,3 +9,4 @@ pub mod segmenter_input_image_generator;
 pub mod segmenter_input_image_storage;
 pub mod delete_expired_repository;
 pub mod clock;
+pub mod usage_recorder;
