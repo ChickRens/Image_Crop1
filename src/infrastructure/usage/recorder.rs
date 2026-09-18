@@ -39,22 +39,15 @@ impl SQLiteUsageRecorder {
 
                 let processing_time_ms = event.processing_time().as_millis() as i64;
 
-                let (image_height, image_width) = match event.image_size() {
-                    Some(size) => (Some(size.height() as i64), Some(size.width() as i64)),
-                    None => (None, None),
-                };
-
                 let created_at = event.created_at().to_string();
 
                 if let Err(e) = sqlx::query(
-                    "INSERT INTO usage_records (operation, status, failure_cause, processing_time_ms, height, width, occurred_at) VALUE (?, ?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO usage_records (operation, status, failure_cause, processing_time_ms, occurred_at) VALUE (?, ?, ?, ?, ?)"
                 )
                 .bind(operation_str)
                 .bind(status_str)
                 .bind(failure_cause)
                 .bind(processing_time_ms)
-                .bind(image_height)
-                .bind(image_width)
                 .bind(created_at)
                 .execute(&pool)
                 .await {
