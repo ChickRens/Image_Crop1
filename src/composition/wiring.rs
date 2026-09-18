@@ -33,7 +33,7 @@ use crate::{
         }, segmenter::shared_sam2::SharedSAM2Segmenter, storage::{
             preview_storage_in_memory::SharedPreviewStorage,
             shared_segmenter_input_storage::SharedSegmenterInputStorage,
-        },
+        }, usage::recorder::SQLiteUsageRecorder,
     },
 };
 
@@ -105,11 +105,12 @@ pub struct App {
             SharedCompletedImageRepository<RealClock>,
             SharedPreviewStorage<RealClock>,
             SharedSegmenterInputStorage<RealClock>
-        >
+        >,
+    usage_recorder: SQLiteUsageRecorder,
 }
 
 impl App {
-    pub fn new() -> Result<Self, ApplicationError> {
+    pub fn new(pool :sqlx::Pool<sqlx::Sqlite>) -> Result<Self, ApplicationError> {
         let clock = RealClock::new();
 
         let session_repo = SharedSessionRepository::new(clock.clone());
@@ -159,6 +160,8 @@ impl App {
         let get_image_uc = GetPreviewUseCase::new(preview_service.clone());
         let delete_expired_uc = DeleteExpiredEntriesUseCase::new(image_repo.clone(), session_repo.clone(), completed_image_repo.clone(), preview_storage.clone(), input_storage.clone(), TTL_SEC);
 
+        let usage_recorder = SQLiteUsageRecorder::new(pool);
+
         Ok(App {
             upload_usecase: upload_uc,
             prepare_segment_usecase: prepare_segment_uc,
@@ -168,7 +171,8 @@ impl App {
             get_completed_usecase: get_completed_uc,
             save_usecase: save_uc,
             get_preview_usecase: get_image_uc,
-            delete_expired_usecase: delete_expired_uc
+            delete_expired_usecase: delete_expired_uc,
+            usage_recorder,
         })
     }
 
@@ -214,5 +218,9 @@ impl App {
 
     pub fn cleanup(&self, now: Instant) {
         self.delete_expired_usecase.execute(now);
+    }
+
+    pub fn usage_recorder(&self) -> &SQLiteUsageRecorder {
+        &self.usage_recorder
     }
 }
