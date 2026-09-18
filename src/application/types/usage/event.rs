@@ -12,6 +12,10 @@ pub struct UsageEvent {
 }
 
 impl UsageEvent {
+    pub fn new(operation: UsageOperation, status: UsageStatus, processing_time: Duration, created_at: DateTime<Utc>) -> Self {
+        Self { operation, status, processing_time, created_at }
+    }
+    
     pub fn operation(&self) -> &UsageOperation {
         &self.operation
     }
