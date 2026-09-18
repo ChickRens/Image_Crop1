@@ -25,6 +25,11 @@ impl SQLiteUsageRecorder {
                     UsageOperation::Upload => "upload".to_string(),
                     UsageOperation::Segment => "segment".to_string(),
                     UsageOperation::Save => "save".to_string(),
+                    UsageOperation::Redo => "redo".to_string(),
+                    UsageOperation::Undo => "undo".to_string(),
+                    UsageOperation::GetPreview => "get-preview".to_string(),
+                    UsageOperation::GetCompleted => "get-completed".to_string(),
+                    UsageOperation::Unknown(err) => err.to_owned(),
                 };
 
                 let (status_str, failure_cause) = match event.status() {
