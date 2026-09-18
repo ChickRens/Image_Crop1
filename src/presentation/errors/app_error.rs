@@ -5,10 +5,7 @@ use axum::{
 };
 
 use crate::{
-    application::error::ApplicationError,
-    common::traits::{Cause, Code, ErrorType, ErrorTypeProvider},
-    parent_error,
-    presentation::errors::presentation_error::PresentationError,
+    application::{error::ApplicationError, types::usage::status::UsageStatus::Failed}, common::traits::{Cause, Code, ErrorType, ErrorTypeProvider}, parent_error, presentation::{errors::presentation_error::PresentationError, middleware::extension::UsageStatusExt},
 };
 
 parent_error!(
@@ -33,6 +30,7 @@ impl IntoResponse for AppError {
         };
 
         let code = self.code();
+        let ext = UsageStatusExt {status: Failed(code.to_string())};
 
         eprintln!("AppError: {:?}", self.cause());
 
@@ -40,6 +38,9 @@ impl IntoResponse for AppError {
             code: code.to_string(),
         });
 
-        (status, json).into_response()
+
+        let mut response = (status, json).into_response();
+        response.extensions_mut().insert(ext);
+        response
     }
 }
