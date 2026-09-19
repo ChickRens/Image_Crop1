@@ -1,6 +1,8 @@
+use std::collections::VecDeque;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct InferenceContextHistory<T> {
-    items: Vec<T>,
+    items: VecDeque<T>,
     current_index: usize,
     max_items: usize,
 }
@@ -8,7 +10,7 @@ pub struct InferenceContextHistory<T> {
 impl<T> InferenceContextHistory<T> {
     pub fn new(max_history: usize) -> Self {
         Self {
-            items: vec![],
+            items: VecDeque::new(),
             current_index: 0,
             max_items: max_history,
         }
@@ -17,7 +19,11 @@ impl<T> InferenceContextHistory<T> {
     pub fn add(&mut self, item: T) {
         // current_index以降の履歴を削除（redo履歴を破棄）
         self.items.truncate(self.current_index);
-        self.items.push(item);
+        self.items.push_back(item);
+
+        if self.items.len() > self.max_items {
+            self.items.pop_front();
+        }
 
         self.current_index = self.items.len();
     }
