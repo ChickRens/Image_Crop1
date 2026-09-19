@@ -9,13 +9,18 @@ mod test;
 use std::{sync::Arc, time::Duration};
 
 use presentation::router;
+use sqlx::sqlite::SqlitePoolOptions;
 use tokio::net::TcpListener;
 
 use crate::{application::{interface::clock::AppClock, usecase::config::CLEANUP_INTERVAL}, composition::wiring::App, infrastructure::clock::RealClock};
 
 #[tokio::main]
 async fn main() {
-    let app = Arc::new(App::new().unwrap());
+    let pool = SqlitePoolOptions::new().max_connections(1).connect("sqlite://app.db?mode=rwc").await.unwrap();
+    sqlx::query("PRAGMA journal_mode=WAL").execute(&pool).await.unwrap();
+    sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
+    let app = Arc::new(App::new(pool).unwrap());
     let clock = RealClock::new();
 
     let app_for_gc = app.clone();
