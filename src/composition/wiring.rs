@@ -2,37 +2,25 @@ use std::time::Instant;
 
 use crate::{
     application::{
-        error::ApplicationError,
-        service::{
+        error::ApplicationError, service::{
             completed_service::SharedCompletedService,
             prepare_service::SharedPrepareSegmentService, preview_service::SharedPreviewService,
             segment_service::SharedSegmentService,
-        },
-        usecase::{
-            config::TTL_SEC,
-            delete_expired_entries_usecase::DeleteExpiredEntriesUseCase,
-            get_completed_usecase::{
+        }, usecase::{
+            config::{MAX_HISTORY, TTL_SEC}, delete_expired_entries_usecase::DeleteExpiredEntriesUseCase, get_completed_usecase::{
                 input::GetCompletedInput, output::GetCompletedOutput, usecase::GetCompletedUseCase,
-            },
-            get_preview_usecase::{
+            }, get_preview_usecase::{
                 get_preview_input::GetPreviewInput, get_preview_output::GetPreviewOutput,
                 usecase::GetPreviewUseCase,
-            },
-            prepare_segment_usecase::{
+            }, prepare_segment_usecase::{
                 prepare_segment_input::PrepareSegmentInput, usecase::PrepareSegmentUseCase,
-            },
-            redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase},
-            save_usecase::{input::SaveInput, output::SaveOutput, usecase::SaveUseCase},
-            segment_usecase::{
+            }, redo_usecase::{redo_input::RedoInput, redo_output::RedoOutput, usecase::RedoUseCase}, save_usecase::{input::SaveInput, output::SaveOutput, usecase::SaveUseCase}, segment_usecase::{
                 segment_input::SegmentInput, segment_output::SegmentOutput, usecase::SegmentUseCase,
-            },
-            undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase},
-            upload_usecase::{
+            }, undo_usecase::{undo_input::UndoInput, undo_output::UndoOutput, usecase::UndoUseCase}, upload_usecase::{
                 upload_input::UploadInput, upload_output::UploadOutput, usecase::UploadUseCase,
             },
         },
-    },
-    infrastructure::{
+    }, infrastructure::{
         clock::RealClock,
         generator::{
             completed_image::SharedWebPCompletedImageGenerator,
@@ -157,7 +145,7 @@ impl App {
             editing_session_repo.clone(),
             input_generator,
             input_storage.clone(),
-            50,
+            MAX_HISTORY,
         );
         let segment_service = SharedSegmentService::new(
             session_repo.clone(),
