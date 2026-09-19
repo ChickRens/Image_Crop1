@@ -1,16 +1,19 @@
 use sqlx::SqlitePool;
 use tokio::sync::mpsc::{self, Sender};
 
-use crate::application::{interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus}};
+use crate::application::{
+    interface::usage_recorder::UsageRecorder,
+    types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus},
+};
 
 pub struct SQLiteUsageRecorder {
-    sender: Sender<UsageEvent>
+    sender: Sender<UsageEvent>,
 }
 
 impl UsageRecorder for SQLiteUsageRecorder {
     async fn record(&self, event: UsageEvent) {
         if let Err(e) = self.sender.try_send(event) {
-            eprintln!("{:?}",e);
+            eprintln!("{:?}", e);
         };
     }
 }

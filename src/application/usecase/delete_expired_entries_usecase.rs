@@ -1,6 +1,17 @@
 use std::time::{Duration, Instant};
 
-use crate::{application::interface::{completed_image_repository::repository::CompletedImageRepository, delete_expired_repository::DeleteExpiredRepository, preview_storage::storage::PreviewStorage, segmenter_input_image_storage::storage::SegmenterInputImageStorage}, domain::repository::{original_image_repository::repository::OriginalImageRepository, session_repository::repository::SessionRepository}};
+use crate::{
+    application::interface::{
+        completed_image_repository::repository::CompletedImageRepository,
+        delete_expired_repository::DeleteExpiredRepository,
+        preview_storage::storage::PreviewStorage,
+        segmenter_input_image_storage::storage::SegmenterInputImageStorage,
+    },
+    domain::repository::{
+        original_image_repository::repository::OriginalImageRepository,
+        session_repository::repository::SessionRepository,
+    },
+};
 
 pub struct DeleteExpiredEntriesUseCase<IR, SR, CIR, PS, SS>
 where
@@ -26,8 +37,22 @@ where
     PS: PreviewStorage + DeleteExpiredRepository,
     SS: SegmenterInputImageStorage + DeleteExpiredRepository,
 {
-    pub fn new(image_repository: IR, session_repository: SR, completed_image_repository: CIR, preview_storage: PS, segmenter_input_storage: SS, ttl: Duration) -> Self {
-        Self { image_repo: image_repository, session_repo: session_repository, completed_repo: completed_image_repository, preview_storage, segmenter_input_storage, ttl }
+    pub fn new(
+        image_repository: IR,
+        session_repository: SR,
+        completed_image_repository: CIR,
+        preview_storage: PS,
+        segmenter_input_storage: SS,
+        ttl: Duration,
+    ) -> Self {
+        Self {
+            image_repo: image_repository,
+            session_repo: session_repository,
+            completed_repo: completed_image_repository,
+            preview_storage,
+            segmenter_input_storage,
+            ttl,
+        }
     }
 
     pub fn execute(&self, now: Instant) {

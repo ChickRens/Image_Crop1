@@ -30,7 +30,8 @@ where
         let (session_id, point) = input.into_parts();
 
         let segmented_image = self.segment_service.segment(session_id, point)?;
-        self.preview_service.generate_and_save_segmented(&segmented_image);
+        self.preview_service
+            .generate_and_save_segmented(&segmented_image);
 
         let segmented_image_id = *segmented_image.image_id();
         let output = SegmentOutput::new(segmented_image_id);

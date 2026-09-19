@@ -1,4 +1,4 @@
 #[derive(Clone)]
 pub struct UsageStatusExt {
-    pub code: String, 
+    pub code: String,
 }

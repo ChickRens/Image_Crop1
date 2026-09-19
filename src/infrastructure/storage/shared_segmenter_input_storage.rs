@@ -4,10 +4,20 @@ use dashmap::mapref::one::RefMut;
 
 use crate::{
     application::{
-        interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository, segmenter_input_image_storage::{
-            error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
-        }}, types::{entry::{Entry, EntryGuard}, segmenter_input_image::SegmenterInputImage},
-    }, domain::value_object::image_id::image_id::ImageId, infrastructure::storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
+        interface::{
+            clock::AppClock,
+            delete_expired_repository::DeleteExpiredRepository,
+            segmenter_input_image_storage::{
+                error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
+            },
+        },
+        types::{
+            entry::{Entry, EntryGuard},
+            segmenter_input_image::SegmenterInputImage,
+        },
+    },
+    domain::value_object::image_id::image_id::ImageId,
+    infrastructure::storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
 };
 
 #[derive(Debug, Clone)]
@@ -22,9 +32,10 @@ impl<Clock> SegmenterInputImageStorage for SharedSegmenterInputStorage<Clock>
 where
     Clock: AppClock,
 {
-    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<SegmenterInputImage>>, SegmenterInputImage>
-        where
-            Self: 'a;
+    type Guard<'a>
+        = EntryGuard<RefMut<'a, ImageId, Entry<SegmenterInputImage>>, SegmenterInputImage>
+    where
+        Self: 'a;
 
     fn save(&self, image: SegmenterInputImage) {
         self.storage.save(image);

@@ -4,8 +4,7 @@ use std::time::{Duration, Instant};
 use dashmap::mapref::one::RefMut;
 
 use crate::application::interface::{
-    clock::AppClock,
-    delete_expired_repository::DeleteExpiredRepository,
+    clock::AppClock, delete_expired_repository::DeleteExpiredRepository,
 };
 use crate::application::types::entry::{Entry, EntryGuard};
 use crate::domain::entity::session::Session;
@@ -26,7 +25,8 @@ impl<Clock> SessionRepository for SharedSessionRepository<Clock>
 where
     Clock: AppClock,
 {
-    type Guard<'a> = EntryGuard<RefMut<'a, SessionId, Entry<Session>>, Session>
+    type Guard<'a>
+        = EntryGuard<RefMut<'a, SessionId, Entry<Session>>, Session>
     where
         Self: 'a;
 

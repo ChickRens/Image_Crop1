@@ -1,4 +1,7 @@
-use crate::{common::traits::ErrorType::{Conflict, NotFound}, leaf_error};
+use crate::{
+    common::traits::ErrorType::{Conflict, NotFound},
+    leaf_error,
+};
 
 leaf_error!(
     pub enum PreviewStorageError {

@@ -1,4 +1,5 @@
 pub mod config;
+pub mod delete_expired_entries_usecase;
 pub mod get_completed_usecase;
 pub mod get_preview_usecase;
 pub mod prepare_segment_usecase;
@@ -7,4 +8,3 @@ pub mod save_usecase;
 pub mod segment_usecase;
 pub mod undo_usecase;
 pub mod upload_usecase;
-pub mod delete_expired_entries_usecase;

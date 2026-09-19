@@ -38,9 +38,17 @@ where
 {
     type InferenceContext = SAM2InferenceContext;
     type StaticContext = SAM2StaticContext;
-    type Guard<'a> = EntryGuard<RefMut<'a, SessionId, Entry<CommonEditingSession<Self::StaticContext, Self::InferenceContext>>>, CommonEditingSession<Self::StaticContext, Self::InferenceContext>>
-        where 
-            Self: 'a;
+    type Guard<'a>
+        = EntryGuard<
+        RefMut<
+            'a,
+            SessionId,
+            Entry<CommonEditingSession<Self::StaticContext, Self::InferenceContext>>,
+        >,
+        CommonEditingSession<Self::StaticContext, Self::InferenceContext>,
+    >
+    where
+        Self: 'a;
 
     fn get<'a>(
         &'a self,

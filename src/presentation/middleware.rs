@@ -1,2 +1,2 @@
-pub mod usage_tracking;
 pub mod extension;
+pub mod usage_tracking;

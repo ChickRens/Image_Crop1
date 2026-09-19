@@ -3,7 +3,8 @@ use std::time::{Duration, Instant};
 use dashmap::{DashMap, mapref::one::RefMut};
 
 use crate::application::{
-    interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository}, types::entry::{Entry, EntryGuard},
+    interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository},
+    types::entry::{Entry, EntryGuard},
 };
 use crate::domain::entity::session::Session;
 use crate::domain::repository::session_repository::error::SessionRepositoryError;
@@ -22,7 +23,8 @@ impl<Clock> SessionRepository for SessionRepositoryInMemory<Clock>
 where
     Clock: AppClock,
 {
-    type Guard<'a> = EntryGuard<RefMut<'a, SessionId, Entry<Session>>, Session>
+    type Guard<'a>
+        = EntryGuard<RefMut<'a, SessionId, Entry<Session>>, Session>
     where
         Self: 'a;
 
@@ -32,12 +34,13 @@ where
         self.sessions.insert(session_id, entry);
     }
 
-    fn get<'a>(&'a self, session_id: &SessionId) -> Result<Self::Guard<'a>, SessionRepositoryError> {
+    fn get<'a>(
+        &'a self,
+        session_id: &SessionId,
+    ) -> Result<Self::Guard<'a>, SessionRepositoryError> {
         self.sessions
             .get_mut(session_id)
-            .map(|entry|{
-                EntryGuard::new(entry, self.clock.now())
-            })
+            .map(|entry| EntryGuard::new(entry, self.clock.now()))
             .ok_or(SessionRepositoryError::SessionNotFound)
     }
 }

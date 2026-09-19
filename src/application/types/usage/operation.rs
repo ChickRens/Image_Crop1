@@ -6,7 +6,7 @@ pub enum UsageOperation {
     Save,
     GetCompleted,
     GetPreview,
-    Unknown(String)
+    Unknown(String),
 }
 
 impl UsageOperation {

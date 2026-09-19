@@ -12,7 +12,7 @@ pub trait SegmenterInputImageStorage {
     type Guard<'a>: DerefMut<Target = SegmenterInputImage>
     where
         Self: 'a;
-    
+
     fn save(&self, image: SegmenterInputImage);
     fn get<'a>(
         &'a self,

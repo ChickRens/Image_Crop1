@@ -30,7 +30,8 @@ where
         let session_id = undo_input.session_id();
 
         let segmented_image = self.segment_service.undo(session_id)?;
-        self.preview_service.generate_and_save_segmented(&segmented_image);
+        self.preview_service
+            .generate_and_save_segmented(&segmented_image);
         let segmented_image_id = *segmented_image.image_id();
 
         let output = UndoOutput::new(segmented_image_id);

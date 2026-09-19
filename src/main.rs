@@ -12,12 +12,23 @@ use presentation::router;
 use sqlx::sqlite::SqlitePoolOptions;
 use tokio::net::TcpListener;
 
-use crate::{application::{interface::clock::AppClock, usecase::config::CLEANUP_INTERVAL}, composition::wiring::App, infrastructure::clock::RealClock};
+use crate::{
+    application::{interface::clock::AppClock, usecase::config::CLEANUP_INTERVAL},
+    composition::wiring::App,
+    infrastructure::clock::RealClock,
+};
 
 #[tokio::main]
 async fn main() {
-    let pool = SqlitePoolOptions::new().max_connections(1).connect("sqlite://app.db?mode=rwc").await.unwrap();
-    sqlx::query("PRAGMA journal_mode=WAL").execute(&pool).await.unwrap();
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect("sqlite://app.db?mode=rwc")
+        .await
+        .unwrap();
+    sqlx::query("PRAGMA journal_mode=WAL")
+        .execute(&pool)
+        .await
+        .unwrap();
     sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
     let app = Arc::new(App::new(pool).unwrap());
@@ -39,7 +50,7 @@ async fn main() {
 
 fn spawn_gc_task<F>(interval: Duration, task: F)
 where
-    F: Fn() + Send + Sync + 'static
+    F: Fn() + Send + Sync + 'static,
 {
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(interval);

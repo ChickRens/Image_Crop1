@@ -4,11 +4,15 @@ use axum::{Router, extract::DefaultBodyLimit, middleware::from_fn_with_state, ro
 use tower_http::services::ServeDir;
 
 use crate::{
-    composition::wiring::App, presentation::{handler::{
-        get_completed::handler::get_completed_image, get_preview::handler::get_preview,
-        redo::handler::redo, save::handler::save, segment::handler::segment, undo::handler::undo,
-        upload::handler::upload,
-    }, middleware::usage_tracking::track_usage},
+    composition::wiring::App,
+    presentation::{
+        handler::{
+            get_completed::handler::get_completed_image, get_preview::handler::get_preview,
+            redo::handler::redo, save::handler::save, segment::handler::segment,
+            undo::handler::undo, upload::handler::upload,
+        },
+        middleware::usage_tracking::track_usage,
+    },
 };
 
 pub fn route(app: Arc<App>) -> Router {

@@ -1,15 +1,23 @@
-use std::{sync::Arc, time::{Duration, Instant}};
+use std::{
+    sync::Arc,
+    time::{Duration, Instant},
+};
 
 use dashmap::mapref::one::RefMut;
 
 use crate::{
-    application::{interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository}, types::entry::{Entry, EntryGuard}}, domain::{
+    application::{
+        interface::{clock::AppClock, delete_expired_repository::DeleteExpiredRepository},
+        types::entry::{Entry, EntryGuard},
+    },
+    domain::{
         entity::original_image::OriginalImage,
         repository::original_image_repository::{
             error::OriginalImageRepositoryError, repository::OriginalImageRepository,
         },
         value_object::image_id::image_id::ImageId,
-    }, infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
+    },
+    infrastructure::repository::image_repository::OriginalImageRepositoryInMemory,
 };
 
 #[derive(Clone)]
@@ -35,11 +43,15 @@ impl<Clock> OriginalImageRepository for SharedOriginalImageRepository<Clock>
 where
     Clock: AppClock,
 {
-    type Guard<'a> = EntryGuard<RefMut<'a, ImageId, Entry<OriginalImage>>, OriginalImage>
-        where 
-            Self: 'a;
+    type Guard<'a>
+        = EntryGuard<RefMut<'a, ImageId, Entry<OriginalImage>>, OriginalImage>
+    where
+        Self: 'a;
 
-    fn get<'a>(&'a self, image_id: &ImageId) -> Result<Self::Guard<'a>, OriginalImageRepositoryError> {
+    fn get<'a>(
+        &'a self,
+        image_id: &ImageId,
+    ) -> Result<Self::Guard<'a>, OriginalImageRepositoryError> {
         self.images.get(image_id)
     }
 
