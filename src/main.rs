@@ -22,7 +22,7 @@ use crate::{
 async fn main() {
     let pool = SqlitePoolOptions::new()
         .max_connections(1)
-        .connect("sqlite://app.db?mode=rwc")
+        .connect("sqlite://database/app.db?mode=rwc")
         .await
         .unwrap();
     sqlx::query("PRAGMA journal_mode=WAL")
