@@ -1,7 +1,6 @@
 use std::{sync::Arc, time::Instant};
 
 use axum::{extract::{Request, State}, middleware::Next};
-use chrono::Utc;
 
 use crate::{application::{interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus}}, composition::wiring::App, presentation::middleware::extension::UsageStatusExt};
 
@@ -23,6 +22,6 @@ pub async fn track_usage(
         Some(err) => UsageStatus::Failed(err.clone().code),
     };
 
-    let event = UsageEvent::new(operation, status, end, Utc::now());
+    let event = UsageEvent::new(operation, status, end);
     app.usage_recorder().record(event).await;
 }

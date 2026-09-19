@@ -1,19 +1,16 @@
 use std::time::Duration;
 
-use chrono::{DateTime, Utc};
-
 use crate::application::types::usage::{operation::UsageOperation, status::UsageStatus};
 
 pub struct UsageEvent {
     operation: UsageOperation,
     status: UsageStatus,
     processing_time: Duration,
-    created_at: DateTime<Utc>
 }
 
 impl UsageEvent {
-    pub fn new(operation: UsageOperation, status: UsageStatus, processing_time: Duration, created_at: DateTime<Utc>) -> Self {
-        Self { operation, status, processing_time, created_at }
+    pub fn new(operation: UsageOperation, status: UsageStatus, processing_time: Duration) -> Self {
+        Self { operation, status, processing_time }
     }
     
     pub fn operation(&self) -> &UsageOperation {
@@ -26,9 +23,5 @@ impl UsageEvent {
     
     pub fn processing_time(&self) -> Duration {
         self.processing_time
-    }
-
-    pub fn created_at(&self) -> DateTime<Utc> {
-        self.created_at
     }
 }

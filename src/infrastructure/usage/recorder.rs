@@ -39,16 +39,13 @@ impl SQLiteUsageRecorder {
 
                 let processing_time_ms = event.processing_time().as_millis() as i64;
 
-                let created_at = event.created_at().to_string();
-
                 if let Err(e) = sqlx::query(
-                    "INSERT INTO usage_records (operation, status, failure_cause, processing_time_ms, occurred_at) VALUE (?, ?, ?, ?, ?)"
+                    "INSERT INTO usage_records (operation, status, failure_cause, processing_time_ms) VALUES (?, ?, ?, ?)"
                 )
                 .bind(operation_str)
                 .bind(status_str)
                 .bind(failure_cause)
                 .bind(processing_time_ms)
-                .bind(created_at)
                 .execute(&pool)
                 .await {
                     eprintln!("{}", e)
