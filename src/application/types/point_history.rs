@@ -21,6 +21,10 @@ impl PointHistory {
         self.items.truncate(self.current_index);
         self.items.push(item);
 
+        if self.items.len() > self.max_items {
+            self.items.remove(0);
+        }
+        
         self.current_index = self.items.len();
     }
 
