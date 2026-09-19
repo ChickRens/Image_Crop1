@@ -5,3 +5,4 @@
 /.cargo
 /.env
 /database
+/.rustc_info.json
