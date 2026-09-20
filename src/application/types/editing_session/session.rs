@@ -93,12 +93,9 @@ impl<S, I> CommonEditingSession<S, I> {
     pub fn new(
         history: PointHistory,
         static_context: S,
-        mut inference_context_history: InferenceContextHistory<I>,
-        initial_inference_context: I,
+        inference_context_history: InferenceContextHistory<I>,
         point_scaler: f64,
     ) -> Self {
-        inference_context_history.add(initial_inference_context);
-
         Self {
             point_history: history,
             static_context: static_context,
