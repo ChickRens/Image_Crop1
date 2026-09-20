@@ -25,12 +25,10 @@ impl<T> InferenceContextHistory<T> {
         if self.cursor - self.base_len > self.max_undo {
             self.base_len += 1;
         }
-
-        self.cursor = self.items.len();
     }
 
     pub fn current(&self) -> &T {
-        &self.items[self.cursor - 1]
+        &self.items[self.cursor]
     }
 
     pub fn can_undo(&self) -> bool {
