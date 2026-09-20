@@ -3,54 +3,47 @@ use crate::domain::value_object::point::Point;
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct PointHistory {
     items: Vec<Point>,
-    current_index: usize,
-    max_items: usize,
+    cursor: usize,
+    max_undo: usize,
+
+    // 確定されたitemsのlen
+    base_len: usize,
 }
 
 impl PointHistory {
-    pub fn new(max_history: usize) -> Self {
-        Self {
-            items: vec![],
-            current_index: 0,
-            max_items: max_history,
-        }
+    pub fn new(max_undo: usize) -> Self {
+        Self { items: vec![], cursor: 0, max_undo, base_len: 0 }
     }
-
+    
     pub fn add(&mut self, item: Point) {
         // current_index以降の履歴を削除（redo履歴を破棄）
-        self.items.truncate(self.current_index);
+        self.items.truncate(self.cursor);
         self.items.push(item);
 
-        if self.items.len() > self.max_items {
-            self.items.remove(0);
+        self.cursor = self.items.len();
+
+        if self.cursor - self.base_len > self.max_undo {
+            self.base_len += 1;
         }
-        
-        self.current_index = self.items.len();
     }
 
     pub fn current(&self) -> Option<&[Point]> {
-        self.items.get(0..self.current_index)
+        self.items.get(0..self.cursor)
     }
 
     pub fn can_undo(&self) -> bool {
-        if self.current_index < 1 {
-            return false;
-        }
-        true
+        self.cursor > self.base_len
     }
 
     pub fn undo(&mut self) {
-        self.current_index -= 1;
+        self.cursor -= 1;
     }
 
     pub fn can_redo(&self) -> bool {
-        if self.current_index >= self.items.len() {
-            return false;
-        }
-        true
+        self.cursor < self.items.len()
     }
 
     pub fn redo(&mut self) {
-        self.current_index += 1;
+        self.cursor += 1;
     }
 }
