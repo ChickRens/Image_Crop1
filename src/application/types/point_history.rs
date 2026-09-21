@@ -27,8 +27,8 @@ impl PointHistory {
         }
     }
 
-    pub fn current(&self) -> Option<&[Point]> {
-        self.items.get(0..self.cursor)
+    pub fn current(&self) -> &[Point] {
+        &self.items[..self.cursor]
     }
 
     pub fn can_undo(&self) -> bool {
