@@ -47,7 +47,7 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     }
 
     fn redo(&mut self) -> Result<(), EditingSessionError> {
-        if self.inference_context_history.can_undo() != self.point_history.can_undo() {
+        if self.inference_context_history.can_redo() != self.point_history.can_redo() {
             return Err(EditingSessionError::HistoryCorrupted);
         }
 
@@ -62,11 +62,7 @@ impl<S, I> EditingSession for CommonEditingSession<S, I> {
     }
 
     fn points(&self) -> &[Point] {
-        let points = self.point_history.current();
-        match points {
-            Some(points) => points,
-            None => &[],
-        }
+        self.point_history.current()
     }
 
     fn points_with(&self, point: Point) -> Vec<Point> {
