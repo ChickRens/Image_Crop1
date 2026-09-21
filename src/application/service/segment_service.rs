@@ -106,7 +106,12 @@ where
         let input_points = session.points();
 
         if input_points.is_empty() {
-            return Ok(original_image.into_image());
+            let image = original_image.into_image();
+            let (data, _, size) = image.into_data();
+            let id = ImageId::new();
+
+            let original_image = Image::new(data, id, size);
+            return Ok(original_image);
         }
 
         let static_context = session.static_context();
