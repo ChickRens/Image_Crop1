@@ -69,7 +69,8 @@ where
         let inference_context = self.segmenter.prepare_inference_context(&segmenter_input)?;
 
         let point_history = PointHistory::new(self.config_max_history);
-        let inference_context_history = InferenceContextHistory::new(self.config_max_history, inference_context);
+        let inference_context_history =
+            InferenceContextHistory::new(self.config_max_history, inference_context);
 
         let editing_session = CommonEditingSession::new(
             point_history,

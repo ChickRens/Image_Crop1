@@ -12,9 +12,14 @@ pub struct PointHistory {
 
 impl PointHistory {
     pub fn new(max_undo: usize) -> Self {
-        Self { items: vec![], cursor: 0, max_undo, base_len: 0 }
+        Self {
+            items: vec![],
+            cursor: 0,
+            max_undo,
+            base_len: 0,
+        }
     }
-    
+
     pub fn add(&mut self, item: Point) {
         // current_index以降の履歴を削除（redo履歴を破棄）
         self.items.truncate(self.cursor);
