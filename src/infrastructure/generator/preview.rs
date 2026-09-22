@@ -82,6 +82,44 @@ impl PreviewImageGenerator for WebPPreviewImageGenerator {
     }
 }
 
+#[cfg(test)]
+mod preview_image_generator_test {
+    use crate::{
+        application::interface::preview_image_generator::PreviewImageGenerator,
+        domain::{
+            entity::image::Image,
+            value_object::{
+                image_data::ImageData,
+                image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::generator::preview::WebPPreviewImageGenerator,
+    };
+
+    #[test]
+    fn generate_returns_webp_preview_and_preserves_metadata() {
+        let size = ImageSize::new(2, 2).unwrap();
+        let image_id = ImageId::new();
+        let rgba = vec![
+            255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255,
+        ];
+        let original = Image::new(ImageData::new(rgba), image_id, size.clone());
+
+        let (preview, scale) = WebPPreviewImageGenerator::new(4).generate(&original);
+        let (preview_data, preview_image_id, preview_size) = preview.into_data();
+        let bytes = preview_data.image();
+
+        assert_eq!(scale, 2.0);
+        assert_eq!(bytes.len() >= 12, true);
+        assert_eq!(&bytes[..4], b"RIFF");
+        assert_eq!(&bytes[8..12], b"WEBP");
+        assert_eq!(preview_image_id, *original.image_id());
+        assert_eq!(preview_size, ImageSize::new(4, 4).unwrap());
+    }
+}
+
+
 impl WebPPreviewImageGenerator {
     pub fn new(preview_image_long_side: u16) -> Self {
         Self {
