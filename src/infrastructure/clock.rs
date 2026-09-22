@@ -16,3 +16,11 @@ impl RealClock {
         Self
     }
 }
+
+pub struct FakeClock;
+
+impl AppClock for FakeClock {
+    fn now(&self) -> Instant {
+        Instant::now()
+    }
+}
