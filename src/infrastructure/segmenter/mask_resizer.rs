@@ -44,7 +44,7 @@ impl SAM2MaskResizer {
 
                 for x in 0..target_w {
                     let src_x = (x as f32 + 0.5) * src_w as f32 / target_w as f32 - 0.5;
-                    let src_x = src_x.clamp(0.0, (src_h - 1) as f32);
+                    let src_x = src_x.clamp(0.0, (src_w - 1) as f32);
 
                     let left_x = src_x.floor() as usize;
                     let right_x = (left_x + 1).min(src_w - 1);
