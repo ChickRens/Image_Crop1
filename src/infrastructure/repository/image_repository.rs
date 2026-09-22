@@ -105,7 +105,8 @@ mod image_repository_test {
 
     #[test]
     fn save_and_get_returns_the_saved_image() {
-        let repo = OriginalImageRepositoryInMemory::new(FakeClock {});
+        let now = Instant::now();
+        let repo = OriginalImageRepositoryInMemory::new(FakeClock::new(now));
         let image = make_image();
         let image_id = image.image_id();
 
@@ -118,7 +119,7 @@ mod image_repository_test {
 
     #[test]
     fn get_missing_image_returns_not_found() {
-        let repo = OriginalImageRepositoryInMemory::new(FakeClock {});
+        let repo = OriginalImageRepositoryInMemory::new(FakeClock::new(Instant::now()));
 
         let result = repo.get(&ImageId::new());
 
@@ -128,7 +129,7 @@ mod image_repository_test {
     #[test]
     fn delete_expired_removes_old_images() {
         let base = Instant::now();
-        let repo = OriginalImageRepositoryInMemory::new(FakeClock {});
+        let repo = OriginalImageRepositoryInMemory::new(FakeClock::new(base));
         let image = make_image();
         let image_id = image.image_id();
 
