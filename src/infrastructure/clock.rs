@@ -17,8 +17,9 @@ impl RealClock {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct FakeClock {
-    time: Instant
+    time: Instant,
 }
 
 impl AppClock for FakeClock {
