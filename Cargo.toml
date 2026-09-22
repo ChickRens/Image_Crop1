@@ -1,5 +1,5 @@
 [package]
-name = "Image_Crop1"
+name = "Goodbye_Background"
 version = "0.1.0"
 edition = "2024"
 
@@ -20,6 +20,3 @@ rayon = "1"
 fast_image_resize = { version = "6.0", features = ["rayon"]}
 dashmap = { version = "4.0", features = ["rayon"] }
 sqlx = { version = "0.9", features = ["sqlite", "runtime-tokio"] }
-
-[lib]
-crate-type = ["cdylib"]

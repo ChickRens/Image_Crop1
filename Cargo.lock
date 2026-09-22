@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "Image_Crop1"
+name = "Goodbye_Background"
 version = "0.1.0"
 dependencies = [
  "axum",
