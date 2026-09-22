@@ -517,3 +517,54 @@ impl ImageSegmenter for Sam2Segmenter {
         Ok(inference_context)
     }
 }
+
+#[cfg(test)]
+mod sam2_test {
+    use ndarray::Array4;
+
+    use crate::{
+        domain::{
+            entity::{image::Image, original_image::OriginalImage},
+            value_object::{
+                image_data::ImageData,
+                image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::segmenter::sam2_data::Mask,
+    };
+
+    use super::Sam2Segmenter;
+
+    #[test]
+    fn scale_prompt_scales_points_to_target_size() {
+        let points = vec![(50.0, 100.0), (10.0, 20.0)];
+
+        let scaled = Sam2Segmenter::_scale_prompt(points, 100, 200, 200, 400);
+
+        assert!((scaled[0].0 - 100.0).abs() < f32::EPSILON);
+        assert!((scaled[0].1 - 200.0).abs() < f32::EPSILON);
+        assert!((scaled[1].0 - 20.0).abs() < f32::EPSILON);
+        assert!((scaled[1].1 - 40.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn generate_image_fast_applies_mask_alpha_to_original_pixels() {
+        let size = ImageSize::new(2, 2).unwrap();
+        let image_data = ImageData::new(vec![
+            255, 0, 0, 255, // red, alpha 255
+            0, 255, 0, 255, // green, alpha 255
+            0, 0, 255, 255, // blue, alpha 255
+            255, 255, 255, 255,
+        ]);
+        let image = Image::new(image_data.clone(), ImageId::new(), size.clone());
+        let original_image = OriginalImage::new(image);
+        let mask = Mask::new(Array4::from_shape_vec((1, 1, 2, 2), vec![1.0, 0.0, 0.5, 1.0]).unwrap());
+
+        let segmented = Sam2Segmenter::_generate_image_fast(&mask, &original_image).unwrap();
+        let (result_image, result_size) = segmented.into_image_and_size();
+
+        assert_eq!(result_size, size);
+        assert_eq!(result_image.image(), &vec![255, 0, 0, 255, 0, 255, 0, 0, 0, 0, 255, 127, 255, 255, 255, 255]);
+    }
+}
