@@ -16,3 +16,20 @@ impl RealClock {
         Self
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct FakeClock {
+    time: Instant,
+}
+
+impl AppClock for FakeClock {
+    fn now(&self) -> Instant {
+        self.time
+    }
+}
+
+impl FakeClock {
+    pub fn new(time: Instant) -> Self {
+        Self { time }
+    }
+}

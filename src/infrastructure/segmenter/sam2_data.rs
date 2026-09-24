@@ -1,6 +1,6 @@
 use ndarray::{Array3, Array4, ArrayBase, ArrayView3, ArrayView4, Dim, OwnedRepr};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct ImageEmbeddings {
     value: Array4<f32>,
 }
@@ -15,7 +15,7 @@ impl ImageEmbeddings {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct HighResFeatureS0 {
     value: Array4<f32>,
 }
@@ -30,7 +30,7 @@ impl HighResFeatureS0 {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct HighResFeatureS1 {
     value: Array4<f32>,
 }
@@ -45,7 +45,7 @@ impl HighResFeatureS1 {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct SAM2StaticContext {
     image_embeddings: ImageEmbeddings,
     high_res_feature_s0: HighResFeatureS0,
@@ -123,7 +123,7 @@ impl Mask {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Default)]
 pub struct SAM2InferenceContext {
     masks: Option<Mask>,
 }

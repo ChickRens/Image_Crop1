@@ -65,3 +65,58 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod session_repository_test {
+    use std::time::{Duration, Instant};
+
+    use crate::{
+        application::interface::delete_expired_repository::DeleteExpiredRepository, domain::{
+            entity::session::Session, repository::
+            session_repository::{error::SessionRepositoryError, repository::SessionRepository}, value_object::{
+                image_id::image_id::ImageId, session_id::session_id::SessionId,
+            },
+        }, infrastructure::{clock::FakeClock, repository::session_repository::SessionRepositoryInMemory},
+    };
+
+    fn make_session() -> Session {
+        let session_id = SessionId::new();
+        let image_id = ImageId::new();
+        Session::new(session_id, image_id)
+    }
+
+    #[test]
+    fn save_and_get_returns_the_saved_session() {
+        let now = Instant::now();
+        let repo = SessionRepositoryInMemory::new(FakeClock::new(now));
+        let session = make_session();
+        let session_id = session.session_id();
+
+        repo.save(session.clone());
+
+        let fetched = repo.get(&session_id).unwrap();
+        assert_eq!(fetched.session_id(), session.session_id());
+    }
+
+    #[test]
+    fn get_missing_session_returns_not_found() {
+        let repo = SessionRepositoryInMemory::new(FakeClock::new(Instant::now()));
+
+        let result = repo.get(&SessionId::new());
+
+        assert!(matches!(result, Err(SessionRepositoryError::SessionNotFound)));
+    }
+
+    #[test]
+    fn delete_expired_removes_old_sessions() {
+        let base = Instant::now();
+        let repo = SessionRepositoryInMemory::new(FakeClock::new(base));
+        let session = make_session();
+        let session_id = session.session_id();
+
+        repo.save(session.clone());
+        repo.delete_expired(base + Duration::from_secs(30), Duration::from_secs(10));
+
+        assert!(repo.get(&session_id).is_err());
+    }
+}

@@ -272,3 +272,110 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod preview_storage_in_memory_test {
+    use std::time::{Duration, Instant};
+
+    use crate::{
+        application::{
+            interface::{
+                delete_expired_repository::DeleteExpiredRepository,
+                preview_storage::{
+                    error::PreviewStorageError,
+                    storage::PreviewStorage,
+                },
+            },
+            types::preview_image::PreviewImage,
+        },
+        domain::{
+            entity::image::Image,
+            value_object::{
+                image_data::ImageData,
+                image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::{
+            clock::FakeClock,
+            storage::preview_storage_in_memory::PreviewStorageInMemory,
+        },
+    };
+
+    fn make_preview_image() -> PreviewImage {
+        let size = ImageSize::new(4, 4).unwrap();
+        let image = Image::new(
+            ImageData::new(vec![
+                255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255,
+            ]),
+            ImageId::new(),
+            size,
+        );
+        PreviewImage::new(image)
+    }
+
+    #[test]
+    fn save_original_and_get_returns_the_saved_image() {
+        let now = Instant::now();
+        let repo = PreviewStorageInMemory::new(FakeClock::new(now));
+        let image = make_preview_image();
+        let image_id = image.image_id();
+
+        repo.save_as_original(image.clone());
+
+        let fetched = repo.get(image_id).unwrap();
+        assert_eq!(fetched.image_id(), image.image_id());
+        assert_eq!(fetched.clone().into_data().2, image.clone().into_data().2);
+    }
+
+    #[test]
+    fn save_segmented_and_get_returns_the_saved_image() {
+        let now = Instant::now();
+        let repo = PreviewStorageInMemory::new(FakeClock::new(now));
+        let image = make_preview_image();
+        let image_id = image.image_id();
+
+        repo.save_as_segmented(image.clone());
+
+        let fetched = repo.get(image_id).unwrap();
+        assert_eq!(fetched.image_id(), image.image_id());
+        assert_eq!(fetched.clone().into_data().2, image.clone().into_data().2);
+    }
+
+    #[test]
+    fn get_missing_image_returns_not_found() {
+        let repo = PreviewStorageInMemory::new(FakeClock::new(Instant::now()));
+
+        let result = repo.get(ImageId::new());
+
+        assert!(matches!(result, Err(PreviewStorageError::ImageNotFound)));
+    }
+
+    #[test]
+    fn same_id_in_original_and_segmented_is_ambiguous() {
+        let now = Instant::now();
+        let repo = PreviewStorageInMemory::new(FakeClock::new(now));
+        let image = make_preview_image();
+        let image_id = image.image_id();
+
+        repo.save_as_original(image.clone());
+        repo.save_as_segmented(image);
+
+        let result = repo.get(image_id);
+
+        assert!(matches!(result, Err(PreviewStorageError::AmbiguousId)));
+    }
+
+    #[test]
+    fn delete_expired_removes_old_images() {
+        let base = Instant::now();
+        let repo = PreviewStorageInMemory::new(FakeClock::new(base));
+        let image = make_preview_image();
+        let image_id = image.image_id();
+
+        repo.save_as_original(image);
+        repo.delete_expired(base + Duration::from_secs(30), Duration::from_secs(10));
+
+        assert!(repo.get(image_id).is_err());
+    }
+}
