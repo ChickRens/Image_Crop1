@@ -6,3 +6,4 @@
 /.env
 /database
 /.rustc_info.json
+/frontend/assets
