@@ -4,9 +4,8 @@ mod composition;
 mod domain;
 mod infrastructure;
 mod presentation;
-mod test;
 
-use std::{sync::Arc, time::Duration};
+use std::{env, sync::Arc, time::Duration};
 
 use presentation::router;
 use sqlx::sqlite::SqlitePoolOptions;
@@ -20,9 +19,11 @@ use crate::{
 
 #[tokio::main]
 async fn main() {
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
     let pool = SqlitePoolOptions::new()
         .max_connections(1)
-        .connect("sqlite://database/app.db?mode=rwc")
+        .connect(&format!("{}?mode=rwc", database_url))
         .await
         .unwrap();
     sqlx::query("PRAGMA journal_mode=WAL")
