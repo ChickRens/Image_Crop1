@@ -6,14 +6,12 @@ use axum::{
     http::Response,
     middleware::Next,
 };
+use uuid::Uuid;
 
 use crate::{
     application::{
-        interface::usage_recorder::UsageRecorder,
-        types::usage::{event::UsageEvent, operation::UsageOperation, status::UsageStatus},
-    },
-    composition::wiring::App,
-    presentation::middleware::extension::UsageStatusExt,
+        interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, id::UsageId, operation::UsageOperation, status::UsageStatus},
+    }, composition::wiring::App, presentation::middleware::extension::UsageStatusExt,
 };
 
 pub async fn track_usage(
@@ -21,6 +19,13 @@ pub async fn track_usage(
     request: Request,
     next: Next,
 ) -> Response<Body> {
+    let id = request
+        .headers()
+        .get("client-id")
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| Uuid::parse_str(value).ok())
+        .map(|value| UsageId::new(value));
+
     let operation = request.uri().path().trim_start_matches("/").to_string();
     let operation = UsageOperation::new(&operation);
     let start = Instant::now();
@@ -34,7 +39,7 @@ pub async fn track_usage(
         Some(err) => UsageStatus::Failed(err.clone().code),
     };
 
-    let event = UsageEvent::new(operation, status, end);
+    let event = UsageEvent::new(id, operation, status, end);
     app.usage_recorder().record(event).await;
 
     response
