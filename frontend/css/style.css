@@ -1,0 +1,478 @@
+/* ==========================================================
+   レイアウト用トークン（色以外）。
+   色を追加したい場合はこのファイルではなく新しい *.css を作ること。
+   ========================================================== */
+:root {
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    --touch-target: 44px;
+
+    --font-ui: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    font-family: inherit;
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-4);
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-muted);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.app-header h1 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.01em;
+}
+
+.icon-btn,
+.primary-btn,
+.ghost-btn {
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-light);
+    color: var(--text);
+    padding: 0 var(--space-4);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    transition: border-color 0.15s ease, transform 0.05s ease;
+}
+
+.icon-btn:hover,
+.primary-btn:hover,
+.ghost-btn:hover {
+    border-color: var(--highlight);
+}
+
+.icon-btn:active,
+.primary-btn:active,
+.ghost-btn:active {
+    transform: scale(0.97);
+}
+
+.primary-btn {
+    background: var(--primary);
+    color: var(--bg-dark);
+    border-color: var(--primary);
+    font-weight: 700;
+}
+
+.ghost-btn {
+    background: transparent;
+}
+
+.icon-btn:disabled,
+.primary-btn:disabled,
+.ghost-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ---------- Dropzone (画像が1枚も無い間だけ表示する大きい入口) ---------- */
+.dropzone {
+    margin: var(--space-4) var(--space-4) 0;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: var(--bg-light);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.dropzone:hover {
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.dropzone.is-dragover {
+    border-color: var(--primary);
+    background: var(--bg-light);
+    color: var(--text);
+}
+
+/* ---------- Strip (画像が1枚でもあれば表示する小さい一覧) ---------- */
+.strip-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border-muted);
+}
+
+.strip-arrow {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-light);
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.strip-arrow:hover {
+    border-color: var(--highlight);
+}
+
+/* スマホ(タッチ操作)では直接スワイプできるので矢印は不要 */
+@media (pointer: coarse) {
+    .strip-arrow {
+        display: none;
+    }
+}
+
+.strip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding: 2px;
+}
+
+.strip.is-dragover {
+    outline: 2px dashed var(--primary);
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+}
+
+.strip-add,
+.strip-thumb {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.strip-add {
+    border: 1.5px dashed var(--border);
+    background: var(--bg-light);
+    color: var(--text-muted);
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.strip-add:hover {
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.strip-thumb {
+    border: 2px solid transparent;
+    background: var(--bg-light);
+    transition: border-color 0.15s ease;
+}
+
+.strip-thumb.is-active {
+    border-color: var(--primary);
+}
+
+.strip-thumb:disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+
+.strip-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.status-dot {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--bg-dark);
+    background: transparent;
+}
+
+.status-dot.status-uploading { background: var(--info); }
+.status-dot.status-editing { background: var(--secondary); }
+.status-dot.status-saving { background: var(--warning); }
+.status-dot.status-saved { background: var(--success); }
+.status-dot.status-error { background: var(--danger); }
+
+.empty-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: var(--space-5) var(--space-4);
+}
+
+/* ---------- Editor (単一の大きな編集画面) ---------- */
+.editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.edit-canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    padding: var(--space-3);
+    overflow: hidden;
+}
+
+#edit-canvas {
+    max-width: 100%;
+    max-height: 100%;
+    touch-action: none; /* スマホでのスクロール/ズーム誤爆を防ぐ */
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-muted);
+    cursor: crosshair;
+}
+
+.edit-bottom-bar {
+    background: var(--bg-dark);
+    border-top: 1px solid var(--border-muted);
+    padding: var(--space-3) var(--space-4);
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+}
+
+.edit-status {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    min-height: 1.2em;
+    margin: 0 0 4px;
+    font-family: var(--font-mono);
+}
+
+.edit-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.edit-toolbar .spacer {
+    flex: 1;
+}
+
+[data-mode="positive"] {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+[data-mode="negative"] {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* ---------- Toast (エラー等の通知カード) ---------- */
+.toast-container {
+    position: fixed;
+    top: var(--space-4);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: min(480px, calc(100% - var(--space-4) * 2));
+    pointer-events: none; /* コンテナ自体はクリックを透過、カードだけ受け付ける */
+}
+
+.toast-card {
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden; /* カウントダウン帯を角丸の内側に収める */
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--toast-accent, var(--info));
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    color: var(--card-text);
+    transform: translateY(-16px);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.toast-card.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-card.is-leaving {
+    transform: translateY(-16px);
+    opacity: 0;
+}
+
+.toast-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    background-color: currentColor;
+    /* mask-image はJS(js/toast.js の applyMaskIcon)がインラインで直接設定する。
+       CSS変数経由(var(--icon-src))にすると、URLの解決基準がこのファイル
+       (css/style.css)になってしまい意図しないパスを探しにいくため使わない。 */
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-message {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    word-break: break-word;
+    color: var(--card-text);
+}
+
+.toast-code {
+    margin: var(--space-1) 0 0;
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--card-text-muted);
+}
+
+.toast-close {
+    flex-shrink: 0;
+    width: var(--touch-target);
+    height: var(--touch-target);
+    margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.toast-close:hover {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.toast-close-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-color: currentColor;
+    /* mask-imageはJS側でインライン設定（理由は.toast-iconのコメント参照） */
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.toast-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--card-text);
+    opacity: 0.35;
+    transform-origin: left;
+    animation-name: toast-progress-shrink;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+@keyframes toast-progress-shrink {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}

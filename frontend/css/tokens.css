@@ -1,0 +1,25 @@
+:root {
+    --hue: 233;
+
+    /* hsl (fallback color) */
+    --bg-dark: hsl(var(--hue) 79% 3%);
+    --bg: hsl(var(--hue) 59% 7%);
+    --bg-light: hsl(var(--hue) 40% 11%);
+    --text: hsl(var(--hue) 100% 100%);
+    --text-muted: hsl(var(--hue) 55% 77%);
+    --highlight: hsl(var(--hue) 25% 45%);
+    --border: hsl(var(--hue) 31% 34%);
+    --border-muted: hsl(var(--hue) 41% 24%);
+    --primary: hsl(var(--hue) 74% 78%);
+    --secondary: hsl(48 45% 58%);
+    --danger: hsl(9 42% 65%);
+    --warning: hsl(51 29% 53%);
+    --success: hsl(148 27% 56%);
+    --info: hsl(217 46% 66%);
+
+    /* --danger/--warning/--success/--info は中間〜明るめの明度(53-66%)なので、
+       --text(白)や--text-muted(明るいラベンダー)を乗せると読みにくい。
+       これらの背景の上で使う専用のテキスト色。 */
+    --card-text: hsl(var(--hue) 60% 10%);
+    --card-text-muted: hsl(var(--hue) 35% 24%);
+}

@@ -1,0 +1,10 @@
+/*
+ * 透過領域を示す市松模様専用の色。
+ * tokens.css のパレット(--bg, --primary等)は全てhue=233寄りの色で
+ * 構成されており、中立的なグレーが無いため、ここだけ別ファイルで定義する。
+ * Photoshop等の透明チェッカー柄に近い、中立的な明暗2色。
+ */
+:root {
+    --checker-light: #cfcfcf;
+    --checker-dark: #9a9a9a;
+}

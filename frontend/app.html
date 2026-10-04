@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Goodbye Background</title>
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/checker-colors.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div id="toast-container" class="toast-container" aria-live="assertive" aria-atomic="true"></div>
+<div id="app">
+  <header class="app-header">
+    <h1>Goodbye Background</h1>
+  </header>
+
+  <input id="file-input" type="file" accept="image/*" multiple hidden />
+
+  <!-- 画像が1枚も無い間はこちらを大きく表示する -->
+  <div id="dropzone" class="dropzone">
+    <p>タップして画像を選択（複数選択可）<br />またはここにドラッグ＆ドロップ</p>
+  </div>
+
+  <!-- 画像が1枚でもあればこちら（小さいストリップ）に切り替わる -->
+  <div id="strip-wrap" class="strip-wrap" hidden>
+    <button id="strip-prev" type="button" class="strip-arrow" aria-label="前へ">‹</button>
+    <div id="strip" class="strip">
+      <button id="strip-add" type="button" class="strip-add" aria-label="画像を追加">＋</button>
+    </div>
+    <button id="strip-next" type="button" class="strip-arrow" aria-label="次へ">›</button>
+  </div>
+
+  <p id="empty-hint" class="empty-hint">画像をアップロードすると、ここに編集画面が表示されます。</p>
+
+  <section id="editor" class="editor" hidden>
+    <div class="edit-canvas-wrap">
+      <canvas id="edit-canvas"></canvas>
+    </div>
+    <div class="edit-bottom-bar">
+      <p id="edit-status" class="edit-status"></p>
+      <div class="edit-toolbar">
+        <button id="mode-toggle" type="button" class="icon-btn" data-mode="positive">➕ 含める（タップで追加）</button>
+        <button id="undo-btn" type="button" class="icon-btn">↺ Undo</button>
+        <button id="redo-btn" type="button" class="icon-btn">↻ Redo</button>
+        <span class="spacer"></span>
+        <button id="save-btn" type="button" class="primary-btn">保存</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

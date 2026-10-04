@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Goodbye Background</title>
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/checker-colors.css" />
+<link rel="stylesheet" href="css/landing.css" />
+<script>
+  // オープニング動画の再生が終わるまでホーム画面を隠す。
+  // JSが動かない環境や動きを減らす設定では付けないので、その場合は最初から表示される。
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.documentElement.classList.add('intro-pending');
+  }
+</script>
+</head>
+<body>
+<div class="bg-stage" id="bg-stage" aria-hidden="true"></div>
+<div class="page">
+
+  <header class="site-header">
+    <span class="wordmark">Goodbye Background</span>
+    <a class="header-cta" href="app.html">アプリを開く</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <h1>1枚の写真から、<br />切り抜き方はいくつでも。</h1>
+        <p class="hero-lead">
+          見せたい部分をタップするだけ。同じ写真からでも、残したい対象ごとに
+          何パターンでも切り抜きを作れます。
+        </p>
+        <a class="cta-primary" href="app.html">アプリを使ってみる</a>
+      </div>
+
+      <!-- 左: 元画像 -->
+      <div class="hero-visual hero-visual-before">
+        <figure class="showcase-before">
+          <span class="showcase-frame">
+            <img src="assets/before.png" alt="切り抜き前の元の写真" />
+          </span>
+          <figcaption>元の写真</figcaption>
+        </figure>
+      </div>
+
+      <!-- 元画像→3つの結果をつなぐ線。3カラムのときは非表示、縦に積むときだけ表示 -->
+      <div class="showcase-branch" role="presentation">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="50" y1="0" x2="15.667" y2="40" />
+          <line x1="50" y1="0" x2="50" y2="40" />
+          <line x1="50" y1="0" x2="84.333" y2="40" />
+        </svg>
+      </div>
+
+      <!-- 右: 切り抜き結果 -->
+      <div class="hero-visual hero-visual-after">
+        <div class="showcase-afters">
+          <figure class="showcase-after">
+            <span class="showcase-frame showcase-frame-checkered">
+              <img src="assets/after1.png" alt="切り抜き結果のパターン1" />
+            </span>
+          </figure>
+          <figure class="showcase-after">
+            <span class="showcase-frame showcase-frame-checkered">
+              <img src="assets/after2.png" alt="切り抜き結果のパターン2" />
+            </span>
+          </figure>
+          <figure class="showcase-after">
+            <span class="showcase-frame showcase-frame-checkered">
+              <img src="assets/after3.png" alt="切り抜き結果のパターン3" />
+            </span>
+          </figure>
+        </div>
+        <p class="showcase-caption">同じ写真から、3通りの切り抜き結果</p>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <h2>見たいところをタップするだけ</h2>
+        <p>残したい部分と消したい部分を、タップで指定するだけ。難しい操作は必要ありません。</p>
+      </div>
+      <div class="feature">
+        <h2>気に入るまで直せる</h2>
+        <p>Undo/Redoでいつでもやり直せるので、思い通りの仕上がりになるまで気軽に調整できます。</p>
+      </div>
+      <div class="feature">
+        <h2>元の画質のまま保存</h2>
+        <p>切り抜いたあとも画質を落とさず、フル解像度のまま保存できます。</p>
+      </div>
+    </section>
+
+    <section class="closing">
+      <h2>さっそく試してみましょう</h2>
+      <a class="cta-primary" href="app.html">アプリを使ってみる</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Goodbye Background</span>
+  </footer>
+
+</div>
+<script src="js/intro.js" defer></script>
+</body>
+</html>
