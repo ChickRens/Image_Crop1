@@ -24,6 +24,8 @@ impl SQLiteUsageRecorder {
 
         tokio::spawn(async move {
             while let Some(event) = rx.recv().await {
+                let id = event.id().map(|id| id.value().to_string());
+
                 let operation_str = match event.operation() {
                     UsageOperation::Upload => "upload".to_string(),
                     UsageOperation::Segment => "segment".to_string(),
@@ -43,8 +45,9 @@ impl SQLiteUsageRecorder {
                 let processing_time_ms = event.processing_time().as_millis() as i64;
 
                 if let Err(e) = sqlx::query(
-                    "INSERT INTO usage_records (operation, status, failure_cause, processing_time_ms) VALUES (?, ?, ?, ?)"
+                    "INSERT INTO usage_records (client_id, operation, status, failure_cause, processing_time_ms) VALUES (?, ?, ?, ?, ?)"
                 )
+                .bind(id)
                 .bind(operation_str)
                 .bind(status_str)
                 .bind(failure_cause)
