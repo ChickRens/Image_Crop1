@@ -72,25 +72,15 @@ mod image_loader_tests {
     use std::{fs::read, path::Path};
 
     use super::FileImageLoader;
-    use crate::{
-        application::{
-            interface::{
-                image_loader::{
-                    error::LoadingError,
-                    loader::ImageLoader,
-                },
-            },
-        },
-    };
+    use crate::application::interface::image_loader::{error::LoadingError, loader::ImageLoader};
 
     #[test]
     fn test_normal_load() {
         let loader = FileImageLoader::new();
 
-        let image = read(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("test/test_image/Normal_Image.png"),
-        )
-        .unwrap();
+        let image =
+            read(Path::new(env!("CARGO_MANIFEST_DIR")).join("test/test_image/Normal_Image.png"))
+                .unwrap();
 
         let result = loader.load(image);
         assert!(result.is_ok());
@@ -105,10 +95,9 @@ mod image_loader_tests {
     fn test_broken_image() {
         let loader = FileImageLoader::new();
 
-        let image = read(
-            Path::new(env!("CARGO_MANIFEST_DIR")).join("test/test_image/Broken_Image.png"),
-        )
-        .unwrap();
+        let image =
+            read(Path::new(env!("CARGO_MANIFEST_DIR")).join("test/test_image/Broken_Image.png"))
+                .unwrap();
 
         let result = loader.load(image);
         assert!(matches!(result, Err(LoadingError::CorruptedImage(_))))

@@ -10,8 +10,13 @@ use uuid::Uuid;
 
 use crate::{
     application::{
-        interface::usage_recorder::UsageRecorder, types::usage::{event::UsageEvent, id::UsageId, operation::UsageOperation, status::UsageStatus},
-    }, composition::wiring::App, presentation::middleware::extension::UsageStatusExt,
+        interface::usage_recorder::UsageRecorder,
+        types::usage::{
+            event::UsageEvent, id::UsageId, operation::UsageOperation, status::UsageStatus,
+        },
+    },
+    composition::wiring::App,
+    presentation::middleware::extension::UsageStatusExt,
 };
 
 pub async fn track_usage(

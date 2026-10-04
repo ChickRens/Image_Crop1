@@ -83,7 +83,27 @@ where
 mod completed_image_repository_test {
     use std::time::{Duration, Instant};
 
-use crate::{application::{interface::{completed_image_repository::{error::CompletedImageRepositoryError, repository::CompletedImageRepository}, delete_expired_repository::DeleteExpiredRepository}, types::completed_image::CompletedImage}, domain::{entity::image::Image, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::{clock::FakeClock, repository::completed_repository::CompletedRepositoryInMemory}};
+    use crate::{
+        application::{
+            interface::{
+                completed_image_repository::{
+                    error::CompletedImageRepositoryError, repository::CompletedImageRepository,
+                },
+                delete_expired_repository::DeleteExpiredRepository,
+            },
+            types::completed_image::CompletedImage,
+        },
+        domain::{
+            entity::image::Image,
+            value_object::{
+                image_data::ImageData, image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::{
+            clock::FakeClock, repository::completed_repository::CompletedRepositoryInMemory,
+        },
+    };
 
     fn make_image() -> CompletedImage {
         let size = ImageSize::new(4, 4).unwrap();
@@ -108,7 +128,10 @@ use crate::{application::{interface::{completed_image_repository::{error::Comple
 
         let fetched = repo.get(image_id).unwrap();
         assert_eq!(fetched.image_id(), image.image_id());
-        assert_eq!(fetched.clone().into_image().image_size(), image.clone().into_image().image_size());
+        assert_eq!(
+            fetched.clone().into_image().image_size(),
+            image.clone().into_image().image_size()
+        );
     }
 
     #[test]
@@ -117,7 +140,10 @@ use crate::{application::{interface::{completed_image_repository::{error::Comple
 
         let result = repo.get(ImageId::new());
 
-        assert!(matches!(result, Err(CompletedImageRepositoryError::ImageNotFound)));
+        assert!(matches!(
+            result,
+            Err(CompletedImageRepositoryError::ImageNotFound)
+        ));
     }
 
     #[test]

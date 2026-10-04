@@ -71,12 +71,17 @@ mod session_repository_test {
     use std::time::{Duration, Instant};
 
     use crate::{
-        application::interface::delete_expired_repository::DeleteExpiredRepository, domain::{
-            entity::session::Session, repository::
-            session_repository::{error::SessionRepositoryError, repository::SessionRepository}, value_object::{
-                image_id::image_id::ImageId, session_id::session_id::SessionId,
+        application::interface::delete_expired_repository::DeleteExpiredRepository,
+        domain::{
+            entity::session::Session,
+            repository::session_repository::{
+                error::SessionRepositoryError, repository::SessionRepository,
             },
-        }, infrastructure::{clock::FakeClock, repository::session_repository::SessionRepositoryInMemory},
+            value_object::{image_id::image_id::ImageId, session_id::session_id::SessionId},
+        },
+        infrastructure::{
+            clock::FakeClock, repository::session_repository::SessionRepositoryInMemory,
+        },
     };
 
     fn make_session() -> Session {
@@ -104,7 +109,10 @@ mod session_repository_test {
 
         let result = repo.get(&SessionId::new());
 
-        assert!(matches!(result, Err(SessionRepositoryError::SessionNotFound)));
+        assert!(matches!(
+            result,
+            Err(SessionRepositoryError::SessionNotFound)
+        ));
     }
 
     #[test]

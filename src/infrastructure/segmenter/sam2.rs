@@ -526,8 +526,7 @@ mod sam2_test {
         domain::{
             entity::{image::Image, original_image::OriginalImage},
             value_object::{
-                image_data::ImageData,
-                image_id::image_id::ImageId,
+                image_data::ImageData, image_id::image_id::ImageId,
                 image_size::image_size::ImageSize,
             },
         },
@@ -559,12 +558,18 @@ mod sam2_test {
         ]);
         let image = Image::new(image_data.clone(), ImageId::new(), size.clone());
         let original_image = OriginalImage::new(image);
-        let mask = Mask::new(Array4::from_shape_vec((1, 1, 2, 2), vec![1.0, 0.0, 0.5, 1.0]).unwrap());
+        let mask =
+            Mask::new(Array4::from_shape_vec((1, 1, 2, 2), vec![1.0, 0.0, 0.5, 1.0]).unwrap());
 
         let segmented = Sam2Segmenter::_generate_image_fast(&mask, &original_image).unwrap();
         let (result_image, result_size) = segmented.into_image_and_size();
 
         assert_eq!(result_size, size);
-        assert_eq!(result_image.image(), &vec![255, 0, 0, 255, 0, 255, 0, 0, 0, 0, 255, 127, 255, 255, 255, 255]);
+        assert_eq!(
+            result_image.image(),
+            &vec![
+                255, 0, 0, 255, 0, 255, 0, 0, 0, 0, 255, 127, 255, 255, 255, 255
+            ]
+        );
     }
 }

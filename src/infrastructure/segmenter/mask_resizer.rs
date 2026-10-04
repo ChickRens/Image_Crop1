@@ -140,4 +140,4 @@ mod resizer_test {
 
         assert_eq!(output.dim(), (1, 1, 3000, 500))
     }
-} 
+}

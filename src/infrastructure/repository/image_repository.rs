@@ -76,19 +76,20 @@ mod image_repository_test {
     use std::time::{Duration, Instant};
 
     use crate::{
-        application::interface::{
-            delete_expired_repository::DeleteExpiredRepository,
-        }, domain::{
+        application::interface::delete_expired_repository::DeleteExpiredRepository,
+        domain::{
             entity::{image::Image, original_image::OriginalImage},
             repository::original_image_repository::{
                 error::OriginalImageRepositoryError, repository::OriginalImageRepository,
             },
             value_object::{
-                image_data::ImageData,
-                image_id::image_id::ImageId,
+                image_data::ImageData, image_id::image_id::ImageId,
                 image_size::image_size::ImageSize,
             },
-        }, infrastructure::{clock::FakeClock, repository::image_repository::OriginalImageRepositoryInMemory},
+        },
+        infrastructure::{
+            clock::FakeClock, repository::image_repository::OriginalImageRepositoryInMemory,
+        },
     };
 
     fn make_image() -> OriginalImage {
@@ -123,7 +124,10 @@ mod image_repository_test {
 
         let result = repo.get(&ImageId::new());
 
-        assert!(matches!(result, Err(OriginalImageRepositoryError::ImageNotFound)));
+        assert!(matches!(
+            result,
+            Err(OriginalImageRepositoryError::ImageNotFound)
+        ));
     }
 
     #[test]

@@ -55,7 +55,17 @@ impl SegmenterInputImageGenerator for SAM2InputGenerator {
 
 #[cfg(test)]
 mod segmenter_input_image_generator_test {
-    use crate::{application::interface::segmenter_input_image_generator::SegmenterInputImageGenerator, domain::{entity::{image::Image, original_image::OriginalImage}, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::generator::segmenter_input::SAM2InputGenerator};
+    use crate::{
+        application::interface::segmenter_input_image_generator::SegmenterInputImageGenerator,
+        domain::{
+            entity::{image::Image, original_image::OriginalImage},
+            value_object::{
+                image_data::ImageData, image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::generator::segmenter_input::SAM2InputGenerator,
+    };
 
     #[test]
     fn generate_returns_sam2_input() {
@@ -66,7 +76,7 @@ mod segmenter_input_image_generator_test {
         ];
         let original = OriginalImage::new(Image::new(ImageData::new(rgba), image_id, size.clone()));
 
-        let input= SAM2InputGenerator::new(4, 4).generate(&original);
+        let input = SAM2InputGenerator::new(4, 4).generate(&original);
         let (_, input_image_id, input_size) = input.image().clone().into_data();
 
         assert_eq!(input_image_id, *original.image().image_id());

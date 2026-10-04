@@ -85,9 +85,24 @@ mod editing_session_repository_test {
     use std::time::{Duration, Instant};
 
     use crate::{
-        application::{interface::{delete_expired_repository::DeleteExpiredRepository, editing_session_repository::{error::EditingSessionRepositoryError, repository::EditingSessionRepository}}, types::{
-            editing_session::session::CommonEditingSession, inference_context_history::InferenceContextHistory, point_history::PointHistory,
-        }}, domain::value_object::session_id::session_id::SessionId, infrastructure::{clock::FakeClock, repository::editing_session_repository::SAM2EditingSessionRepository, segmenter::sam2_data::{SAM2InferenceContext, SAM2StaticContext}},
+        application::{
+            interface::{
+                delete_expired_repository::DeleteExpiredRepository,
+                editing_session_repository::{
+                    error::EditingSessionRepositoryError, repository::EditingSessionRepository,
+                },
+            },
+            types::{
+                editing_session::session::CommonEditingSession,
+                inference_context_history::InferenceContextHistory, point_history::PointHistory,
+            },
+        },
+        domain::value_object::session_id::session_id::SessionId,
+        infrastructure::{
+            clock::FakeClock,
+            repository::editing_session_repository::SAM2EditingSessionRepository,
+            segmenter::sam2_data::{SAM2InferenceContext, SAM2StaticContext},
+        },
     };
 
     type EditingSession = CommonEditingSession<SAM2StaticContext, SAM2InferenceContext>;
@@ -122,7 +137,10 @@ mod editing_session_repository_test {
 
         let result = repo.get(&SessionId::new());
 
-        assert!(matches!(result, Err(EditingSessionRepositoryError::EditingSessionNotFound)));
+        assert!(matches!(
+            result,
+            Err(EditingSessionRepositoryError::EditingSessionNotFound)
+        ));
     }
 
     #[test]

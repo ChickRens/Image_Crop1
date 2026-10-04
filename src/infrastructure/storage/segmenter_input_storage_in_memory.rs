@@ -79,7 +79,28 @@ where
 mod segmenter_input_image_repository_test {
     use std::time::{Duration, Instant};
 
-use crate::{application::{interface::{delete_expired_repository::DeleteExpiredRepository, segmenter_input_image_storage::{error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage}}, types::segmenter_input_image::SegmenterInputImage}, domain::{entity::image::Image, value_object::{image_data::ImageData, image_id::image_id::ImageId, image_size::image_size::ImageSize}}, infrastructure::{clock::FakeClock, storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory}};
+    use crate::{
+        application::{
+            interface::{
+                delete_expired_repository::DeleteExpiredRepository,
+                segmenter_input_image_storage::{
+                    error::SegmenterInputImageStorageError, storage::SegmenterInputImageStorage,
+                },
+            },
+            types::segmenter_input_image::SegmenterInputImage,
+        },
+        domain::{
+            entity::image::Image,
+            value_object::{
+                image_data::ImageData, image_id::image_id::ImageId,
+                image_size::image_size::ImageSize,
+            },
+        },
+        infrastructure::{
+            clock::FakeClock,
+            storage::segmenter_input_storage_in_memory::SegmenterInputStorageInMemory,
+        },
+    };
 
     fn make_image() -> SegmenterInputImage {
         let size = ImageSize::new(4, 4).unwrap();
@@ -113,7 +134,10 @@ use crate::{application::{interface::{delete_expired_repository::DeleteExpiredRe
 
         let result = repo.get(ImageId::new());
 
-        assert!(matches!(result, Err(SegmenterInputImageStorageError::ImageNotFound)));
+        assert!(matches!(
+            result,
+            Err(SegmenterInputImageStorageError::ImageNotFound)
+        ));
     }
 
     #[test]
@@ -123,7 +147,7 @@ use crate::{application::{interface::{delete_expired_repository::DeleteExpiredRe
         let image = make_image();
         repo.save(image.clone());
         let image_id = image.image_id();
-        
+
         repo.delete_expired(base + Duration::from_secs(30), Duration::from_secs(10));
 
         assert!(repo.get(*image_id).is_err());

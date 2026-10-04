@@ -89,8 +89,7 @@ mod preview_image_generator_test {
         domain::{
             entity::image::Image,
             value_object::{
-                image_data::ImageData,
-                image_id::image_id::ImageId,
+                image_data::ImageData, image_id::image_id::ImageId,
                 image_size::image_size::ImageSize,
             },
         },
@@ -118,7 +117,6 @@ mod preview_image_generator_test {
         assert_eq!(preview_size, ImageSize::new(4, 4).unwrap());
     }
 }
-
 
 impl WebPPreviewImageGenerator {
     pub fn new(preview_image_long_side: u16) -> Self {

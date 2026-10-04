@@ -45,8 +45,7 @@ mod completed_image_generator_test {
         domain::{
             entity::image::Image,
             value_object::{
-                image_data::ImageData,
-                image_id::image_id::ImageId,
+                image_data::ImageData, image_id::image_id::ImageId,
                 image_size::image_size::ImageSize,
             },
         },
@@ -73,7 +72,6 @@ mod completed_image_generator_test {
         assert_eq!(encoded.image_size(), original.image_size());
     }
 }
-
 
 #[derive(Debug, Clone)]
 pub struct SharedWebPCompletedImageGenerator {

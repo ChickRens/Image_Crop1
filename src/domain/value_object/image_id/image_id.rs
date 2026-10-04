@@ -35,7 +35,7 @@ impl ImageId {
 mod image_id_tests {
     use uuid::Uuid;
 
-use crate::domain::value_object::image_id::{error::ImageIdError, image_id::ImageId};
+    use crate::domain::value_object::image_id::{error::ImageIdError, image_id::ImageId};
 
     #[test]
     fn test_normal_convert_from_uuid() {

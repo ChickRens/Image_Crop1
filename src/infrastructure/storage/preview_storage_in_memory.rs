@@ -263,24 +263,19 @@ mod preview_storage_in_memory_test {
         application::{
             interface::{
                 delete_expired_repository::DeleteExpiredRepository,
-                preview_storage::{
-                    error::PreviewStorageError,
-                    storage::PreviewStorage,
-                },
+                preview_storage::{error::PreviewStorageError, storage::PreviewStorage},
             },
             types::preview_image::PreviewImage,
         },
         domain::{
             entity::image::Image,
             value_object::{
-                image_data::ImageData,
-                image_id::image_id::ImageId,
+                image_data::ImageData, image_id::image_id::ImageId,
                 image_size::image_size::ImageSize,
             },
         },
         infrastructure::{
-            clock::FakeClock,
-            storage::preview_storage_in_memory::PreviewStorageInMemory,
+            clock::FakeClock, storage::preview_storage_in_memory::PreviewStorageInMemory,
         },
     };
 
