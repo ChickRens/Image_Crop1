@@ -1,24 +1,27 @@
-FROM rust:1-trixie
-
+FROM rust:1-trixie AS builder
 WORKDIR /app
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         pkg-config \
         libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-
 COPY Cargo.toml Cargo.lock ./
-
 COPY src ./src
 COPY frontend ./frontend
 COPY models ./models
 COPY migrations ./migrations
-
 RUN cargo build --release
 
-COPY database ./database
-
+FROM debian:trixie-slim
+WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/* && \
+    useradd -m -u 1000 appuser
+COPY --from=builder /app/target/release/Goodbye_Background ./
+COPY --from=builder /app/models ./models
+COPY --from=builder /app/frontend ./frontend
+COPY --chown=appuser:appuser database ./database
 EXPOSE 3000
-
-CMD ["./target/release/Image_Crop1"]
+USER appuser
+CMD ["./Goodbye_Background"]

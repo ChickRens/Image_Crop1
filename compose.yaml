@@ -1,13 +1,17 @@
 services:
   goodbye-background:
+    environment: 
+      DATABASE_URL: ${DATABASE_URL}
     build:
       context: .
       dockerfile: DockerFile
-
     ports:
       - "3000:3000"
-
     volumes:
-      - ./database:/app/database
-
+      - ./database:/app/database:rw
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    # read_only: true
+    tmpfs:
+      - /tmp
